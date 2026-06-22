@@ -1,6 +1,7 @@
 {
   "name": "casino-referral-bot-client",
   "version": "1.0.0",
+  "homepage": ".",
   "private": true,
   "dependencies": {
     "@twa-dev/sdk": "^1.0.0",

@@ -1,0 +1,10 @@
+{
+  "name": "referral-bot",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "cd client && npm install && npm run build",
+    "start": "node server/index.js",
+    "install:all": "npm install --prefix server && npm install --prefix client"
+  }
+}

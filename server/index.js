@@ -2,7 +2,6 @@ require('dotenv').config();
 
 const path = require('path');
 const fs = require('fs');
-const { execSync } = require('child_process');
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
@@ -14,29 +13,9 @@ const routes = require('./routes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const clientBuildPath = path.join(__dirname, '..', 'client', 'build');
 
 // Trust Railway proxy
 app.set('trust proxy', 1);
-
-// Auto-build client if not built yet
-if (!fs.existsSync(path.join(clientBuildPath, 'index.html'))) {
-  console.log('Client build not found, building React app...');
-  try {
-    const clientDir = path.join(__dirname, '..', 'client');
-    execSync('npm install', { cwd: clientDir, stdio: 'inherit', shell: true, env: { ...process.env, CI: 'false' } });
-    console.log('Installing client deps done, building React...');
-    execSync('npm run build', { cwd: clientDir, stdio: 'inherit', shell: true, env: { ...process.env, CI: 'false' } });
-    console.log('Client build complete');
-  } catch (buildErr) {
-    console.error('Client build failed with error:', buildErr.message);
-  }
-}
-
-// Serve React static files
-if (fs.existsSync(clientBuildPath)) {
-  app.use(express.static(clientBuildPath));
-}
 
 // Security headers
 app.use(helmet({
@@ -93,17 +72,6 @@ app.post(`/webhook/${process.env.WEBHOOK_SECRET_PATH}`, verifyBotWebhook, (req, 
 // API routes
 app.use('/api', routes);
 
-// SPA catch-all
-app.get('*', (req, res, next) => {
-  if (req.path.startsWith('/api') || req.path.startsWith('/webhook')) return next();
-  const indexPath = path.join(clientBuildPath, 'index.html');
-  if (fs.existsSync(indexPath)) {
-    res.sendFile(indexPath);
-  } else {
-    res.status(200).send('Server is running. Frontend not built yet.');
-  }
-});
-
 // Error handler
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
@@ -131,6 +99,18 @@ const start = async () => {
       console.log('No valid WEBHOOK_URL, using polling mode');
       await bot.telegram.deleteWebhook();
       bot.launch();
+    }
+
+    // Serve React static files — added directly above app.listen
+    const clientBuildPath = path.join(__dirname, '../client/build');
+    if (fs.existsSync(clientBuildPath)) {
+      app.use(express.static(clientBuildPath));
+      app.get('*', (req, res, next) => {
+        if (req.path.startsWith('/api') || req.path.startsWith('/webhook')) {
+          return next();
+        }
+        res.sendFile(path.join(clientBuildPath, 'index.html'));
+      });
     }
 
     app.listen(PORT, () => {
