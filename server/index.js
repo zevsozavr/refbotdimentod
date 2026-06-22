@@ -103,21 +103,38 @@ const start = async () => {
 
     // Serve React static files
     const clientBuildPath = path.join(__dirname, '../client/dist');
-    const indexPath = path.join(clientBuildPath, 'index.html');
-    console.log('Looking for frontend at:', indexPath);
-    if (fs.existsSync(indexPath)) {
-      app.use(express.static(clientBuildPath));
-      app.get('*', (req, res, next) => {
+
+    if (fs.existsSync(clientBuildPath)) {
+      app.use(express.static(clientBuildPath, {
+        setHeaders: (res, filePath) => {
+          if (filePath.endsWith('.js')) {
+            res.setHeader('Content-Type', 'application/javascript');
+          } else if (filePath.endsWith('.css')) {
+            res.setHeader('Content-Type', 'text/css');
+          }
+        }
+      }));
+
+      app.use((req, res, next) => {
         if (req.path.startsWith('/api') || req.path.startsWith('/webhook')) {
           return next();
         }
-        res.sendFile(indexPath);
+        const indexPath = path.join(clientBuildPath, 'index.html');
+        if (fs.existsSync(indexPath)) {
+          res.sendFile(indexPath);
+        } else {
+          next();
+        }
       });
-      console.log('Frontend static files loaded');
+
+      console.log('Frontend static files loaded from', clientBuildPath);
     } else {
       console.log('Frontend build not found — API only mode');
-      app.get('*', (req, res) => {
-        res.send('Server running. Frontend not built yet.');
+      app.use((req, res, next) => {
+        if (req.path.startsWith('/api') || req.path.startsWith('/webhook')) {
+          return next();
+        }
+        res.status(503).send('Frontend not built yet.');
       });
     }
 
