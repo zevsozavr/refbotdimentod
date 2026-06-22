@@ -102,7 +102,7 @@ const start = async () => {
     }
 
     // Serve React static files
-    const clientBuildPath = path.join(__dirname, '../client/build');
+    const clientBuildPath = path.join(__dirname, '../client/dist');
     const indexPath = path.join(clientBuildPath, 'index.html');
     console.log('Looking for frontend at:', indexPath);
     if (fs.existsSync(indexPath)) {
