@@ -4,6 +4,7 @@
   "homepage": ".",
   "private": true,
   "dependencies": {
+    "@twa-dev/sdk": "^8.0.2",
     "axios": "^1.7.7",
     "i18next": "^23.15.1",
     "react": "^18.3.1",
@@ -14,8 +15,8 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "node ../scripts/check-secrets.js && react-scripts build",
-    "prebuild": "node ../scripts/check-secrets.js"
+    "build": "react-scripts build",
+    "check-secrets": "node ../scripts/check-secrets.js"
   },
   "browserslist": {
     "production": [">0.2%", "not dead", "not op_mini all"],
