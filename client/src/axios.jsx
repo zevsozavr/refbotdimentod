@@ -1,14 +1,12 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || '/api',
+  baseURL: '/api',
 });
 
 api.interceptors.request.use((config) => {
-  const initData = window.Telegram?.WebApp?.initData;
-  if (initData) {
-    config.headers['x-telegram-init-data'] = initData;
-  }
+  const initData = window.Telegram?.WebApp?.initData || '';
+  config.headers['x-telegram-init-data'] = initData;
   const adminToken = sessionStorage.getItem('adminToken');
   if (adminToken) {
     config.headers['x-admin-token'] = adminToken;

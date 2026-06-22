@@ -10,7 +10,15 @@ const isAdminId = (telegramId) => {
 
 const verifyTelegramAuth = (req, res, next) => {
   const initData = req.headers['x-telegram-init-data'];
-  if (!initData) {
+
+  // Development bypass — skip verification if NODE_ENV is not production
+  if (process.env.NODE_ENV !== 'production') {
+    const devUser = { id: parseInt(process.env.DEV_TELEGRAM_ID || '0'), first_name: 'Dev', username: 'devuser' };
+    req.telegramUser = devUser;
+    return next();
+  }
+
+  if (!initData || initData.trim() === '') {
     return res.status(401).json({ error: 'Missing authentication data' });
   }
 
@@ -20,15 +28,15 @@ const verifyTelegramAuth = (req, res, next) => {
     if (!hash) {
       return res.status(401).json({ error: 'Invalid authentication data' });
     }
-
     params.delete('hash');
-
     const sortedKeys = Array.from(params.keys()).sort();
     const dataCheckString = sortedKeys.map(key => `${key}=${params.get(key)}`).join('\n');
-
     const secretKey = crypto.createHmac('sha256', 'WebAppData').update(process.env.BOT_TOKEN).digest();
     const computedHash = crypto.createHmac('sha256', secretKey).update(dataCheckString).digest('hex');
 
+    if (computedHash.length !== hash.length) {
+      return res.status(401).json({ error: 'Invalid authentication signature' });
+    }
     if (!crypto.timingSafeEqual(Buffer.from(computedHash), Buffer.from(hash))) {
       return res.status(401).json({ error: 'Invalid authentication signature' });
     }
