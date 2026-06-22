@@ -20,14 +20,12 @@ const clientBuildPath = path.join(__dirname, '..', 'client', 'build');
 if (!fs.existsSync(path.join(clientBuildPath, 'index.html'))) {
   console.log('Client build not found, building React app...');
   try {
-    execSync('npm install && npm run build', {
-      cwd: path.join(__dirname, '..', 'client'),
-      stdio: 'inherit',
-      env: { ...process.env, CI: 'false' },
-    });
+    const clientDir = path.join(__dirname, '..', 'client');
+    execSync('npm install', { cwd: clientDir, stdio: 'inherit', env: { ...process.env, CI: 'false' } });
+    execSync('npm run build', { cwd: clientDir, stdio: 'inherit', env: { ...process.env, CI: 'false' } });
     console.log('Client build complete');
   } catch (buildErr) {
-    console.error('Client build failed:', buildErr.message);
+    console.error('Client build failed. Check logs above for details.');
   }
 }
 
