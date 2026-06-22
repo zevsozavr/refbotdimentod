@@ -4,7 +4,6 @@ const path = require('path');
 const fs = require('fs');
 const express = require('express');
 const helmet = require('helmet');
-const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const { migrate } = require('./db');
 const { bot } = require('./bot');
@@ -22,35 +21,43 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "data:"],
-      connectSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'", "https://api.telegram.org"],
       frameAncestors: ["https://web.telegram.org", "https://web.telegram.org.k"],
     },
   },
   frameguard: false,
+  crossOriginEmbedderPolicy: false,
 }));
 
-app.use(helmet.xContentTypeOptions());
 app.use(helmet.referrerPolicy({ policy: 'no-referrer' }));
 
 // CORS
-const allowedOrigins = [
-  'https://web.telegram.org',
-  'https://web.telegram.org.k',
-].filter(Boolean);
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  const allowed = [
+    'https://web.telegram.org',
+    'https://web.telegram.org.k',
+    process.env.APP_URL,
+  ].filter(Boolean);
 
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
+  if (!origin || allowed.includes(origin)) {
+    if (origin) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
     }
-  },
-  credentials: true,
-}));
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,x-telegram-init-data,x-admin-token');
+  }
+
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+
+  next();
+});
 
 // Global rate limiter
 const globalLimiter = rateLimit({
