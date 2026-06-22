@@ -16,16 +16,22 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const clientBuildPath = path.join(__dirname, '..', 'client', 'build');
 
+// Trust Railway proxy
+app.set('trust proxy', 1);
+
 // Auto-build client if not built yet
 if (!fs.existsSync(path.join(clientBuildPath, 'index.html'))) {
   console.log('Client build not found, building React app...');
   try {
     const clientDir = path.join(__dirname, '..', 'client');
-    execSync('npm install', { cwd: clientDir, stdio: 'inherit', env: { ...process.env, CI: 'false' } });
-    execSync('npm run build', { cwd: clientDir, stdio: 'inherit', env: { ...process.env, CI: 'false' } });
-    console.log('Client build complete');
+    execSync('npm install 2>&1', { cwd: clientDir, encoding: 'utf8', env: { ...process.env, CI: 'false' } });
+    console.log('npm install completed, building...');
+    const buildOut = execSync('npm run build 2>&1', { cwd: clientDir, encoding: 'utf8', env: { ...process.env, CI: 'false' } });
+    console.log('Client build output:', buildOut);
   } catch (buildErr) {
-    console.error('Client build failed. Check logs above for details.');
+    console.error('Client build failed. Full output:');
+    console.error(buildErr.stdout);
+    console.error(buildErr.stderr);
   }
 }
 
@@ -111,18 +117,22 @@ const start = async () => {
   try {
     await migrate();
 
-    if (process.env.NODE_ENV === 'production' && process.env.WEBHOOK_URL && !process.env.WEBHOOK_URL.includes('.railway.internal')) {
+    // Try webhook only if WEBHOOK_URL starts with https://
+    if (process.env.WEBHOOK_URL && process.env.WEBHOOK_URL.startsWith('https://')) {
       try {
         const webhookUrl = `${process.env.WEBHOOK_URL}/webhook/${process.env.WEBHOOK_SECRET_PATH}`;
         await bot.telegram.setWebhook(webhookUrl);
         console.log(`Bot webhook set to: ${webhookUrl}`);
       } catch (webhookErr) {
-        console.error('Webhook failed, falling back to polling:', webhookErr.message);
+        console.error('Webhook failed:', webhookErr.message);
+        console.log('Falling back to polling...');
+        await bot.telegram.deleteWebhook();
         bot.launch();
       }
     } else {
+      console.log('No valid WEBHOOK_URL, using polling mode');
+      await bot.telegram.deleteWebhook();
       bot.launch();
-      console.log('Bot started in polling mode');
     }
 
     app.listen(PORT, () => {
