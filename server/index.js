@@ -89,13 +89,14 @@ const start = async () => {
   try {
     await migrate();
 
-    if (process.env.NODE_ENV === 'production' && process.env.WEBHOOK_URL) {
+    if (process.env.NODE_ENV === 'production' && process.env.WEBHOOK_URL && !process.env.WEBHOOK_URL.includes('.railway.internal')) {
       try {
         const webhookUrl = `${process.env.WEBHOOK_URL}/webhook/${process.env.WEBHOOK_SECRET_PATH}`;
         await bot.telegram.setWebhook(webhookUrl);
         console.log(`Bot webhook set to: ${webhookUrl}`);
       } catch (webhookErr) {
-        console.error('Webhook registration failed (server will still run):', webhookErr.message);
+        console.error('Webhook failed, falling back to polling:', webhookErr.message);
+        bot.launch();
       }
     } else {
       bot.launch();
