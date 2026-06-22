@@ -24,14 +24,12 @@ if (!fs.existsSync(path.join(clientBuildPath, 'index.html'))) {
   console.log('Client build not found, building React app...');
   try {
     const clientDir = path.join(__dirname, '..', 'client');
-    execSync('npm install 2>&1', { cwd: clientDir, encoding: 'utf8', env: { ...process.env, CI: 'false' } });
-    console.log('npm install completed, building...');
-    const buildOut = execSync('npm run build 2>&1', { cwd: clientDir, encoding: 'utf8', env: { ...process.env, CI: 'false' } });
-    console.log('Client build output:', buildOut);
+    execSync('npm install', { cwd: clientDir, stdio: 'inherit', shell: true, env: { ...process.env, CI: 'false' } });
+    console.log('Installing client deps done, building React...');
+    execSync('npm run build', { cwd: clientDir, stdio: 'inherit', shell: true, env: { ...process.env, CI: 'false' } });
+    console.log('Client build complete');
   } catch (buildErr) {
-    console.error('Client build failed. Full output:');
-    console.error(buildErr.stdout);
-    console.error(buildErr.stderr);
+    console.error('Client build failed with error:', buildErr.message);
   }
 }
 
