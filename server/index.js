@@ -6,7 +6,8 @@ const helmet = require('helmet');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const { migrate } = require('./db');
-const { bot, verifyBotWebhook } = require('./bot');
+const { bot } = require('./bot');
+const { verifyBotWebhook } = require('./middleware');
 const routes = require('./routes');
 
 const app = express();
