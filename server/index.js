@@ -1,5 +1,6 @@
 require('dotenv').config();
 
+const path = require('path');
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
@@ -11,6 +12,10 @@ const routes = require('./routes');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Serve React static files
+const clientBuildPath = path.join(__dirname, '..', 'client', 'build');
+app.use(express.static(clientBuildPath));
+
 // Security headers
 app.use(helmet({
   contentSecurityPolicy: {
@@ -18,24 +23,26 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:"],
+      connectSrc: ["'self'"],
+      frameAncestors: ["https://web.telegram.org", "https://web.telegram.org.k"],
     },
   },
+  frameguard: false,
 }));
 
 app.use(helmet.xContentTypeOptions());
-app.use(helmet.frameguard({ action: 'deny' }));
 app.use(helmet.referrerPolicy({ policy: 'no-referrer' }));
 
-// CORS lockdown
+// CORS — allow Telegram origins and self for API
 const allowedOrigins = [
   'https://web.telegram.org',
   'https://web.telegram.org.k',
-  process.env.MINI_APP_URL || '',
 ].filter(Boolean);
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV === 'development') {
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -63,6 +70,12 @@ app.post(`/webhook/${process.env.WEBHOOK_SECRET_PATH}`, verifyBotWebhook, (req, 
 
 // API routes
 app.use('/api', routes);
+
+// SPA catch-all — serve React index.html for all non-API, non-webhook routes
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api') || req.path.startsWith('/webhook')) return next();
+  res.sendFile(path.join(clientBuildPath, 'index.html'));
+});
 
 // Error handler - generic messages only
 app.use((err, req, res, next) => {
