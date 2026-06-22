@@ -101,15 +101,23 @@ const start = async () => {
       bot.launch();
     }
 
-    // Serve React static files — added directly above app.listen
+    // Serve React static files
     const clientBuildPath = path.join(__dirname, '../client/build');
-    if (fs.existsSync(clientBuildPath)) {
+    const indexPath = path.join(clientBuildPath, 'index.html');
+    console.log('Looking for frontend at:', indexPath);
+    if (fs.existsSync(indexPath)) {
       app.use(express.static(clientBuildPath));
       app.get('*', (req, res, next) => {
         if (req.path.startsWith('/api') || req.path.startsWith('/webhook')) {
           return next();
         }
-        res.sendFile(path.join(clientBuildPath, 'index.html'));
+        res.sendFile(indexPath);
+      });
+      console.log('Frontend static files loaded');
+    } else {
+      console.log('Frontend build not found — API only mode');
+      app.get('*', (req, res) => {
+        res.send('Server running. Frontend not built yet.');
       });
     }
 
