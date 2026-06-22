@@ -1,6 +1,8 @@
 require('dotenv').config();
 
 const path = require('path');
+const fs = require('fs');
+const { execSync } = require('child_process');
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
@@ -12,10 +14,27 @@ const routes = require('./routes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const clientBuildPath = path.join(__dirname, '..', 'client', 'build');
+
+// Auto-build client if not built yet
+if (!fs.existsSync(path.join(clientBuildPath, 'index.html'))) {
+  console.log('Client build not found, building React app...');
+  try {
+    execSync('npm install && npm run build', {
+      cwd: path.join(__dirname, '..', 'client'),
+      stdio: 'inherit',
+      env: { ...process.env, CI: 'false' },
+    });
+    console.log('Client build complete');
+  } catch (buildErr) {
+    console.error('Client build failed:', buildErr.message);
+  }
+}
 
 // Serve React static files
-const clientBuildPath = path.join(__dirname, '..', 'client', 'build');
-app.use(express.static(clientBuildPath));
+if (fs.existsSync(clientBuildPath)) {
+  app.use(express.static(clientBuildPath));
+}
 
 // Security headers
 app.use(helmet({
@@ -35,7 +54,7 @@ app.use(helmet({
 app.use(helmet.xContentTypeOptions());
 app.use(helmet.referrerPolicy({ policy: 'no-referrer' }));
 
-// CORS — allow Telegram origins and self for API
+// CORS
 const allowedOrigins = [
   'https://web.telegram.org',
   'https://web.telegram.org.k',
@@ -64,7 +83,7 @@ app.use(globalLimiter);
 
 app.use(express.json());
 
-// Bot webhook endpoint (before main router to avoid auth middleware)
+// Bot webhook endpoint
 app.post(`/webhook/${process.env.WEBHOOK_SECRET_PATH}`, verifyBotWebhook, (req, res) => {
   bot.handleUpdate(req.body, res);
 });
@@ -72,13 +91,18 @@ app.post(`/webhook/${process.env.WEBHOOK_SECRET_PATH}`, verifyBotWebhook, (req, 
 // API routes
 app.use('/api', routes);
 
-// SPA catch-all — serve React index.html for all non-API, non-webhook routes
+// SPA catch-all
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api') || req.path.startsWith('/webhook')) return next();
-  res.sendFile(path.join(clientBuildPath, 'index.html'));
+  const indexPath = path.join(clientBuildPath, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(200).send('Server is running. Frontend not built yet.');
+  }
 });
 
-// Error handler - generic messages only
+// Error handler
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
   res.status(500).json({ error: 'Internal server error' });
@@ -114,7 +138,6 @@ const start = async () => {
 
 start();
 
-// Graceful shutdown
 process.once('SIGINT', () => {
   bot.stop('SIGINT');
   process.exit(0);
