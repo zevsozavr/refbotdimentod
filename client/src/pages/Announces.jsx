@@ -18,6 +18,17 @@ const Announces = () => {
       .finally(() => setLoading(false));
   };
 
+  const openLink = (link) => {
+    const isTelegramLink = link.includes('t.me') || link.includes('telegram.me');
+    if (isTelegramLink && window.Telegram?.WebApp?.openTelegramLink) {
+      window.Telegram.WebApp.openTelegramLink(link);
+    } else if (window.Telegram?.WebApp?.openLink) {
+      window.Telegram.WebApp.openLink(link);
+    } else {
+      window.open(link, '_blank', 'noopener,noreferrer');
+    }
+  };
+
   useEffect(() => { fetchItems(); }, []);
 
   if (loading) return <div className="page"><div className="loading-center"><div className="spinner" /></div></div>;
@@ -36,7 +47,7 @@ const Announces = () => {
       ) : (
         items.map(item => (
           item.type === 'stream' ? (
-            <div key={`s-${item.id}`} className="announce-card stream-card" onClick={() => { window.open(item.link, '_blank'); }}>
+            <div key={`s-${item.id}`} className="announce-card stream-card" onClick={() => openLink(item.link)}>
               {item.banner_image && <img className="announce-banner" src={item.banner_image} alt="" />}
               <div className="announce-type-badge">📺 {lang === 'uk' ? 'Стрім' : 'Стрим'}</div>
               <div className="announce-title">{lang === 'uk' ? item.text_uk : item.text_ru || 'Stream'}</div>

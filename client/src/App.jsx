@@ -7,6 +7,8 @@ import i18n from './i18n';
 import BottomNav from './components/BottomNav';
 import NotificationsPanel from './components/NotificationsPanel';
 import Banned from './pages/Banned';
+import Pending from './pages/Pending';
+import Rejected from './pages/Rejected';
 import Home from './pages/Home';
 import Contests from './pages/Contests';
 import Announces from './pages/Announces';
@@ -118,6 +120,8 @@ const AppContent = () => {
   }
 
   if (user.status === 'banned') return <Banned />;
+  if (user.status === 'pending' && !isAdmin) return <Pending />;
+  if (user.status === 'rejected' && !isAdmin) return <Rejected />;
 
   return (
     <HashRouter>

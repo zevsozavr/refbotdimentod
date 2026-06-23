@@ -252,7 +252,7 @@ router.post('/casino/:casinoId/submit-id', verifyTelegramAuth, [
     const casino = casinos[req.params.casinoId];
     if (!casino) return res.status(404).json({ error: 'Casino not found' });
 
-    const userResult = await pool.query('SELECT id, telegram_username, ' + casino.casino_id_column + ' FROM users WHERE telegram_id = $1', [req.telegramUser.id]);
+    const userResult = await pool.query('SELECT id, telegram_username, status, ' + casino.casino_id_column + ' FROM users WHERE telegram_id = $1', [req.telegramUser.id]);
     if (userResult.rows.length === 0) return res.status(404).json({ error: 'User not found' });
 
     const user = userResult.rows[0];
@@ -271,6 +271,10 @@ router.post('/casino/:casinoId/submit-id', verifyTelegramAuth, [
       'INSERT INTO pending_changes (user_id, field, old_value, new_value) VALUES ($1, $2, $3, $4)',
       [user.id, casino.casino_id_column, oldValue, req.body.casino_account_id]
     );
+
+    if (user.status === 'rejected') {
+      await pool.query("UPDATE users SET status = 'pending' WHERE id = $1", [user.id]);
+    }
 
     const casinoName = casino.id === 'topmatch' ? 'TopMatch' : 'TonPlay';
     await notifyAdminChange(user, casino.casino_id_column, req.body.casino_account_id, casinoName);

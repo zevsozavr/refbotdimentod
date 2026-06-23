@@ -1371,3 +1371,40 @@ textarea.input { resize: vertical; min-height: 80px; }
 .flex { display: flex; }
 .flex-wrap { flex-wrap: wrap; }
 .text-sm { font-size: 12px; }
+
+/* ── Clear/Dismiss Notifications ── */
+.notif-item-clear {
+  background: transparent;
+  border: none;
+  color: var(--text-caption);
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition);
+  opacity: 0.6;
+}
+
+.notif-item-clear:hover {
+  color: var(--error);
+  opacity: 1;
+}
+
+.notif-clear-all {
+  background: transparent;
+  border: none;
+  color: var(--text-caption);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all var(--transition);
+}
+
+.notif-clear-all:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}

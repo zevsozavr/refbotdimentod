@@ -10,13 +10,38 @@ const NotificationsPanel = () => {
   const [open, setOpen] = useState(false);
   const [announces, setAnnounces] = useState([]);
   const [streams, setStreams] = useState([]);
+  const [clearedIds, setClearedIds] = useState(() => {
+    try {
+      const stored = localStorage.getItem('cleared_notifications');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
   const panelRef = useRef(null);
   const lang = i18n.language === 'uk' ? 'uk' : 'ru';
 
+  const fetchNotifications = () => {
+    api.get('/announcements')
+      .then(r => {
+        // filter out streams from announcements endpoint response
+        const onlyAnnounces = r.data.filter(x => x.type === 'announce');
+        setAnnounces(onlyAnnounces.slice(0, 5));
+      })
+      .catch(() => {});
+    api.get('/streams')
+      .then(r => setStreams(r.data.slice(0, 5)))
+      .catch(() => {});
+  };
+
   useEffect(() => {
-    if (!open) return;
-    api.get('/announcements').then(r => setAnnounces(r.data.slice(0, 5))).catch(() => {});
-    api.get('/streams').then(r => setStreams(r.data.slice(0, 5))).catch(() => {});
+    fetchNotifications();
+  }, []);
+
+  useEffect(() => {
+    if (open) {
+      fetchNotifications();
+    }
   }, [open]);
 
   useEffect(() => {
@@ -29,7 +54,40 @@ const NotificationsPanel = () => {
 
   if (location.pathname !== '/') return null;
 
-  const total = announces.length + streams.length;
+  const clearNotification = (e, type, id) => {
+    e.stopPropagation();
+    const key = `${type}-${id}`;
+    const next = [...clearedIds, key];
+    setClearedIds(next);
+    localStorage.setItem('cleared_notifications', JSON.stringify(next));
+  };
+
+  const clearAllNotifications = () => {
+    const next = [
+      ...clearedIds,
+      ...announces.map(a => `announce-${a.id}`),
+      ...streams.map(s => `stream-${s.id}`)
+    ];
+    const uniqueNext = Array.from(new Set(next));
+    setClearedIds(uniqueNext);
+    localStorage.setItem('cleared_notifications', JSON.stringify(uniqueNext));
+  };
+
+  const openLink = (link) => {
+    const isTelegramLink = link.includes('t.me') || link.includes('telegram.me');
+    if (isTelegramLink && window.Telegram?.WebApp?.openTelegramLink) {
+      window.Telegram.WebApp.openTelegramLink(link);
+    } else if (window.Telegram?.WebApp?.openLink) {
+      window.Telegram.WebApp.openLink(link);
+    } else {
+      window.open(link, '_blank', 'noopener,noreferrer');
+    }
+    setOpen(false);
+  };
+
+  const activeAnnounces = announces.filter(a => !clearedIds.includes(`announce-${a.id}`));
+  const activeStreams = streams.filter(s => !clearedIds.includes(`stream-${s.id}`));
+  const total = activeAnnounces.length + activeStreams.length;
 
   return (
     <>
@@ -43,13 +101,20 @@ const NotificationsPanel = () => {
           <div className="notif-panel" ref={panelRef} onClick={(e) => e.stopPropagation()}>
             <div className="notif-panel-header">
               <span>{lang === 'uk' ? '🔔 Сповіщення' : '🔔 Уведомления'}</span>
-              <button className="notif-close" onClick={() => setOpen(false)}>✕</button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {total > 0 && (
+                  <button className="notif-clear-all" onClick={clearAllNotifications}>
+                    {lang === 'uk' ? 'Очистити все' : 'Очистить все'}
+                  </button>
+                )}
+                <button className="notif-close" onClick={() => setOpen(false)}>✕</button>
+              </div>
             </div>
 
-            {announces.length > 0 && (
+            {activeAnnounces.length > 0 && (
               <div className="notif-section">
                 <div className="notif-section-title">📢 {lang === 'uk' ? 'Оголошення' : 'Объявления'}</div>
-                {announces.map(a => (
+                {activeAnnounces.map(a => (
                   <div key={`a-${a.id}`} className="notif-item" onClick={() => { navigate('/announces'); setOpen(false); }}>
                     {a.banner_image && <img className="notif-item-img" src={a.banner_image} alt="" />}
                     <div className="notif-item-body">
@@ -58,25 +123,18 @@ const NotificationsPanel = () => {
                         <div className="notif-item-text">{(lang === 'uk' ? a.text_uk : a.text_ru || '').slice(0, 80)}</div>
                       )}
                     </div>
+                    <button className="notif-item-clear" onClick={(e) => clearNotification(e, 'announce', a.id)}>✕</button>
                   </div>
                 ))}
               </div>
             )}
 
-            {streams.length > 0 && (
+            {activeStreams.length > 0 && (
               <div className="notif-section">
                 <div className="notif-section-title">📺 {lang === 'uk' ? 'Стріми' : 'Стримы'}</div>
-{streams.map(s => {
+                {activeStreams.map(s => {
                   const startTime = new Date(s.start_time);
                   const timeStr = startTime.toLocaleString(lang === 'uk' ? 'uk-UA' : 'ru-RU', { timeZone: 'Europe/Kyiv' });
-                  const openLink = (link) => {
-                    if (window.Telegram?.WebApp?.openLink) {
-                      window.Telegram.WebApp.openLink(link);
-                    } else {
-                      window.open(link, '_blank');
-                    }
-                    setOpen(false);
-                  };
                   return (
                     <div key={`s-${s.id}`} className="notif-item" onClick={() => openLink(s.link)}>
                       {s.banner_image && <img className="notif-item-img" src={s.banner_image} alt="" />}
@@ -86,6 +144,7 @@ const NotificationsPanel = () => {
                         </div>
                         <div className="notif-item-text">🕐 {timeStr}</div>
                       </div>
+                      <button className="notif-item-clear" onClick={(e) => clearNotification(e, 'stream', s.id)}>✕</button>
                     </div>
                   );
                 })}
