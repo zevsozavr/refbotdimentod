@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import api from '../axios';
 
 const Announces = () => {
   const { t, i18n } = useTranslation();
-  const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -26,10 +24,7 @@ const Announces = () => {
 
   return (
     <div className="page">
-      <div className="page-header">
-        <button className="back-btn" onClick={() => navigate('/')}>←</button>
-        <h1 className="page-title" style={{ margin: 0 }}>{t('nav.announces')}</h1>
-      </div>
+      <h1 className="page-title">{t('nav.announces')}</h1>
 
       {error ? (
         <div className="error-state">

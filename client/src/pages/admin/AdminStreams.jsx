@@ -83,7 +83,10 @@ const AdminStreams = () => {
 
   return (
     <div className="page">
-      <h1 className="page-title">📺 Streams</h1>
+      <div className="page-header">
+        <button className="back-btn" onClick={() => navigate(-1)}>←</button>
+        <h1 className="page-title" style={{ margin: 0 }}>📺 Streams</h1>
+      </div>
       <button className="btn btn-primary btn-sm mb-4" onClick={openCreate}>Create Stream</button>
 
       {showForm && (
