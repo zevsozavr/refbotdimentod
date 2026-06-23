@@ -1,7 +1,7 @@
 require('dotenv').config();
 
-const path = require('path');
 const fs = require('fs');
+const path = require('path');
 const express = require('express');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
@@ -121,6 +121,9 @@ app.use((err, req, res, next) => {
 // Start
 const start = async () => {
   try {
+    const uploadDir = path.join(__dirname, 'uploads', 'banners');
+    fs.mkdirSync(uploadDir, { recursive: true });
+
     await migrate();
 
     const webhookUrlBase = (process.env.WEBHOOK_URL || '').trim();

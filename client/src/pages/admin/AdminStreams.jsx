@@ -22,7 +22,7 @@ const AdminStreams = () => {
       fd.append('file', file);
       const res = await adminApi.post('/upload', fd);
       setForm({ ...form, banner_image: res.data.url });
-    } catch { setError('Upload failed'); }
+    } catch (e) { setError(e.response?.data?.error || 'Upload failed'); }
     finally { setUploading(false); }
   };
 

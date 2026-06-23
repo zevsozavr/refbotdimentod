@@ -28,7 +28,7 @@ const AdminContests = () => {
       const res = await adminApi.post('/upload', fd);
       setForm({ ...form, banner_image: res.data.url });
     } catch (err) {
-      setError('Upload failed');
+      setError(err.response?.data?.error || 'Upload failed');
     } finally {
       setUploading(false);
     }

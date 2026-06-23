@@ -1315,6 +1315,20 @@ textarea.input { resize: vertical; min-height: 80px; }
 
 .notif-view-all {
   text-align: center;
+  padding: 12px 0 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  cursor: pointer;
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+  transition: opacity var(--transition);
+}
+
+.notif-view-all:active { opacity: 0.6; }
+
+.notif-view-all {
+  text-align: center;
   padding: 12px;
   color: var(--accent);
   font-weight: 600;

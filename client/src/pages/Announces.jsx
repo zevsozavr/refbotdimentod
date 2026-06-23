@@ -8,11 +8,19 @@ const Announces = () => {
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const lang = i18n.language === 'uk' ? 'uk' : 'ru';
 
-  useEffect(() => {
-    api.get('/announcements').then(res => setItems(res.data)).catch(console.error).finally(() => setLoading(false));
-  }, []);
+  const fetchItems = () => {
+    setLoading(true);
+    setError('');
+    api.get('/announcements')
+      .then(res => setItems(res.data))
+      .catch(err => setError(err.response?.data?.error || 'Failed to load'))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => { fetchItems(); }, []);
 
   if (loading) return <div className="page"><div className="loading-center"><div className="spinner" /></div></div>;
 
@@ -23,7 +31,12 @@ const Announces = () => {
         <h1 className="page-title" style={{ margin: 0 }}>{t('nav.announces')}</h1>
       </div>
 
-      {items.length === 0 ? (
+      {error ? (
+        <div className="error-state">
+          <p className="text-secondary" style={{ marginBottom: 8 }}>{error}</p>
+          <button className="btn btn-primary btn-sm" onClick={fetchItems}>{t('common.retry') || 'Retry'}</button>
+        </div>
+      ) : items.length === 0 ? (
         <p className="text-secondary">{t('announces.empty') || (lang === 'uk' ? 'Немає оголошень' : 'Нет объявлений')}</p>
       ) : (
         items.map(item => (

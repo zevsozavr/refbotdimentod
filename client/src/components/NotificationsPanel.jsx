@@ -8,13 +8,15 @@ const NotificationsPanel = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
-  const [items, setItems] = useState([]);
+  const [announces, setAnnounces] = useState([]);
+  const [streams, setStreams] = useState([]);
   const panelRef = useRef(null);
   const lang = i18n.language === 'uk' ? 'uk' : 'ru';
 
   useEffect(() => {
     if (!open) return;
-    api.get('/announcements').then(r => setItems(r.data.slice(0, 8))).catch(() => {});
+    api.get('/announcements').then(r => setAnnounces(r.data.slice(0, 5))).catch(() => {});
+    api.get('/streams').then(r => setStreams(r.data.slice(0, 5))).catch(() => {});
   }, [open]);
 
   useEffect(() => {
@@ -27,9 +29,7 @@ const NotificationsPanel = () => {
 
   if (location.pathname !== '/') return null;
 
-  const announces = items.filter(i => i.type === 'announce');
-  const streams = items.filter(i => i.type === 'stream');
-  const total = items.length;
+  const total = announces.length + streams.length;
 
   return (
     <>
@@ -54,7 +54,9 @@ const NotificationsPanel = () => {
                     {a.banner_image && <img className="notif-item-img" src={a.banner_image} alt="" />}
                     <div className="notif-item-body">
                       <div className="notif-item-title">{lang === 'uk' ? a.title_uk : a.title_ru}</div>
-                      <div className="notif-item-text">{(lang === 'uk' ? a.text_uk : a.text_ru || '').slice(0, 60)}</div>
+                      {((lang === 'uk' ? a.text_uk : a.text_ru) || '').length > 0 && (
+                        <div className="notif-item-text">{(lang === 'uk' ? a.text_uk : a.text_ru || '').slice(0, 80)}</div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -64,15 +66,21 @@ const NotificationsPanel = () => {
             {streams.length > 0 && (
               <div className="notif-section">
                 <div className="notif-section-title">📺 {lang === 'uk' ? 'Стріми' : 'Стримы'}</div>
-                {streams.map(s => (
-                  <div key={`s-${s.id}`} className="notif-item" onClick={() => { window.open(s.link, '_blank'); setOpen(false); }}>
-                    {s.banner_image && <img className="notif-item-img" src={s.banner_image} alt="" />}
-                    <div className="notif-item-body">
-                      <div className="notif-item-title">{lang === 'uk' ? s.text_uk : s.text_ru || 'Stream'}</div>
-                      <div className="notif-item-text">🕐 {new Date(s.start_time).toLocaleString([], { timeZone: 'Europe/Kyiv' })}</div>
+                {streams.map(s => {
+                  const startTime = new Date(s.start_time);
+                  const timeStr = startTime.toLocaleString(lang === 'uk' ? 'uk-UA' : 'ru-RU', { timeZone: 'Europe/Kyiv' });
+                  return (
+                    <div key={`s-${s.id}`} className="notif-item" onClick={() => { window.open(s.link, '_blank'); setOpen(false); }}>
+                      {s.banner_image && <img className="notif-item-img" src={s.banner_image} alt="" />}
+                      <div className="notif-item-body">
+                        <div className="notif-item-title">
+                          {s.text_uk && lang === 'uk' ? s.text_uk : s.text_ru || '📺 Stream'}
+                        </div>
+                        <div className="notif-item-text">🕐 {timeStr}</div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
 
