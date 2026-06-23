@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { adminApi } from '../../axios';
 import AdminNav from '../../components/AdminNav';
+import { toLocalDatetime, withTimezone } from '../../utils/timezone';
 
 const AdminContests = () => {
   const { t } = useTranslation();
@@ -57,10 +58,10 @@ const AdminContests = () => {
   const openCreate = () => {
     setEditing(null);
     const now = new Date();
-    const startStr = now.toISOString().slice(0, 16);
+    const startStr = toLocalDatetime(now.toISOString());
     const endObj = new Date();
     endObj.setHours(23, 59);
-    const endStr = endObj.toISOString().slice(0, 16);
+    const endStr = toLocalDatetime(endObj.toISOString());
     setForm({ title_uk: '', title_ru: '', description_uk: '', description_ru: '', prize_uk: '', prize_ru: '', referral_type: '1', casino: 'topmatch', start_date: startStr, end_date: endStr, winner_count: '1', banner_image: '' });
     setShowForm(true);
     setError('');
@@ -74,7 +75,7 @@ const AdminContests = () => {
       prize_uk: contest.prize_uk, prize_ru: contest.prize_ru,
       referral_type: String(contest.eligible_referral_type),
       casino: contest.casino || 'topmatch',
-      start_date: contest.start_date.slice(0, 16), end_date: contest.end_date.slice(0, 16),
+      start_date: toLocalDatetime(contest.start_date), end_date: toLocalDatetime(contest.end_date),
       winner_count: String(contest.winner_count || 1),
       banner_image: contest.banner_image || '',
     });
@@ -89,8 +90,8 @@ const AdminContests = () => {
         ...form,
         referral_type: parseInt(form.referral_type),
         casino: form.casino,
-        start_date: new Date(form.start_date).toISOString(),
-        end_date: new Date(form.end_date).toISOString(),
+        start_date: withTimezone(form.start_date),
+        end_date: withTimezone(form.end_date),
       };
 
       if (editing) {

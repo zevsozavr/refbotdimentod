@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { adminApi } from '../../axios';
+import { toLocalDatetime, withTimezone } from '../../utils/timezone';
 
 const AdminStreams = () => {
   const { t } = useTranslation();
@@ -42,7 +43,7 @@ const AdminStreams = () => {
     setEditing(null);
     const now = new Date();
     now.setHours(now.getHours() + 1);
-    setForm({ banner_image: '', link: '', start_time: now.toISOString().slice(0, 16), text_ru: '', text_uk: '' });
+    setForm({ banner_image: '', link: '', start_time: toLocalDatetime(now.toISOString()), text_ru: '', text_uk: '' });
     setShowForm(true);
     setError('');
   };
@@ -52,7 +53,7 @@ const AdminStreams = () => {
     setForm({
       banner_image: s.banner_image || '',
       link: s.link,
-      start_time: new Date(s.start_time).toISOString().slice(0, 16),
+      start_time: toLocalDatetime(s.start_time),
       text_ru: s.text_ru || '',
       text_uk: s.text_uk || '',
     });
@@ -63,8 +64,9 @@ const AdminStreams = () => {
   const handleSave = async () => {
     if (!form.link || !form.start_time) { setError('Link and start time are required'); return; }
     try {
-      if (editing) await adminApi.put(`/admin/streams/${editing.id}`, form);
-      else await adminApi.post('/admin/streams', form);
+      const payload = { ...form, start_time: withTimezone(form.start_time) };
+      if (editing) await adminApi.put(`/admin/streams/${editing.id}`, payload);
+      else await adminApi.post('/admin/streams', payload);
       setShowForm(false);
       fetchStreams();
     } catch (e) { setError(e.response?.data?.error || 'Save failed'); }
