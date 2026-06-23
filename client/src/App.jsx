@@ -11,9 +11,7 @@ import Banned from './pages/Banned';
 import Rejected from './pages/Rejected';
 import Home from './pages/Home';
 import Contests from './pages/Contests';
-import Referral from './pages/Referral';
 import Settings from './pages/Settings';
-import AdminLogin from './pages/admin/AdminLogin';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminUserDetail from './pages/admin/AdminUserDetail';
 import AdminContests from './pages/admin/AdminContests';
@@ -129,9 +127,7 @@ const AppContent = () => {
             <Home />
           } />
           <Route path="/contests" element={<Contests />} />
-          <Route path="/referral" element={<Referral />} />
           <Route path="/settings" element={<Settings />} />
-          <Route path="/admin/login" element={<AdminLogin />} />
           {isAdmin && (
             <>
               <Route path="/admin/users" element={<AdminUsers />} />

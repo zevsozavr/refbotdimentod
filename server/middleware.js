@@ -105,19 +105,9 @@ const verifyTelegramAuth = (req, res, next) => {
 };
 
 const verifyAdminAuth = (req, res, next) => {
-  const token = req.headers['x-admin-token'];
-  if (!token) {
-    return res.status(401).json({ error: 'Admin token required' });
-  }
-
-  if (!crypto.timingSafeEqual(Buffer.from(token), Buffer.from(process.env.ADMIN_TOKEN))) {
-    return res.status(401).json({ error: 'Invalid admin token' });
-  }
-
   if (!req.telegramUser || !isAdminId(req.telegramUser.id)) {
     return res.status(401).json({ error: 'Unauthorized admin access' });
   }
-
   next();
 };
 

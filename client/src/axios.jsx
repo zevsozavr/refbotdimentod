@@ -11,25 +11,7 @@ api.interceptors.request.use((config) => {
   if (sessionToken) {
     config.headers['x-session-token'] = sessionToken;
   }
-  const adminToken = sessionStorage.getItem('adminToken');
-  if (adminToken) {
-    config.headers['x-admin-token'] = adminToken;
-  }
   return config;
 });
-
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      const isAdminRoute = error.config.url?.startsWith('/admin');
-      if (isAdminRoute) {
-        sessionStorage.removeItem('adminToken');
-        window.location.hash = '#/admin/login';
-      }
-    }
-    return Promise.reject(error);
-  }
-);
 
 export default api;

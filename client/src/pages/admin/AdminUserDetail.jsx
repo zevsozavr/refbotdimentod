@@ -14,12 +14,9 @@ const AdminUserDetail = () => {
   useEffect(() => {
     const fetch = async () => {
       try {
-        const res = await api.get('/admin/users', { params: { limit: 100 } });
-        const found = res.data.users.find((u) => u.id === parseInt(id));
-        if (found) {
-          setUser(found);
-          setReferralType(found.referral_type ? String(found.referral_type) : '');
-        }
+        const res = await api.get(`/admin/users/${id}`);
+        setUser(res.data);
+        setReferralType(res.data.referral_type ? String(res.data.referral_type) : '');
       } catch (e) {
         console.error('User detail error:', e);
       } finally {
