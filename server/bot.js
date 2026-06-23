@@ -3,18 +3,31 @@ const { isAdminId } = require('./middleware');
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
-let miniAppUrl = process.env.MINI_APP_URL;
-if (!miniAppUrl) {
-  const wh = process.env.WEBHOOK_URL || '';
-  miniAppUrl = wh.replace(/\/webhook\/[^/]+$/, '') || 'https://t.me/your_bot/your_app';
-  console.log('MINI_APP_URL not set, using fallback:', miniAppUrl);
-}
+let miniAppUrlPromise = null;
+const getMiniAppUrl = async () => {
+  if (process.env.MINI_APP_URL) return process.env.MINI_APP_URL;
+  if (!miniAppUrlPromise) {
+    miniAppUrlPromise = (async () => {
+      try {
+        const me = await bot.telegram.getMe();
+        const url = `https://t.me/${me.username}/app`;
+        console.log('MINI_APP_URL not set, constructed:', url);
+        return url;
+      } catch {
+        const fallback = (process.env.WEBHOOK_URL || '').trim().replace(/\/webhook\/[^/]+$/, '');
+        console.log('MINI_APP_URL not set, fallback:', fallback || 'missing');
+        return fallback || 'https://t.me/your_bot/your_app';
+      }
+    })();
+  }
+  return miniAppUrlPromise;
+};
 
-const getKeyboard = (language) => ({
+const getKeyboard = async (language) => ({
   inline_keyboard: [[
     {
       text: language === 'uk' ? 'Відкрити Mini App' : 'Открыть Mini App',
-      url: miniAppUrl,
+      url: await getMiniAppUrl(),
     }
   ]]
 });
@@ -26,12 +39,13 @@ bot.start(async (ctx) => {
     const result = await pool.query('SELECT * FROM users WHERE telegram_id = $1', [telegramId]);
     const user = result.rows[0];
 
+    const keyboard = await getKeyboard(user ? user.language : 'uk');
     if (user && user.status === 'verified') {
       await ctx.reply(
         user.language === 'uk'
           ? 'Ласкаво просимо назад! Натисніть кнопку нижче, щоб відкрити Mini App.'
           : 'Добро пожаловать назад! Нажмите кнопку ниже, чтобы открыть Mini App.',
-        { reply_markup: getKeyboard(user.language) }
+        { reply_markup: keyboard }
       );
     } else {
       const lang = user ? user.language : 'uk';
@@ -39,7 +53,7 @@ bot.start(async (ctx) => {
         lang === 'uk'
           ? 'Ласкаво просимо! Натисніть кнопку нижче, щоб відкрити Mini App та зареєструватися.'
           : 'Добро пожаловать! Нажмите кнопку ниже, чтобы открыть Mini App и зарегистрироваться.',
-        { reply_markup: getKeyboard(lang) }
+        { reply_markup: keyboard }
       );
     }
   } catch (err) {
