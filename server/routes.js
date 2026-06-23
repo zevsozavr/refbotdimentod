@@ -998,13 +998,27 @@ router.post('/admin/pending-changes/:id/approve', verifyTelegramAuth, verifyAdmi
 router.post('/admin/pending-changes/:id/reject', verifyTelegramAuth, verifyAdminAuth, adminLimiter, async (req, res) => {
   try {
     const changeId = parseInt(req.params.id);
-    const result = await pool.query(
-      "UPDATE pending_changes SET status = 'rejected', reviewed_at = NOW() WHERE id = $1 AND status = 'pending' RETURNING *",
-      [changeId]
-    );
-    if (result.rows.length === 0) {
+    const changeResult = await pool.query("SELECT pc.*, u.telegram_id, u.language FROM pending_changes pc JOIN users u ON u.id = pc.user_id WHERE pc.id = $1 AND pc.status = 'pending'", [changeId]);
+    if (changeResult.rows.length === 0) {
       return res.status(404).json({ error: 'Pending change not found or already processed' });
     }
+    const change = changeResult.rows[0];
+
+    await pool.query(
+      "UPDATE pending_changes SET status = 'rejected', reviewed_at = NOW() WHERE id = $1",
+      [changeId]
+    );
+
+    const casinoName = change.field.startsWith('casino_id_topmatch') || change.field.startsWith('wallet_topmatch') ? 'TopMatch' : 'TonPlay';
+    const fieldLabel = change.field.startsWith('casino_id') ? `${casinoName} ID` : `${casinoName} TRC20`;
+    const msg = change.language === 'uk'
+      ? `❌ Ваш запит на зміну ${fieldLabel} було відхилено адміністратором.`
+      : `❌ Ваш запрос на изменение ${fieldLabel} был отклонен администратором.`;
+    try {
+      const { notifyUser } = require('./bot');
+      await notifyUser(change.telegram_id, msg, msg, change.language);
+    } catch (e) { console.error('Notify rejection error:', e); }
+
     res.json({ success: true });
   } catch (err) {
     console.error('Reject change error:', err);

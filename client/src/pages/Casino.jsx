@@ -144,14 +144,16 @@ const Casino = () => {
           value={casinoIdInput}
           onChange={e => setCasinoIdInput(e.target.value)}
           maxLength={32}
+          disabled={idPending === 'pending'}
         />
         <button
           className="btn btn-primary btn-sm wallet-btn"
           onClick={submitCasinoId}
-          disabled={!casinoIdInput.trim() || savingId}
+          disabled={!casinoIdInput.trim() || savingId || idPending === 'pending'}
         >
-          {savingId ? '⋯' : (lang === 'uk' ? 'Надіслати' : 'Отправить')}
+          {idPending === 'pending' ? (lang === 'uk' ? 'Очікує...' : 'Ожидает...') : (savingId ? '⋯' : (lang === 'uk' ? 'Надіслати' : 'Отправить'))}
         </button>
+        {idPending === 'pending' && <p className="wallet-card-msg" style={{ color: 'var(--warning)' }}>{lang === 'uk' ? '⏳ Запит на зміну очікує підтвердження адміністратора' : '⏳ Запрос на изменение ожидает подтверждения администратора'}</p>}
         {idMsg && <p className="wallet-card-msg">{idMsg}</p>}
       </div>
 
@@ -179,14 +181,16 @@ const Casino = () => {
           value={walletInput}
           onChange={e => setWalletInput(e.target.value)}
           style={{ fontFamily: 'monospace' }}
+          disabled={walletPending === 'pending'}
         />
         <button
           className="btn btn-primary btn-sm wallet-btn"
           onClick={submitWallet}
-          disabled={!walletInput.trim() || savingWallet}
+          disabled={!walletInput.trim() || savingWallet || walletPending === 'pending'}
         >
-          {savingWallet ? '⋯' : (lang === 'uk' ? 'Надіслати' : 'Отправить')}
+          {walletPending === 'pending' ? (lang === 'uk' ? 'Очікує...' : 'Ожидает...') : (savingWallet ? '⋯' : (lang === 'uk' ? 'Надіслати' : 'Отправить'))}
         </button>
+        {walletPending === 'pending' && <p className="wallet-card-msg" style={{ color: 'var(--warning)' }}>{lang === 'uk' ? '⏳ Запит на зміну очікує підтвердження адміністратора' : '⏳ Запрос на изменение ожидает подтверждения администратора'}</p>}
         <p className="wallet-card-note">
           {lang === 'uk'
             ? 'Адміністратор підтвердить зміни перед застосуванням'
