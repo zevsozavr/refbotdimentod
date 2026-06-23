@@ -22,11 +22,8 @@ const AdminStreams = () => {
       fd.append('file', file);
       const res = await adminApi.post('/upload', fd);
       setForm({ ...form, banner_image: res.data.url });
-    } catch (err) {
-      setError('Upload failed');
-    } finally {
-      setUploading(false);
-    }
+    } catch { setError('Upload failed'); }
+    finally { setUploading(false); }
   };
 
   const removeBanner = () => {
@@ -37,16 +34,15 @@ const AdminStreams = () => {
   useEffect(() => { fetchStreams(); }, []);
 
   const fetchStreams = async () => {
-    try {
-      const res = await adminApi.get('/admin/streams');
-      setStreams(res.data);
-    } catch (e) { console.error('Fetch streams error:', e); }
+    try { const res = await adminApi.get('/admin/streams'); setStreams(res.data); } catch (e) { console.error(e); }
     finally { setLoading(false); }
   };
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ banner_image: '', link: '', start_time: '', text_ru: '', text_uk: '' });
+    const now = new Date();
+    now.setHours(now.getHours() + 1);
+    setForm({ banner_image: '', link: '', start_time: now.toISOString().slice(0, 16), text_ru: '', text_uk: '' });
     setShowForm(true);
     setError('');
   };
@@ -65,38 +61,22 @@ const AdminStreams = () => {
   };
 
   const handleSave = async () => {
-    if (!form.link || !form.start_time) {
-      setError('Link and start time are required');
-      return;
-    }
+    if (!form.link || !form.start_time) { setError('Link and start time are required'); return; }
     try {
-      if (editing) {
-        await adminApi.put(`/admin/streams/${editing.id}`, form);
-      } else {
-        await adminApi.post('/admin/streams', form);
-      }
+      if (editing) await adminApi.put(`/admin/streams/${editing.id}`, form);
+      else await adminApi.post('/admin/streams', form);
       setShowForm(false);
       fetchStreams();
-    } catch (e) {
-      setError(e.response?.data?.error || 'Save failed');
-    }
+    } catch (e) { setError(e.response?.data?.error || 'Save failed'); }
   };
 
   const handleDelete = async (id) => {
-    if (!confirm(t('admin.contests.delete') + '?')) return;
-    try {
-      await adminApi.delete(`/admin/streams/${id}`);
-      fetchStreams();
-    } catch (e) { console.error('Delete stream error:', e); }
+    if (!confirm('Delete?')) return;
+    try { await adminApi.delete(`/admin/streams/${id}`); fetchStreams(); } catch (e) { console.error(e); }
   };
 
-  const getStatusText = (status) => {
-    switch (status) {
-      case 'scheduled': return t('admin.contests.active');
-      case 'live': return 'Live';
-      case 'ended': return t('admin.contests.ended');
-      default: return status;
-    }
+  const setStatus = async (id, status) => {
+    try { await adminApi.put(`/admin/streams/${id}`, { status }); fetchStreams(); } catch (e) { console.error(e); }
   };
 
   if (loading) return <div className="page"><div className="loading-center"><div className="spinner" /></div></div>;
@@ -114,8 +94,8 @@ const AdminStreams = () => {
             {uploading && <p className="text-secondary text-sm mt-1">Uploading...</p>}
             {form.banner_image && (
               <div style={{ position: 'relative', display: 'inline-block', marginTop: 8 }}>
-                <img src={form.banner_image} alt="banner preview" style={{ maxWidth: '100%', maxHeight: 120, borderRadius: 'var(--radius-sm)' }} />
-                <button type="button" onClick={removeBanner} style={{ position: 'absolute', top: -6, right: -6, background: 'var(--error)', color: '#fff', border: 'none', borderRadius: '50%', width: 22, height: 22, cursor: 'pointer', fontSize: 12, lineHeight: '22px', textAlign: 'center' }}>×</button>
+                <img src={form.banner_image} alt="" style={{ maxWidth: '100%', maxHeight: 120, borderRadius: 'var(--radius-sm)' }} />
+                <button type="button" onClick={removeBanner} style={{ position: 'absolute', top: -6, right: -6, background: 'var(--error)', color: '#fff', border: 'none', borderRadius: '50%', width: 22, height: 22, cursor: 'pointer', fontSize: 12 }}>×</button>
               </div>
             )}
           </div>
@@ -143,15 +123,22 @@ const AdminStreams = () => {
         </div>
       )}
 
-      {streams.map((s) => (
+      {streams.map(s => (
         <div key={s.id} className="card" style={{ padding: 16, marginBottom: 12 }}>
           {s.banner_image && <img src={s.banner_image} alt="" style={{ width: '100%', borderRadius: 'var(--radius-sm)', maxHeight: 120, objectFit: 'cover', marginBottom: 8 }} />}
-          <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>{s.link}</div>
-          <div className="text-secondary" style={{ fontSize: 12 }}>{new Date(s.start_time).toLocaleString([], { timeZone: 'Europe/Kyiv' })}</div>
-          <div style={{ fontSize: 12, marginTop: 4 }}>
-            <span className={`badge ${s.status === 'scheduled' ? 'badge-primary' : s.status === 'live' ? 'badge-success' : 'badge-secondary'}`}>{getStatusText(s.status)}</span>
+          <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>
+            <a href={s.link} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)' }}>{s.link}</a>
           </div>
-          <div className="flex gap-2 mt-4">
+          <div className="text-secondary" style={{ fontSize: 12, marginBottom: 4 }}>{s.text_ru}{s.text_uk ? ` / ${s.text_uk}` : ''}</div>
+          <div className="text-secondary" style={{ fontSize: 12 }}>🕐 {new Date(s.start_time).toLocaleString([], { timeZone: 'Europe/Kyiv' })}</div>
+          <div style={{ fontSize: 12, marginTop: 4, display: 'flex', gap: 6, alignItems: 'center' }}>
+            <span className={`badge ${s.status === 'scheduled' ? 'badge-primary' : s.status === 'live' ? 'badge-success' : 'badge-secondary'}`}>
+              {s.status === 'scheduled' ? 'Scheduled' : s.status === 'live' ? '🔴 Live' : 'Ended'}
+            </span>
+            {s.status === 'scheduled' && <button className="btn btn-success btn-xs" onClick={() => setStatus(s.id, 'live')}>Set Live</button>}
+            {s.status === 'live' && <button className="btn btn-secondary btn-xs" onClick={() => setStatus(s.id, 'ended')}>End</button>}
+          </div>
+          <div className="flex gap-2 mt-3">
             <button className="btn btn-secondary btn-sm" onClick={() => openEdit(s)}>{t('admin.contests.edit')}</button>
             <button className="btn btn-danger btn-sm" onClick={() => handleDelete(s.id)}>{t('admin.contests.delete')}</button>
           </div>
