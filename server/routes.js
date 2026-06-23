@@ -3,7 +3,7 @@ const { body, param, query, validationResult } = require('express-validator');
 const rateLimit = require('express-rate-limit');
 const { pool } = require('./db');
 const { verifyTelegramAuth, verifyAdminAuth, isAdminId, generateSessionToken } = require('./middleware');
-const { notifyWinner, notifyAdmin, notifyUser } = require('./bot');
+const { notifyWinner, notifyAdmin, notifyUser, notifyAdminChange } = require('./bot');
 
 const router = express.Router();
 
@@ -216,7 +216,7 @@ router.post('/casino/:casinoId/submit-id', verifyTelegramAuth, [
     const casino = casinos[req.params.casinoId];
     if (!casino) return res.status(404).json({ error: 'Casino not found' });
 
-    const userResult = await pool.query('SELECT id, ' + casino.casino_id_column + ' FROM users WHERE telegram_id = $1', [req.telegramUser.id]);
+    const userResult = await pool.query('SELECT id, telegram_username, ' + casino.casino_id_column + ' FROM users WHERE telegram_id = $1', [req.telegramUser.id]);
     if (userResult.rows.length === 0) return res.status(404).json({ error: 'User not found' });
 
     const user = userResult.rows[0];
@@ -235,6 +235,9 @@ router.post('/casino/:casinoId/submit-id', verifyTelegramAuth, [
       'INSERT INTO pending_changes (user_id, field, old_value, new_value) VALUES ($1, $2, $3, $4)',
       [user.id, casino.casino_id_column, oldValue, req.body.casino_account_id]
     );
+
+    const casinoName = casino.id === 'topmatch' ? 'TopMatch' : 'TonPlay';
+    await notifyAdminChange(user, casino.casino_id_column, req.body.casino_account_id, casinoName);
 
     res.json({ status: 'pending', field: casino.casino_id_column, new_value: req.body.casino_account_id });
   } catch (err) {
@@ -256,7 +259,7 @@ router.post('/wallet/:casinoId/submit', verifyTelegramAuth, [
 
     const walletColumn = casino.id === 'topmatch' ? 'wallet_topmatch' : 'wallet_tonplay';
 
-    const userResult = await pool.query('SELECT id, ' + walletColumn + ' FROM users WHERE telegram_id = $1', [req.telegramUser.id]);
+    const userResult = await pool.query('SELECT id, telegram_username, ' + walletColumn + ' FROM users WHERE telegram_id = $1', [req.telegramUser.id]);
     if (userResult.rows.length === 0) return res.status(404).json({ error: 'User not found' });
 
     const user = userResult.rows[0];
@@ -274,6 +277,9 @@ router.post('/wallet/:casinoId/submit', verifyTelegramAuth, [
       'INSERT INTO pending_changes (user_id, field, old_value, new_value) VALUES ($1, $2, $3, $4)',
       [user.id, walletColumn, oldValue, req.body.wallet_address]
     );
+
+    const casinoName = casino.id === 'topmatch' ? 'TopMatch' : 'TonPlay';
+    await notifyAdminChange(user, walletColumn, req.body.wallet_address, casinoName);
 
     res.json({ status: 'pending', field: walletColumn, new_value: req.body.wallet_address });
   } catch (err) {
@@ -427,7 +433,7 @@ router.get('/admin/users', verifyTelegramAuth, verifyAdminAuth, adminLimiter, as
     const result = await pool.query(
       `SELECT id, telegram_id, telegram_username, language, status, level_topmatch, level_tonplay, casino_id_topmatch, casino_id_tonplay, wallet_topmatch, wallet_tonplay, created_at
        FROM users ${whereClause}
-       ORDER BY created_at DESC
+       ORDER BY status = 'pending' DESC, created_at DESC
        LIMIT $${paramIndex++} OFFSET $${paramIndex++}`,
       [...params, parseInt(limit), offset]
     );

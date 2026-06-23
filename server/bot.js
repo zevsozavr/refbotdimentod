@@ -112,6 +112,24 @@ const notifyAdmin = async (winner, contest) => {
   }
 };
 
+const notifyAdminChange = async (user, field, newValue, casinoName) => {
+  try {
+    const adminIds = (process.env.ADMIN_TELEGRAM_IDS || '').split(',').map(id => id.trim()).filter(Boolean);
+    const fieldLabel = field.startsWith('casino_id') ? `${casinoName} ID` : `${casinoName} TRC20`;
+    const message = `✏️ Запит на зміну / Запрос на изменение\n\nКористувач / Пользователь: @${user.telegram_username || `ID: ${user.telegram_id}`}\nПоле / Поле: ${fieldLabel}\nНове значення / Новое значение: ${newValue}\n\nПерейдіть в адмін-панель щоб підтвердити / Перейдите в админ-панель чтобы подтвердить`;
+
+    for (const adminId of adminIds) {
+      try {
+        await bot.telegram.sendMessage(adminId, message);
+      } catch (e) {
+        console.error(`Error notifying admin ${adminId}:`, e);
+      }
+    }
+  } catch (err) {
+    console.error('Error notifying admins about change:', err);
+  }
+};
+
 const notifyUser = async (telegramId, textUk, textRu, language) => {
   try {
     const message = language === 'uk' ? textUk : textRu;
@@ -121,4 +139,4 @@ const notifyUser = async (telegramId, textUk, textRu, language) => {
   }
 };
 
-module.exports = { bot, notifyWinner, notifyAdmin, notifyUser };
+module.exports = { bot, notifyWinner, notifyAdmin, notifyUser, notifyAdminChange };
