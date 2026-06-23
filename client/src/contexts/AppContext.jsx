@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import api from '../axios';
 
 const AppContext = createContext(null);
 
@@ -9,6 +8,7 @@ export const AppProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
+  const [initKey, setInitKey] = useState(0);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -19,10 +19,14 @@ export const AppProvider = ({ children }) => {
     setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
   }, []);
 
+  const triggerInit = useCallback(() => {
+    setInitKey((k) => k + 1);
+  }, []);
+
   const isAdmin = user?.is_admin === true;
 
   return (
-    <AppContext.Provider value={{ user, setUser, loading, setLoading, theme, toggleTheme, isAdmin }}>
+    <AppContext.Provider value={{ user, setUser, loading, setLoading, theme, toggleTheme, isAdmin, initKey, triggerInit }}>
       {children}
     </AppContext.Provider>
   );
