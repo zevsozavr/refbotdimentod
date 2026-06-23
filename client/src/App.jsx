@@ -22,11 +22,10 @@ import AdminStats from './pages/admin/AdminStats';
 import './styles.css';
 
 const AppContent = () => {
-  const { user, setUser, loading, setLoading, isAdmin, initKey, triggerInit } = useApp();
+  const { user, setUser, loading, setLoading, isAdmin, initKey } = useApp();
   const { i18n: i18nInstance } = useTranslation();
   const [initDone, setInitDone] = useState(false);
-  const [devInput, setDevInput] = useState('');
-  const [devError, setDevError] = useState('');
+  const [initError, setInitError] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -44,13 +43,8 @@ const AppContent = () => {
         i18nInstance.changeLanguage(savedLang);
 
         const tgUser = tg?.initDataUnsafe?.user;
-        const devId = localStorage.getItem('dev_telegram_id');
-        const telegramId = tgUser?.id || (devId ? parseInt(devId) : null);
-
-        if (!telegramId) {
-          if (!cancelled) { setLoading(false); setInitDone(true); }
-          return;
-        }
+        // Outside Telegram: auto-login as dev ID 1 (matches server dev bypass)
+        const telegramId = tgUser?.id || 1;
 
         const res = await api.post('/auth/init', {
           telegram_id: telegramId,
@@ -60,7 +54,7 @@ const AppContent = () => {
         if (!cancelled) setUser(res.data);
       } catch (err) {
         console.error('Init error:', err);
-        if (!cancelled) setDevError(err.response?.data?.error || 'Connection failed');
+        if (!cancelled) setInitError(err.response?.data?.error || 'Connection failed');
       } finally {
         if (!cancelled) { setLoading(false); setInitDone(true); }
       }
@@ -80,45 +74,11 @@ const AppContent = () => {
   const hasLanguage = !!localStorage.getItem('language');
   if (!hasLanguage) return <LanguageSelect />;
 
-  // No user yet — try dev login or show error
   if (!user) {
-    const devId = localStorage.getItem('dev_telegram_id');
-    if (!devId) {
-      return (
-        <div className="lang-select">
-          <h1 className="page-title">Dev Login</h1>
-          <p className="text-secondary mb-4">Enter your Telegram ID:</p>
-          <input
-            className="input mb-2"
-            placeholder="Telegram ID"
-            value={devInput}
-            onChange={(e) => setDevInput(e.target.value)}
-            type="number"
-          />
-          {devError && <p className="text-sm" style={{ color: 'var(--error)' }}>{devError}</p>}
-          <button
-            className="btn btn-primary btn-block"
-            onClick={() => {
-              if (devInput.trim()) {
-                localStorage.setItem('dev_telegram_id', devInput.trim());
-                triggerInit();
-              }
-            }}
-            disabled={!devInput.trim()}
-          >
-            Submit
-          </button>
-        </div>
-      );
-    }
-    // devId exists but auth failed
     return (
-      <div className="lang-select">
-        <h1 className="page-title">Auth Error</h1>
-        <p className="text-secondary mb-4">{devError || 'Failed to authenticate. Check your Telegram ID.'}</p>
-        <button className="btn btn-primary btn-block" onClick={() => { localStorage.removeItem('dev_telegram_id'); window.location.reload(); }}>
-          Try Again
-        </button>
+      <div className="status-screen">
+        <div className="spinner" />
+        {initError && <p className="text-secondary mt-4">{initError}</p>}
       </div>
     );
   }

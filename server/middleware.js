@@ -13,7 +13,7 @@ const verifyTelegramAuth = (req, res, next) => {
 
   // Development bypass — skip verification if NODE_ENV is not production
   if (process.env.NODE_ENV !== 'production') {
-    const devUser = { id: parseInt(process.env.DEV_TELEGRAM_ID || '0'), first_name: 'Dev', username: 'devuser' };
+    const devUser = { id: parseInt(process.env.DEV_TELEGRAM_ID || '1'), first_name: 'Dev', username: 'devuser' };
     req.telegramUser = devUser;
     return next();
   }
