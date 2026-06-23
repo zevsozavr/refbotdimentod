@@ -13,7 +13,6 @@ const routes = require('./routes');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Trust Railway proxy
 app.set('trust proxy', 1);
 
 // Security headers
@@ -51,33 +50,59 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type,x-telegram-init-data,x-admin-token');
   }
-
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(204);
-  }
-
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
 });
 
-// Global rate limiter
-const globalLimiter = rateLimit({
+// Rate limiter
+app.use(rateLimit({
   windowMs: 60 * 1000,
   max: 100,
   message: { error: 'Too many requests, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
-});
-app.use(globalLimiter);
+}));
 
 app.use(express.json());
 
-// Bot webhook endpoint
+// Bot webhook
 app.post(`/webhook/${process.env.WEBHOOK_SECRET_PATH}`, verifyBotWebhook, (req, res) => {
   bot.handleUpdate(req.body, res);
 });
 
 // API routes
 app.use('/api', routes);
+
+// Static files — must be after API routes, before error handler and listen
+const clientBuildPath = path.join(__dirname, '../client/dist');
+
+if (fs.existsSync(clientBuildPath)) {
+  app.use(express.static(clientBuildPath, {
+    setHeaders: (res, filePath) => {
+      if (filePath.endsWith('.js')) {
+        res.setHeader('Content-Type', 'application/javascript');
+      } else if (filePath.endsWith('.css')) {
+        res.setHeader('Content-Type', 'text/css');
+      }
+    }
+  }));
+
+  app.use((req, res, next) => {
+    if (req.path.startsWith('/api') || req.path.startsWith('/webhook')) {
+      return next();
+    }
+    const indexPath = path.join(clientBuildPath, 'index.html');
+    if (fs.existsSync(indexPath)) {
+      res.sendFile(indexPath);
+    } else {
+      next();
+    }
+  });
+
+  console.log('Frontend static files loaded from', clientBuildPath);
+} else {
+  console.log('Frontend build not found — API only mode');
+}
 
 // Error handler
 app.use((err, req, res, next) => {
@@ -90,7 +115,6 @@ const start = async () => {
   try {
     await migrate();
 
-    // Try webhook only if WEBHOOK_URL starts with https://
     if (process.env.WEBHOOK_URL && process.env.WEBHOOK_URL.startsWith('https://')) {
       try {
         const webhookUrl = `${process.env.WEBHOOK_URL}/webhook/${process.env.WEBHOOK_SECRET_PATH}`;
@@ -108,43 +132,6 @@ const start = async () => {
       bot.launch();
     }
 
-    // Serve React static files
-    const clientBuildPath = path.join(__dirname, '../client/dist');
-
-    if (fs.existsSync(clientBuildPath)) {
-      app.use(express.static(clientBuildPath, {
-        setHeaders: (res, filePath) => {
-          if (filePath.endsWith('.js')) {
-            res.setHeader('Content-Type', 'application/javascript');
-          } else if (filePath.endsWith('.css')) {
-            res.setHeader('Content-Type', 'text/css');
-          }
-        }
-      }));
-
-      app.use((req, res, next) => {
-        if (req.path.startsWith('/api') || req.path.startsWith('/webhook')) {
-          return next();
-        }
-        const indexPath = path.join(clientBuildPath, 'index.html');
-        if (fs.existsSync(indexPath)) {
-          res.sendFile(indexPath);
-        } else {
-          next();
-        }
-      });
-
-      console.log('Frontend static files loaded from', clientBuildPath);
-    } else {
-      console.log('Frontend build not found — API only mode');
-      app.use((req, res, next) => {
-        if (req.path.startsWith('/api') || req.path.startsWith('/webhook')) {
-          return next();
-        }
-        res.status(503).send('Frontend not built yet.');
-      });
-    }
-
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
@@ -156,11 +143,5 @@ const start = async () => {
 
 start();
 
-process.once('SIGINT', () => {
-  bot.stop('SIGINT');
-  process.exit(0);
-});
-process.once('SIGTERM', () => {
-  bot.stop('SIGTERM');
-  process.exit(0);
-});
+process.once('SIGINT', () => { bot.stop('SIGINT'); process.exit(0); });
+process.once('SIGTERM', () => { bot.stop('SIGTERM'); process.exit(0); });
