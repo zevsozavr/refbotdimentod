@@ -51,7 +51,12 @@ const AppContent = () => {
           telegram_username: tgUser?.username || 'dev',
           language: savedLang,
         });
-        if (!cancelled) setUser(res.data);
+        if (!cancelled) {
+          setUser(res.data);
+          if (res.data.token) {
+            localStorage.setItem('session_token', res.data.token);
+          }
+        }
       } catch (err) {
         console.error('Init error:', err);
         if (!cancelled) setInitError(err.response?.data?.error || 'Connection failed');

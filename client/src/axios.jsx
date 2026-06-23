@@ -7,6 +7,10 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   const initData = window.Telegram?.WebApp?.initData || '';
   config.headers['x-telegram-init-data'] = initData;
+  const sessionToken = localStorage.getItem('session_token');
+  if (sessionToken) {
+    config.headers['x-session-token'] = sessionToken;
+  }
   const adminToken = sessionStorage.getItem('adminToken');
   if (adminToken) {
     config.headers['x-admin-token'] = adminToken;

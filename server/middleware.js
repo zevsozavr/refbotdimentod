@@ -8,6 +8,28 @@ const isAdminId = (telegramId) => {
   return getAdminIds().includes(String(telegramId));
 };
 
+// Session token — HMAC-signed telegram_id, used when Telegram initData is unavailable
+const getSessionSecret = () =>
+  crypto.createHmac('sha256', process.env.BOT_TOKEN).update('session').digest();
+
+const generateSessionToken = (telegramId) => {
+  const hmac = crypto.createHmac('sha256', getSessionSecret()).update(String(telegramId)).digest('base64url');
+  return `${telegramId}:${hmac}`;
+};
+
+const verifySessionToken = (token) => {
+  try {
+    const colonIdx = token.indexOf(':');
+    if (colonIdx < 0) return null;
+    const id = token.slice(0, colonIdx);
+    const sig = token.slice(colonIdx + 1);
+    const expected = crypto.createHmac('sha256', getSessionSecret()).update(id).digest('base64url');
+    if (sig.length !== expected.length) return null;
+    if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return null;
+    return parseInt(id, 10);
+  } catch { return null; }
+};
+
 const verifyTelegramAuth = (req, res, next) => {
   const initData = req.headers['x-telegram-init-data'];
 
@@ -18,7 +40,16 @@ const verifyTelegramAuth = (req, res, next) => {
     return next();
   }
 
+  // Fall back to session token when initData is empty or missing
   if (!initData || initData.trim() === '') {
+    const sessionToken = req.headers['x-session-token'];
+    if (sessionToken) {
+      const telegramId = verifySessionToken(sessionToken);
+      if (telegramId) {
+        req.telegramUser = { id: telegramId, first_name: 'User', username: '' };
+        return next();
+      }
+    }
     return res.status(401).json({ error: 'Missing authentication data' });
   }
 
@@ -93,4 +124,4 @@ const verifyBotWebhook = (req, res, next) => {
   next();
 };
 
-module.exports = { verifyTelegramAuth, verifyAdminAuth, verifyBotWebhook, isAdminId };
+module.exports = { verifyTelegramAuth, verifyAdminAuth, verifyBotWebhook, isAdminId, generateSessionToken };

@@ -2,7 +2,7 @@ const express = require('express');
 const { body, param, query, validationResult } = require('express-validator');
 const rateLimit = require('express-rate-limit');
 const { pool } = require('./db');
-const { verifyTelegramAuth, verifyAdminAuth, isAdminId } = require('./middleware');
+const { verifyTelegramAuth, verifyAdminAuth, isAdminId, generateSessionToken } = require('./middleware');
 const { notifyWinner, notifyAdmin, notifyUser } = require('./bot');
 
 const router = express.Router();
@@ -99,6 +99,7 @@ router.post('/auth/init', authInitLimiter, [
       referral_type: user.referral_type,
       created_at: user.created_at,
       is_admin: isAdminId(telegram_id),
+      token: generateSessionToken(telegram_id),
     });
   } catch (err) {
     console.error('Auth init error:', err);
