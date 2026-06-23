@@ -8,14 +8,12 @@ const Casino = () => {
   const { user } = useApp();
   const navigate = useNavigate();
   const [casinoData, setCasinoData] = useState(null);
-  const [contests, setContests] = useState([]);
   const [casinoIdInput, setCasinoIdInput] = useState('');
   const [idSubmitMsg, setIdSubmitMsg] = useState('');
   const lang = user?.language || 'uk';
 
   useEffect(() => {
     api.get(`/casino/${casinoId}/me`).then(res => setCasinoData(res.data));
-    api.get(`/contests?casino=${casinoId}`).then(res => setContests(res.data)).catch(() => setContests([]));
   }, [casinoId]);
 
   const submitCasinoId = async () => {
@@ -51,12 +49,13 @@ const Casino = () => {
       <div className="referral-card">
         <p className="referral-label">{lang === 'uk' ? 'Реферальне посилання' : 'Реферальная ссылка'}</p>
         <button className={`btn btn-${casinoId}`} onClick={() => {
-          const link = casinoData?.referral_link;
+          let link = casinoData?.referral_link;
           if (!link) return;
+          if (!link.startsWith('http://') && !link.startsWith('https://')) link = 'https://' + link;
           if (window.Telegram?.WebApp?.openLink) {
             window.Telegram.WebApp.openLink(link);
           } else {
-            window.open(link, '_blank');
+            window.open(link, '_blank', 'noopener,noreferrer');
           }
         }}>
           🎰 {lang === 'uk' ? 'Відкрити казино' : 'Открыть казино'}
@@ -86,23 +85,6 @@ const Casino = () => {
           {lang === 'uk' ? 'Підтвердити ID' : 'Подтвердить ID'}
         </button>
         {idSubmitMsg && <p className="casino-id-msg">{idSubmitMsg}</p>}
-      </div>
-
-      <div className="contests-section">
-        <div className="contests-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>{lang === 'uk' ? 'Активні конкурси' : 'Активные конкурсы'}</h2>
-          <button className="btn-ghost" style={{ width: 'auto', padding: '8px 16px', fontSize: 13 }} onClick={() => navigate(`/contests?casino=${casinoId}`)}>
-            {lang === 'uk' ? 'Всі конкурси' : 'Все конкурсы'}
-          </button>
-        </div>
-        {contests.length === 0
-          ? <p className="text-secondary">{lang === 'uk' ? 'Немає активних конкурсів' : 'Нет активных конкурсов'}</p>
-          : contests.slice(0, 3).map(c => (
-            <div key={c.id} className={`contest-card ${c.casino}`}>
-              <div className="contest-title">{c.title}</div>
-              <div className="contest-prize">{c.prize}</div>
-            </div>
-          ))}
       </div>
     </div>
   );
