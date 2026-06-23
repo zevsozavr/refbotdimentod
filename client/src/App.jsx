@@ -90,6 +90,7 @@ const AppContent = () => {
       <div className="app">
         <Routes>
           <Route path="/" element={
+            isAdmin || user.status === 'verified' ? <Home /> :
             user.status === 'pending' ? <Pending /> :
             user.status === 'rejected' ? <Rejected /> :
             <Home />

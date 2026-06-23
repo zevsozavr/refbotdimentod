@@ -84,8 +84,8 @@ router.post('/auth/init', authInitLimiter, [
       user = result.rows[0];
     } else {
       result = await pool.query(
-        'UPDATE users SET telegram_username = $1 WHERE telegram_id = $2 RETURNING *',
-        [telegram_username || null, telegram_id]
+        'UPDATE users SET telegram_username = $1, language = $2 WHERE telegram_id = $3 RETURNING *',
+        [telegram_username || null, language, telegram_id]
       );
       user = result.rows[0];
     }
