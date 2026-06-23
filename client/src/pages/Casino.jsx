@@ -125,31 +125,33 @@ const Casino = () => {
           <div className="wallet-card-icon">👤</div>
           <div>
             <div className="wallet-card-title">{lang === 'uk' ? 'ID в казино' : 'ID в казино'}</div>
-            {casinoData.casino_account_id && (
+            {casinoData.casino_account_id ? (
               <div className="wallet-card-value">
                 <span className="wallet-current-label">{lang === 'uk' ? 'Поточний:' : 'Текущий:'}</span>
                 <span className="wallet-current-id">{casinoData.casino_account_id}</span>
                 {idPending === 'pending' && <span className="wallet-pending-badge">{lang === 'uk' ? 'Очікує' : 'Ожидает'}</span>}
               </div>
+            ) : (
+              <div className="wallet-card-value">
+                <span className="wallet-not-set">{lang === 'uk' ? 'Не вказано' : 'Не указан'}</span>
+              </div>
             )}
           </div>
         </div>
-        <div className="wallet-card-input-row">
-          <input
-            className="input wallet-input"
-            placeholder={lang === 'uk' ? 'Введіть новий ID' : 'Введите новый ID'}
-            value={casinoIdInput}
-            onChange={e => setCasinoIdInput(e.target.value)}
-            maxLength={32}
-          />
-          <button
-            className="btn btn-primary btn-sm wallet-btn"
-            onClick={submitCasinoId}
-            disabled={!casinoIdInput.trim() || savingId}
-          >
-            {savingId ? '...' : (lang === 'uk' ? 'Змінити' : 'Изменить')}
-          </button>
-        </div>
+        <input
+          className="input"
+          placeholder={lang === 'uk' ? 'Введіть новий ID' : 'Введите новый ID'}
+          value={casinoIdInput}
+          onChange={e => setCasinoIdInput(e.target.value)}
+          maxLength={32}
+        />
+        <button
+          className="btn btn-primary btn-sm wallet-btn"
+          onClick={submitCasinoId}
+          disabled={!casinoIdInput.trim() || savingId}
+        >
+          {savingId ? '⋯' : (lang === 'uk' ? 'Надіслати' : 'Отправить')}
+        </button>
         {idMsg && <p className="wallet-card-msg">{idMsg}</p>}
       </div>
 
@@ -171,22 +173,20 @@ const Casino = () => {
             )}
           </div>
         </div>
-        <div className="wallet-card-input-row">
-          <input
-            className="input wallet-input"
-            placeholder={lang === 'uk' ? 'Введіть TRC20 адресу (починається з T)' : 'Введите TRC20 адрес (начинается с T)'}
-            value={walletInput}
-            onChange={e => setWalletInput(e.target.value)}
-            style={{ fontFamily: 'monospace', fontSize: 13 }}
-          />
-          <button
-            className="btn btn-primary btn-sm wallet-btn"
-            onClick={submitWallet}
-            disabled={!walletInput.trim() || savingWallet}
-          >
-            {savingWallet ? '...' : (lang === 'uk' ? 'Зберегти' : 'Сохранить')}
-          </button>
-        </div>
+        <input
+          className="input"
+          placeholder={lang === 'uk' ? 'Введіть TRC20 адресу' : 'Введите TRC20 адрес'}
+          value={walletInput}
+          onChange={e => setWalletInput(e.target.value)}
+          style={{ fontFamily: 'monospace' }}
+        />
+        <button
+          className="btn btn-primary btn-sm wallet-btn"
+          onClick={submitWallet}
+          disabled={!walletInput.trim() || savingWallet}
+        >
+          {savingWallet ? '⋯' : (lang === 'uk' ? 'Надіслати' : 'Отправить')}
+        </button>
         <p className="wallet-card-note">
           {lang === 'uk'
             ? 'Адміністратор підтвердить зміни перед застосуванням'
