@@ -66,18 +66,19 @@ const NotificationsPanel = () => {
             {streams.length > 0 && (
               <div className="notif-section">
                 <div className="notif-section-title">📺 {lang === 'uk' ? 'Стріми' : 'Стримы'}</div>
-                {streams.map(s => {
+{streams.map(s => {
                   const startTime = new Date(s.start_time);
                   const timeStr = startTime.toLocaleString(lang === 'uk' ? 'uk-UA' : 'ru-RU', { timeZone: 'Europe/Kyiv' });
-                  const openLink = (url) => {
-                    if (window.Telegram?.WebApp) {
-                      window.Telegram.WebApp.openLink(url);
+                  const openLink = (link) => {
+                    if (window.Telegram?.WebApp?.openLink) {
+                      window.Telegram.WebApp.openLink(link);
                     } else {
-                      window.open(url, '_blank');
+                      window.open(link, '_blank');
                     }
+                    setOpen(false);
                   };
                   return (
-                    <div key={`s-${s.id}`} className="notif-item" onClick={() => { openLink(s.link); setOpen(false); }}>
+                    <div key={`s-${s.id}`} className="notif-item" onClick={() => openLink(s.link)}>
                       {s.banner_image && <img className="notif-item-img" src={s.banner_image} alt="" />}
                       <div className="notif-item-body">
                         <div className="notif-item-title">
