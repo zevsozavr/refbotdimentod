@@ -1,11 +1,30 @@
 const express = require('express');
 const { body, param, query, validationResult } = require('express-validator');
 const rateLimit = require('express-rate-limit');
+const multer = require('multer');
+const path = require('path');
 const { pool } = require('./db');
 const { verifyTelegramAuth, verifyAdminAuth, isAdminId, generateSessionToken } = require('./middleware');
 const { notifyWinner, notifyAdmin, notifyUser, notifyAdminChange } = require('./bot');
 
 const router = express.Router();
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, path.join(__dirname, 'uploads/banners')),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, `${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`);
+  },
+});
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowed = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, allowed.includes(ext));
+  },
+});
 
 const sanitizeHtml = (str) => {
   if (!str) return str;
@@ -53,10 +72,21 @@ const authInitLimiter = rateLimit({
 
 const adminLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 60,
-  message: { error: 'Too many admin requests, please try again later' },
+  max: 100,
+  message: { error: 'Too many requests, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
+});
+
+// ─── FILE UPLOAD ───
+
+router.post('/upload', verifyTelegramAuth, verifyAdminAuth, adminLimiter, (req, res) => {
+  upload.single('file')(req, res, (err) => {
+    if (err) return res.status(400).json({ error: err.message });
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+    const url = `/uploads/banners/${req.file.filename}`;
+    res.json({ url });
+  });
 });
 
 // ─── AUTH ───

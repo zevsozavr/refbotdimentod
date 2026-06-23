@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { adminApi } from '../../axios';
 
@@ -10,6 +10,29 @@ const AdminStreams = () => {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ banner_image: '', link: '', start_time: '', text_ru: '', text_uk: '' });
   const [error, setError] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef(null);
+
+  const handleBannerUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await adminApi.post('/upload', fd);
+      setForm({ ...form, banner_image: res.data.url });
+    } catch (err) {
+      setError('Upload failed');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removeBanner = () => {
+    setForm({ ...form, banner_image: '' });
+    if (fileRef.current) fileRef.current.value = '';
+  };
 
   useEffect(() => { fetchStreams(); }, []);
 
@@ -86,8 +109,15 @@ const AdminStreams = () => {
       {showForm && (
         <div className="card" style={{ padding: 16, marginBottom: 16 }}>
           <div className="form-group">
-            <label className="form-label">Banner Image URL</label>
-            <input className="input" placeholder="https://..." value={form.banner_image} onChange={(e) => setForm({ ...form, banner_image: e.target.value })} maxLength={500} />
+            <label className="form-label">Banner Image</label>
+            <input ref={fileRef} className="input" type="file" accept="image/*" onChange={handleBannerUpload} disabled={uploading} />
+            {uploading && <p className="text-secondary text-sm mt-1">Uploading...</p>}
+            {form.banner_image && (
+              <div style={{ position: 'relative', display: 'inline-block', marginTop: 8 }}>
+                <img src={form.banner_image} alt="banner preview" style={{ maxWidth: '100%', maxHeight: 120, borderRadius: 'var(--radius-sm)' }} />
+                <button type="button" onClick={removeBanner} style={{ position: 'absolute', top: -6, right: -6, background: 'var(--error)', color: '#fff', border: 'none', borderRadius: '50%', width: 22, height: 22, cursor: 'pointer', fontSize: 12, lineHeight: '22px', textAlign: 'center' }}>×</button>
+              </div>
+            )}
           </div>
           <div className="form-group">
             <label className="form-label">Stream Link *</label>
@@ -117,7 +147,7 @@ const AdminStreams = () => {
         <div key={s.id} className="card" style={{ padding: 16, marginBottom: 12 }}>
           {s.banner_image && <img src={s.banner_image} alt="" style={{ width: '100%', borderRadius: 'var(--radius-sm)', maxHeight: 120, objectFit: 'cover', marginBottom: 8 }} />}
           <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>{s.link}</div>
-          <div className="text-secondary" style={{ fontSize: 12 }}>{new Date(s.start_time).toLocaleString()}</div>
+          <div className="text-secondary" style={{ fontSize: 12 }}>{new Date(s.start_time).toLocaleString([], { timeZone: 'Europe/Kyiv' })}</div>
           <div style={{ fontSize: 12, marginTop: 4 }}>
             <span className={`badge ${s.status === 'scheduled' ? 'badge-primary' : s.status === 'live' ? 'badge-success' : 'badge-secondary'}`}>{getStatusText(s.status)}</span>
           </div>

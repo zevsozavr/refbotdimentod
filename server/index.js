@@ -65,10 +65,13 @@ app.use(rateLimit({
   legacyHeaders: false,
 }));
 
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
 
 // photos
 app.use('/photos', express.static(path.join(__dirname, '../resources/photos')));
+
+// uploaded banners
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Bot webhook — path is already secret via WEBHOOK_SECRET_PATH
 app.post(`/webhook/${process.env.WEBHOOK_SECRET_PATH}`, (req, res) => {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { adminApi } from '../../axios';
 import AdminNav from '../../components/AdminNav';
@@ -15,6 +15,29 @@ const AdminContests = () => {
     winner_count: '1', banner_image: '',
   });
   const [error, setError] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef(null);
+
+  const handleBannerUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await adminApi.post('/upload', fd);
+      setForm({ ...form, banner_image: res.data.url });
+    } catch (err) {
+      setError('Upload failed');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removeBanner = () => {
+    setForm({ ...form, banner_image: '' });
+    if (fileRef.current) fileRef.current.value = '';
+  };
 
   useEffect(() => {
     fetchContests();
@@ -178,8 +201,15 @@ const AdminContests = () => {
             <input className="input" type="number" min="1" max="100" value={form.winner_count} onChange={(e) => setForm({ ...form, winner_count: e.target.value })} />
           </div>
           <div className="form-group">
-            <label className="form-label">Banner Image URL</label>
-            <input className="input" placeholder="https://..." value={form.banner_image} onChange={(e) => setForm({ ...form, banner_image: e.target.value })} maxLength={500} />
+            <label className="form-label">Banner Image</label>
+            <input ref={fileRef} className="input" type="file" accept="image/*" onChange={handleBannerUpload} disabled={uploading} />
+            {uploading && <p className="text-secondary text-sm mt-1">Uploading...</p>}
+            {form.banner_image && (
+              <div style={{ position: 'relative', display: 'inline-block', marginTop: 8 }}>
+                <img src={form.banner_image} alt="banner preview" style={{ maxWidth: '100%', maxHeight: 120, borderRadius: 'var(--radius-sm)' }} />
+                <button type="button" onClick={removeBanner} style={{ position: 'absolute', top: -6, right: -6, background: 'var(--error)', color: '#fff', border: 'none', borderRadius: '50%', width: 22, height: 22, cursor: 'pointer', fontSize: 12, lineHeight: '22px', textAlign: 'center' }}>×</button>
+              </div>
+            )}
           </div>
           <div className="form-group">
             <label className="form-label">{t('admin.contests.form.start')}</label>

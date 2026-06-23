@@ -99,7 +99,7 @@ bot.action(/^notif_contests$/, async (ctx) => {
   let msg = lang === 'uk' ? '🏆 *Майбутні конкурси:*\n\n' : '🏆 *Предстоящие конкурсы:*\n\n';
   for (const c of contests.rows) {
     const start = new Date(c.start_date);
-    const timeStr = start.toLocaleString(lang === 'uk' ? 'uk-UA' : 'ru-RU');
+    const timeStr = start.toLocaleString(lang === 'uk' ? 'uk-UA' : 'ru-RU', { timeZone: 'Europe/Kyiv' });
     const title = lang === 'uk' ? c.title_uk : c.title_ru;
     const prize = lang === 'uk' ? c.prize_uk : c.prize_ru;
     msg += `*${title}*\n🏆 ${prize}\n🕐 ${timeStr}\n\n`;
@@ -127,7 +127,7 @@ bot.action(/^notif_streams$/, async (ctx) => {
   let msg = lang === 'uk' ? '📺 *Майбутні стріми:*\n\n' : '📺 *Предстоящие стримы:*\n\n';
   for (const s of streams.rows) {
     const start = new Date(s.start_time);
-    const timeStr = start.toLocaleString(lang === 'uk' ? 'uk-UA' : 'ru-RU');
+    const timeStr = start.toLocaleString(lang === 'uk' ? 'uk-UA' : 'ru-RU', { timeZone: 'Europe/Kyiv' });
     const text = lang === 'uk' ? s.text_uk : s.text_ru;
     msg += `${s.banner_image ? '🖼️ ' : ''}${text || ''}\n🔗 ${s.link}\n🕐 ${timeStr}\n\n`;
   }
