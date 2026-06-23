@@ -178,6 +178,20 @@ const migrate = async () => {
         )
       `);
     } catch (err) { console.log('contest_reminders table already exists or error:', err.message); }
+
+    try {
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS announcements (
+          id SERIAL PRIMARY KEY,
+          title_uk VARCHAR(500) NOT NULL,
+          title_ru VARCHAR(500) NOT NULL,
+          text_uk TEXT,
+          text_ru TEXT,
+          banner_image TEXT,
+          created_at TIMESTAMP DEFAULT NOW()
+        )
+      `);
+    } catch (err) { console.log('announcements table already exists or error:', err.message); }
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('Migration failed:', err);

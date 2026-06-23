@@ -2,12 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import api from '../axios';
+import { useApp } from '../contexts/AppContext';
 
 const Contests = () => {
   const { t } = useTranslation();
+  const { user } = useApp();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const casinoId = searchParams.get('casino');
+  const paramCasino = searchParams.get('casino');
+  const [casinoId, setCasinoId] = useState(paramCasino || (user?.level_topmatch ? 'topmatch' : user?.level_tonplay ? 'tonplay' : null));
   const [active, setActive] = useState([]);
   const [history, setHistory] = useState([]);
   const [tab, setTab] = useState('active');
@@ -16,7 +19,7 @@ const Contests = () => {
 
   useEffect(() => {
     if (!casinoId) {
-      navigate('/');
+      setLoading(false);
       return;
     }
     const fetch = async () => {
@@ -80,6 +83,15 @@ const Contests = () => {
       <div className="page">
         <h1 className="page-title">{t('contests.title')}</h1>
         <div className="loading-center"><div className="spinner" /></div>
+      </div>
+    );
+  }
+
+  if (!casinoId) {
+    return (
+      <div className="page">
+        <h1 className="page-title">{t('contests.title')}</h1>
+        <p className="text-secondary" style={{ textAlign: 'center', marginTop: 20 }}>{t('contests.no_casino') || 'Выберите казино на главной'}</p>
       </div>
     );
   }

@@ -1127,4 +1127,72 @@ router.delete('/admin/streams/:id', verifyTelegramAuth, verifyAdminAuth, adminLi
   }
 });
 
+// ─── ANNOUNCEMENTS ───
+
+router.get('/announcements', verifyTelegramAuth, async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM announcements ORDER BY created_at DESC');
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Get announcements error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.get('/admin/announcements', verifyTelegramAuth, verifyAdminAuth, adminLimiter, async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM announcements ORDER BY created_at DESC');
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Admin get announcements error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.post('/admin/announcements', verifyTelegramAuth, verifyAdminAuth, adminLimiter, async (req, res) => {
+  try {
+    const { title_uk, title_ru, text_uk, text_ru, banner_image } = req.body;
+    if (!title_uk || !title_ru) {
+      return res.status(400).json({ error: 'title_uk and title_ru are required' });
+    }
+    const result = await pool.query(
+      `INSERT INTO announcements (title_uk, title_ru, text_uk, text_ru, banner_image)
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [title_uk, title_ru, text_uk || null, text_ru || null, banner_image || null]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error('Create announcement error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.put('/admin/announcements/:id', verifyTelegramAuth, verifyAdminAuth, adminLimiter, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const { title_uk, title_ru, text_uk, text_ru, banner_image } = req.body;
+    const result = await pool.query(
+      `UPDATE announcements SET title_uk = COALESCE($1, title_uk), title_ru = COALESCE($2, title_ru), text_uk = COALESCE($3, text_uk), text_ru = COALESCE($4, text_ru), banner_image = COALESCE($5, banner_image)
+       WHERE id = $6 RETURNING *`,
+      [title_uk, title_ru, text_uk, text_ru, banner_image, id]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Announcement not found' });
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Update announcement error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.delete('/admin/announcements/:id', verifyTelegramAuth, verifyAdminAuth, adminLimiter, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    await pool.query('DELETE FROM announcements WHERE id = $1', [id]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Delete announcement error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 module.exports = router;

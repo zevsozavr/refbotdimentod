@@ -15,6 +15,8 @@ const BottomNav = () => {
 
   const items = [
     { path: '/', icon: '🏠', label: t('nav.home') },
+    { path: '/contests', icon: '🏆', label: t('nav.contests') },
+    { path: '/announces', icon: '📢', label: t('nav.announces') },
     { path: '/settings', icon: '⚙️', label: t('nav.settings') },
   ];
 

@@ -8,6 +8,7 @@ import BottomNav from './components/BottomNav';
 import Banned from './pages/Banned';
 import Home from './pages/Home';
 import Contests from './pages/Contests';
+import Announces from './pages/Announces';
 import Casino from './pages/Casino';
 import Settings from './pages/Settings';
 import AdminUsers from './pages/admin/AdminUsers';
@@ -17,6 +18,7 @@ import AdminBroadcast from './pages/admin/AdminBroadcast';
 import AdminStats from './pages/admin/AdminStats';
 import AdminPendingChanges from './pages/admin/AdminPendingChanges';
 import AdminStreams from './pages/admin/AdminStreams';
+import AdminAnnounces from './pages/admin/AdminAnnounces';
 import './styles.css';
 
 const AppContent = () => {
@@ -123,6 +125,7 @@ const AppContent = () => {
           <Route path="/" element={<Home />} />
           <Route path="/casino/:casinoId" element={<Casino />} />
           <Route path="/contests" element={<Contests />} />
+          <Route path="/announces" element={<Announces />} />
           <Route path="/settings" element={<Settings />} />
           {isAdmin && (
             <>
@@ -133,6 +136,7 @@ const AppContent = () => {
               <Route path="/admin/stats" element={<AdminStats />} />
               <Route path="/admin/pending-changes" element={<AdminPendingChanges />} />
               <Route path="/admin/streams" element={<AdminStreams />} />
+              <Route path="/admin/announces" element={<AdminAnnounces />} />
             </>
           )}
           <Route path="*" element={<Navigate to="/" />} />
