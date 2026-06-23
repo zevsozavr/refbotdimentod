@@ -805,6 +805,23 @@ textarea.input { resize: vertical; min-height: 80px; }
   border-color: var(--accent);
 }
 
+.tab.active.topmatch { background: var(--topmatch-gradient); border-color: #e53935; }
+.tab.active.tonplay { background: var(--tonplay-gradient); border-color: #00c853; }
+
+.contest-banner {
+  width: 100%;
+  border-radius: var(--radius-sm);
+  margin-bottom: 10px;
+  max-height: 160px;
+  object-fit: cover;
+}
+
+.contest-meta-info {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
 /* ── Utility ── */
 .mt-2 { margin-top: 8px; }
 .mt-4 { margin-top: 16px; }

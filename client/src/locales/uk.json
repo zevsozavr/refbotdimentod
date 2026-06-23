@@ -36,6 +36,8 @@
   "contests.no_active": "Немає активних конкурсів",
   "contests.level": "Рівень",
   "contests.no_history": "Немає завершених конкурсів",
+  "contests.join": "Приєднатися",
+  "contests.leave": "Покинути",
   "settings.title": "Налаштування",
   "settings.language": "Мова",
   "settings.theme": "Тема",

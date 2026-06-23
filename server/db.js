@@ -90,11 +90,29 @@ const migrate = async () => {
     `);
 
     await client.query(`
+      ALTER TABLE contests ADD COLUMN IF NOT EXISTS winner_count INTEGER DEFAULT 1
+    `);
+
+    await client.query(`
+      ALTER TABLE contests ADD COLUMN IF NOT EXISTS banner_image VARCHAR(500) DEFAULT NULL
+    `);
+
+    await client.query(`
       CREATE TABLE IF NOT EXISTS contest_winners (
         id SERIAL PRIMARY KEY,
         contest_id INTEGER REFERENCES contests(id) ON DELETE CASCADE,
         user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
         picked_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS contest_participants (
+        id SERIAL PRIMARY KEY,
+        contest_id INTEGER REFERENCES contests(id) ON DELETE CASCADE,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        joined_at TIMESTAMP DEFAULT NOW(),
+        UNIQUE(contest_id, user_id)
       )
     `);
 
@@ -133,6 +151,33 @@ const migrate = async () => {
 
     await client.query('COMMIT');
     console.log('Database migration completed successfully');
+
+    // Apply post-migration alterations outside transaction
+    try {
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS streams (
+          id SERIAL PRIMARY KEY,
+          banner_image TEXT,
+          link TEXT NOT NULL,
+          start_time TIMESTAMPTZ NOT NULL,
+          text_ru TEXT,
+          text_uk TEXT,
+          status TEXT DEFAULT 'scheduled',
+          created_at TIMESTAMP DEFAULT NOW()
+        )
+      `);
+    } catch (err) { console.log('streams table already exists or error:', err.message); }
+
+    try {
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS contest_reminders (
+          id SERIAL PRIMARY KEY,
+          contest_id INTEGER REFERENCES contests(id) ON DELETE CASCADE,
+          sent BOOLEAN DEFAULT FALSE,
+          sent_at TIMESTAMP
+        )
+      `);
+    } catch (err) { console.log('contest_reminders table already exists or error:', err.message); }
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('Migration failed:', err);

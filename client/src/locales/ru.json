@@ -34,6 +34,8 @@
   "contests.no_active": "Нет активных конкурсов",
   "contests.level": "Уровень",
   "contests.no_history": "Нет завершенных конкурсов",
+  "contests.join": "Участвовать",
+  "contests.leave": "Выйти",
   "settings.title": "Настройки",
   "settings.language": "Язык",
   "settings.theme": "Тема",

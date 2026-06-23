@@ -16,6 +16,7 @@ import AdminContests from './pages/admin/AdminContests';
 import AdminBroadcast from './pages/admin/AdminBroadcast';
 import AdminStats from './pages/admin/AdminStats';
 import AdminPendingChanges from './pages/admin/AdminPendingChanges';
+import AdminStreams from './pages/admin/AdminStreams';
 import './styles.css';
 
 const AppContent = () => {
@@ -131,6 +132,7 @@ const AppContent = () => {
               <Route path="/admin/broadcast" element={<AdminBroadcast />} />
               <Route path="/admin/stats" element={<AdminStats />} />
               <Route path="/admin/pending-changes" element={<AdminPendingChanges />} />
+              <Route path="/admin/streams" element={<AdminStreams />} />
             </>
           )}
           <Route path="*" element={<Navigate to="/" />} />

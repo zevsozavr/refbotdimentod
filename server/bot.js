@@ -1,32 +1,143 @@
-const { Telegraf } = require('telegraf');
+const { Telegraf, Markup } = require('telegraf');
 const { isAdminId } = require('./middleware');
 const { pool } = require('./db');
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
-let miniAppUrlPromise = null;
-const getMiniAppUrl = async () => {
-  if (process.env.MINI_APP_URL) return process.env.MINI_APP_URL;
-  if (!miniAppUrlPromise) {
-    miniAppUrlPromise = (async () => {
-      const fallback = (process.env.WEBHOOK_URL || '').trim().replace(/\/webhook\/[^/]+$/, '');
-      if (fallback) {
-        console.log('MINI_APP_URL not set, using web app URL:', fallback);
-        return fallback;
+// ─── REMINDER INTERVAL ───
+
+const checkContestReminders = async () => {
+  try {
+    const reminders = await pool.query(
+      `SELECT cr.id, cr.contest_id, c.title_uk, c.title_ru, c.start_date, c.casino
+       FROM contest_reminders cr
+       JOIN contests c ON c.id = cr.contest_id
+       WHERE cr.sent = FALSE AND c.status = 'active' AND c.start_date <= NOW() + INTERVAL '15 minutes' AND c.start_date > NOW()`
+    );
+    for (const r of reminders.rows) {
+      const participants = await pool.query(
+        `SELECT u.telegram_id, u.language FROM contest_participants cp
+         JOIN users u ON u.id = cp.user_id
+         WHERE cp.contest_id = $1`,
+        [r.contest_id]
+      );
+      for (const p of participants.rows) {
+        const msg = p.language === 'uk'
+          ? `🔔 Конкурс "${r.title_uk}" розпочнеться за 15 хвилин!\nКазино: ${r.casino === 'topmatch' ? 'TopMatch' : 'TonPlay'}`
+          : `🔔 Конкурс "${r.title_ru}" начнется через 15 минут!\nКазино: ${r.casino === 'topmatch' ? 'TopMatch' : 'TonPlay'}`;
+        try { await bot.telegram.sendMessage(p.telegram_id, msg); } catch (e) { /* ignore */ }
       }
-      try {
-        const me = await bot.telegram.getMe();
-        const url = `https://t.me/${me.username}/app`;
-        console.log('MINI_APP_URL not set, constructed:', url);
-        return url;
-      } catch {
-        console.log('MINI_APP_URL not set and could not determine URL');
-        return 'https://t.me/your_bot/your_app';
-      }
-    })();
+      await pool.query('UPDATE contest_reminders SET sent = TRUE, sent_at = NOW() WHERE id = $1', [r.id]);
+    }
+  } catch (err) {
+    console.error('Contest reminder check error:', err);
   }
-  return miniAppUrlPromise;
 };
+
+setInterval(checkContestReminders, 60000);
+
+// ─── NOTIFICATION MENU ───
+
+const sendNotificationMenu = async (ctx, language) => {
+  const lang = language || 'uk';
+  const text = lang === 'uk' ? '🔔 Сповіщення' : '🔔 Уведомления';
+  await ctx.reply(text, {
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: lang === 'uk' ? '🏆 Конкурси' : '🏆 Конкурсы', callback_data: 'notif_contests' }],
+        [{ text: lang === 'uk' ? '📺 Стріми' : '📺 Стримы', callback_data: 'notif_streams' }],
+        [{ text: lang === 'uk' ? '◀️ Назад' : '◀️ Назад', callback_data: 'notif_back' }],
+      ],
+    },
+  });
+};
+
+bot.hears(/^(🔔 Сповіщення|🔔 Уведомления|Notifications)$/, async (ctx) => {
+  const user = await pool.query('SELECT language FROM users WHERE telegram_id = $1', [ctx.from.id]);
+  const lang = user.rows[0]?.language || 'uk';
+  await sendNotificationMenu(ctx, lang);
+});
+
+bot.action('notif_main', async (ctx) => {
+  await ctx.answerCbQuery();
+  const user = await pool.query('SELECT language FROM users WHERE telegram_id = $1', [ctx.from.id]);
+  const lang = user.rows[0]?.language || 'uk';
+  await sendNotificationMenu(ctx, lang);
+});
+
+bot.action('notif_back', async (ctx) => {
+  await ctx.answerCbQuery();
+  const user = await pool.query('SELECT language FROM users WHERE telegram_id = $1', [ctx.from.id]);
+  const lang = user.rows[0]?.language || 'uk';
+  const text = lang === 'uk'
+    ? '🌐 Оберіть мову / Выберите язык:'
+    : '🌐 Выберите язык / Оберіть мову:';
+  await ctx.editMessageText(text, {
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: '🇺🇦 Українська', callback_data: 'lang_uk' }],
+        [{ text: '🇷🇺 Русский', callback_data: 'lang_ru' }],
+      ],
+    },
+  });
+});
+
+bot.action(/^notif_contests$/, async (ctx) => {
+  await ctx.answerCbQuery();
+  const user = await pool.query('SELECT language FROM users WHERE telegram_id = $1', [ctx.from.id]);
+  const lang = user.rows[0]?.language || 'uk';
+  const contests = await pool.query(
+    "SELECT * FROM contests WHERE status = 'active' AND start_date > NOW() AND end_date > NOW() ORDER BY start_date ASC LIMIT 5"
+  );
+  if (contests.rows.length === 0) {
+    const emptyText = lang === 'uk' ? 'Немає майбутніх конкурсів' : 'Нет предстоящих конкурсов';
+    await ctx.editMessageText(`📭 ${emptyText}`, {
+      reply_markup: { inline_keyboard: [[{ text: lang === 'uk' ? '◀️ Назад' : '◀️ Назад', callback_data: 'notif_main' }]] },
+    });
+    return;
+  }
+  let msg = lang === 'uk' ? '🏆 *Майбутні конкурси:*\n\n' : '🏆 *Предстоящие конкурсы:*\n\n';
+  for (const c of contests.rows) {
+    const start = new Date(c.start_date);
+    const timeStr = start.toLocaleString(lang === 'uk' ? 'uk-UA' : 'ru-RU');
+    const title = lang === 'uk' ? c.title_uk : c.title_ru;
+    const prize = lang === 'uk' ? c.prize_uk : c.prize_ru;
+    msg += `*${title}*\n🏆 ${prize}\n🕐 ${timeStr}\n\n`;
+  }
+  await ctx.editMessageText(msg, {
+    parse_mode: 'Markdown',
+    reply_markup: { inline_keyboard: [[{ text: lang === 'uk' ? '◀️ Назад' : '◀️ Назад', callback_data: 'notif_main' }]] },
+  });
+});
+
+bot.action(/^notif_streams$/, async (ctx) => {
+  await ctx.answerCbQuery();
+  const user = await pool.query('SELECT language FROM users WHERE telegram_id = $1', [ctx.from.id]);
+  const lang = user.rows[0]?.language || 'uk';
+  const streams = await pool.query(
+    "SELECT * FROM streams WHERE status = 'scheduled' AND start_time > NOW() ORDER BY start_time ASC LIMIT 5"
+  );
+  if (streams.rows.length === 0) {
+    const emptyText = lang === 'uk' ? 'Немає майбутніх стрімів' : 'Нет предстоящих стримов';
+    await ctx.editMessageText(`📭 ${emptyText}`, {
+      reply_markup: { inline_keyboard: [[{ text: lang === 'uk' ? '◀️ Назад' : '◀️ Назад', callback_data: 'notif_main' }]] },
+    });
+    return;
+  }
+  let msg = lang === 'uk' ? '📺 *Майбутні стріми:*\n\n' : '📺 *Предстоящие стримы:*\n\n';
+  for (const s of streams.rows) {
+    const start = new Date(s.start_time);
+    const timeStr = start.toLocaleString(lang === 'uk' ? 'uk-UA' : 'ru-RU');
+    const text = lang === 'uk' ? s.text_uk : s.text_ru;
+    msg += `${s.banner_image ? '🖼️ ' : ''}${text || ''}\n🔗 ${s.link}\n🕐 ${timeStr}\n\n`;
+  }
+  await ctx.editMessageText(msg, {
+    parse_mode: 'Markdown',
+    reply_markup: { inline_keyboard: [[{ text: lang === 'uk' ? '◀️ Назад' : '◀️ Назад', callback_data: 'notif_main' }]] },
+  });
+});
+
+// ─── LANGUAGE SELECTION ───
 
 bot.command('start', async (ctx) => {
   await ctx.reply('🌐 Оберіть мову / Выберите язык:', {
@@ -39,6 +150,22 @@ bot.command('start', async (ctx) => {
   });
 });
 
+const sendMainMenu = async (ctx, lang) => {
+  const mainText = lang === 'uk'
+    ? '👋 Вітаємо! Оберіть дію:'
+    : '👋 Приветствуем! Выберите действие:';
+  const btnOpen = lang === 'uk' ? '🚀 Відкрити додаток' : '🚀 Открыть приложение';
+  const btnNotif = lang === 'uk' ? '🔔 Сповіщення' : '🔔 Уведомления';
+  await ctx.editMessageText(mainText, {
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: btnOpen, web_app: { url: process.env.APP_URL } }],
+        [{ text: btnNotif, callback_data: 'notif_main' }],
+      ],
+    },
+  });
+};
+
 bot.action('lang_uk', async (ctx) => {
   await ctx.answerCbQuery();
   try {
@@ -49,13 +176,7 @@ bot.action('lang_uk', async (ctx) => {
       [ctx.from.id, ctx.from.username || null]
     );
   } catch (e) { console.error('lang_uk error:', e); }
-  await ctx.editMessageText('✅ Мову встановлено: Українська', {
-    reply_markup: {
-      inline_keyboard: [[
-        { text: '🚀 Відкрити додаток', web_app: { url: process.env.APP_URL } },
-      ]],
-    },
-  });
+  await sendMainMenu(ctx, 'uk');
 });
 
 bot.action('lang_ru', async (ctx) => {
@@ -68,14 +189,10 @@ bot.action('lang_ru', async (ctx) => {
       [ctx.from.id, ctx.from.username || null]
     );
   } catch (e) { console.error('lang_ru error:', e); }
-  await ctx.editMessageText('✅ Язык установлен: Русский', {
-    reply_markup: {
-      inline_keyboard: [[
-        { text: '🚀 Открыть приложение', web_app: { url: process.env.APP_URL } },
-      ]],
-    },
-  });
+  await sendMainMenu(ctx, 'ru');
 });
+
+// ─── NOTIFY WINNER ───
 
 const notifyWinner = async (user, contest, language) => {
   try {
@@ -92,19 +209,23 @@ const notifyWinner = async (user, contest, language) => {
   }
 };
 
-const notifyAdmin = async (winner, contest) => {
+const notifyAdmin = async (winners, contest) => {
   try {
     const adminIds = (process.env.ADMIN_TELEGRAM_IDS || '').split(',').map(id => id.trim()).filter(Boolean);
     const casinoName = contest.casino === 'topmatch' ? 'TopMatch' : 'TonPlay';
-    const casinoId = contest.casino === 'topmatch' ? winner.casino_id_topmatch : winner.casino_id_tonplay;
-    const wallet = contest.casino === 'topmatch' ? winner.wallet_topmatch : winner.wallet_tonplay;
-    const message = `🏆 Новий переможець / Новый победитель\n\nКазино / Казино: ${casinoName}\nTelegram ID: ${winner.telegram_id}\nUsername: @${winner.telegram_username || 'N/A'}\nCasino ID: ${casinoId || 'N/A'}\nTRC20 USDT: ${wallet || 'N/A'}\nКонкурс / Конкурс: ${contest.title_uk} / ${contest.title_ru}\nПриз / Приз: ${contest.prize_uk} / ${contest.prize_ru}`;
+    const winnersArr = Array.isArray(winners) ? winners : [winners];
 
-    for (const adminId of adminIds) {
-      try {
-        await bot.telegram.sendMessage(adminId, message);
-      } catch (e) {
-        console.error(`Error notifying admin ${adminId}:`, e);
+    for (const winner of winnersArr) {
+      const casinoId = contest.casino === 'topmatch' ? winner.casino_id_topmatch : winner.casino_id_tonplay;
+      const wallet = contest.casino === 'topmatch' ? winner.wallet_topmatch : winner.wallet_tonplay;
+      const message = `🏆 Переможець / Победитель\n\nКазино / Казино: ${casinoName}\nTelegram ID: ${winner.telegram_id}\nUsername: @${winner.telegram_username || 'N/A'}\nCasino ID: ${casinoId || 'N/A'}\nTRC20 USDT: ${wallet || 'N/A'}\nКонкурс / Конкурс: ${contest.title_uk} / ${contest.title_ru}\nПриз / Приз: ${contest.prize_uk} / ${contest.prize_ru}`;
+
+      for (const adminId of adminIds) {
+        try {
+          await bot.telegram.sendMessage(adminId, message);
+        } catch (e) {
+          console.error(`Error notifying admin ${adminId}:`, e);
+        }
       }
     }
   } catch (err) {

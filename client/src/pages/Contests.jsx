@@ -51,6 +51,20 @@ const Contests = () => {
     return `${hours}h ${minutes}m`;
   };
 
+  const handleJoin = async (contestId, joined) => {
+    try {
+      if (joined) {
+        await api.post(`/contests/${contestId}/leave`);
+      } else {
+        await api.post(`/contests/${contestId}/join`);
+      }
+      const res = await api.get(`/contests?casino=${casinoId}`);
+      setActive(res.data);
+    } catch (e) {
+      console.error('Join/leave error:', e);
+    }
+  };
+
   if (loading) {
     return (
       <div className="page">
@@ -66,12 +80,8 @@ const Contests = () => {
         <h1 className="page-title">{t('contests.title')}</h1>
         <div className="card" style={{ padding: 20, textAlign: 'center', marginTop: 20 }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>💰</div>
-          <p style={{ fontSize: 15, fontWeight: 600, marginBottom: 8 }}>
-            {t('settings.wallet_title')}
-          </p>
-          <p className="text-secondary" style={{ fontSize: 13, marginBottom: 16 }}>
-            {t('settings.wallet_note')}
-          </p>
+          <p style={{ fontSize: 15, fontWeight: 600, marginBottom: 8 }}>{t('settings.wallet_title')}</p>
+          <p className="text-secondary" style={{ fontSize: 13, marginBottom: 16 }}>{t('settings.wallet_note')}</p>
           <button className={`btn btn-${casinoId}`} onClick={() => navigate(`/casino/${casinoId}`)}>
             {t('settings.wallet_save')}
           </button>
@@ -85,10 +95,10 @@ const Contests = () => {
       <h1 className="page-title">{t('contests.title')}</h1>
 
       <div className="tabs">
-        <button className={`tab ${tab === 'active' ? 'active' : ''}`} onClick={() => setTab('active')}>
+        <button className={`tab ${tab === 'active' ? `active ${casinoId}` : ''}`} onClick={() => setTab('active')}>
           {t('contests.active')} ({active.length})
         </button>
-        <button className={`tab ${tab === 'history' ? 'active' : ''}`} onClick={() => setTab('history')}>
+        <button className={`tab ${tab === 'history' ? `active ${casinoId}` : ''}`} onClick={() => setTab('history')}>
           {t('contests.history')} ({history.length})
         </button>
       </div>
@@ -99,9 +109,22 @@ const Contests = () => {
         ) : (
           active.map((c) => (
             <div key={c.id} className={`contest-card ${c.casino}`}>
+              {c.banner_image && (
+                <img className="contest-banner" src={c.banner_image} alt={c.title} />
+              )}
               <div className="contest-title">{c.title}</div>
               <div className="contest-prize">{t('contests.prize')}: {c.prize}</div>
+              <div className="contest-meta-info">
+                <span>👥 {c.participant_count} | 🏆 {c.winner_count}</span>
+              </div>
               <div className="contest-timer">{t('contests.ends_in')}: {getTimeRemaining(c.end_date)}</div>
+              <button
+                className={`btn btn-sm ${c.joined ? 'btn-secondary' : `btn-${casinoId}`}`}
+                onClick={() => handleJoin(c.id, c.joined)}
+                style={{ marginTop: 10, width: '100%' }}
+              >
+                {c.joined ? t('contests.leave') : t('contests.join')}
+              </button>
             </div>
           ))
         )
@@ -115,9 +138,9 @@ const Contests = () => {
             <div key={c.id} className={`contest-card ${c.casino || ''}`}>
               <div className="contest-title">{c.title}</div>
               <div className="contest-prize">{t('contests.prize')}: {c.prize}</div>
-              {c.winner && (
+              {c.winners && c.winners.length > 0 && (
                 <div className="contest-timer" style={{ color: 'var(--warning)' }}>
-                  {t('contests.winner')}: @{c.winner.telegram_username}
+                  {t('contests.winner')}: {c.winners.map(w => `@${w.telegram_username}`).join(', ')}
                 </div>
               )}
             </div>

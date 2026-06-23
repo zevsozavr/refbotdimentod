@@ -12,6 +12,7 @@ const AdminContests = () => {
   const [form, setForm] = useState({
     title_uk: '', title_ru: '', description_uk: '', description_ru: '',
     prize_uk: '', prize_ru: '', referral_type: '1', casino: 'topmatch', start_date: '', end_date: '',
+    winner_count: '1', banner_image: '',
   });
   const [error, setError] = useState('');
 
@@ -32,7 +33,12 @@ const AdminContests = () => {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ title_uk: '', title_ru: '', description_uk: '', description_ru: '', prize_uk: '', prize_ru: '', referral_type: '1', casino: 'topmatch', start_date: '', end_date: '' });
+    const now = new Date();
+    const startStr = now.toISOString().slice(0, 16);
+    const endObj = new Date();
+    endObj.setHours(23, 59);
+    const endStr = endObj.toISOString().slice(0, 16);
+    setForm({ title_uk: '', title_ru: '', description_uk: '', description_ru: '', prize_uk: '', prize_ru: '', referral_type: '1', casino: 'topmatch', start_date: startStr, end_date: endStr, winner_count: '1', banner_image: '' });
     setShowForm(true);
     setError('');
   };
@@ -46,6 +52,8 @@ const AdminContests = () => {
       referral_type: String(contest.eligible_referral_type),
       casino: contest.casino || 'topmatch',
       start_date: contest.start_date.slice(0, 16), end_date: contest.end_date.slice(0, 16),
+      winner_count: String(contest.winner_count || 1),
+      banner_image: contest.banner_image || '',
     });
     setShowForm(true);
     setError('');
@@ -166,6 +174,14 @@ const AdminContests = () => {
             </select>
           </div>
           <div className="form-group">
+            <label className="form-label">Winner Count</label>
+            <input className="input" type="number" min="1" max="100" value={form.winner_count} onChange={(e) => setForm({ ...form, winner_count: e.target.value })} />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Banner Image URL</label>
+            <input className="input" placeholder="https://..." value={form.banner_image} onChange={(e) => setForm({ ...form, banner_image: e.target.value })} maxLength={500} />
+          </div>
+          <div className="form-group">
             <label className="form-label">{t('admin.contests.form.start')}</label>
             <input className="input" type="datetime-local" value={form.start_date} onChange={(e) => setForm({ ...form, start_date: e.target.value })} />
           </div>
@@ -196,13 +212,11 @@ const AdminContests = () => {
               {new Date(c.start_date).toLocaleDateString()} — {new Date(c.end_date).toLocaleDateString()}
             </span>
           </div>
-          <div className="flex gap-2 mt-3">
+          <div className="flex gap-2 mt-3" style={{ flexWrap: 'wrap' }}>
             {c.status === 'active' && (
-              <>
-                <button className="btn btn-secondary btn-sm" onClick={() => openEdit(c)}>{t('admin.contests.edit')}</button>
-                <button className="btn btn-danger btn-sm" onClick={() => handleDelete(c.id)}>{t('admin.contests.delete')}</button>
-              </>
+              <button className="btn btn-secondary btn-sm" onClick={() => openEdit(c)}>{t('admin.contests.edit')}</button>
             )}
+            <button className="btn btn-danger btn-sm" onClick={() => handleDelete(c.id)}>{t('admin.contests.delete')}</button>
             {c.status !== 'winner_picked' && new Date(c.end_date) < new Date() && (
               <button className="btn btn-success btn-sm" onClick={() => handlePickWinner(c.id)}>
                 {t('admin.contests.pick_winner')}
