@@ -81,10 +81,10 @@ router.post('/auth/init', authInitLimiter, [
     } else {
       const needsVerify = isAdmin && result.rows[0].status !== 'verified';
       result = await pool.query(
-        `UPDATE users SET telegram_username = $1, language = $2,
-         status = CASE WHEN $3::boolean THEN 'verified' ELSE status END
-         WHERE telegram_id = $4 RETURNING *`,
-        [telegram_username || null, language, needsVerify, telegram_id]
+        `UPDATE users SET telegram_username = $1,
+         status = CASE WHEN $2::boolean THEN 'verified' ELSE status END
+         WHERE telegram_id = $3 RETURNING *`,
+        [telegram_username || null, needsVerify, telegram_id]
       );
       user = result.rows[0];
     }

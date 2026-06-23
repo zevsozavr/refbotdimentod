@@ -62,11 +62,12 @@ const AppContent = () => {
         }
 
         const telegramId = telegramUser?.id || 1;
+        const savedLang = localStorage.getItem('language') || 'uk';
 
         const res = await api.post('/auth/init', {
           telegram_id: telegramId,
           telegram_username: telegramUser?.username || 'dev',
-          language: 'uk',
+          language: savedLang,
         });
         if (!cancelled) {
           setUser(res.data);
