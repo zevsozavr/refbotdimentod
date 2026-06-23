@@ -79,11 +79,8 @@ const AdminUsers = () => {
                   </div>
                   <div style={{ display: 'flex', gap: 6, marginTop: 6, flexWrap: 'wrap', alignItems: 'center' }}>
                     <span className={`status-badge ${getStatusBadge(u.status)}`}>{statusLabel[u.status]}</span>
-                    <span className={`level-badge ${u.level_topmatch ? 'topmatch' : 'none'}`} style={{ marginTop: 0 }}>
-                      TopMatch: {u.level_topmatch || '—'}
-                    </span>
-                    <span className={`level-badge ${u.level_tonplay ? 'tonplay' : 'none'}`} style={{ marginTop: 0 }}>
-                      TonPlay: {u.level_tonplay || '—'}
+                    <span className={`level-badge`}>
+                      Рівень {Math.max(u.level_topmatch || 0, u.level_tonplay || 0)}
                     </span>
                   </div>
                 </div>
