@@ -86,10 +86,11 @@ router.post('/auth/init', authInitLimiter, [
     } else {
       const needsVerify = isAdmin && result.rows[0].status !== 'verified';
       result = await pool.query(
-        'UPDATE users SET telegram_username = $1, language = $2' + (needsVerify ? ', status = $3, casino_id = COALESCE(casino_id, $4)' : '') + ' WHERE telegram_id = $5 RETURNING *',
-        needsVerify
-          ? [telegram_username || null, language, 'verified', 'admin', telegram_id]
-          : [telegram_username || null, language, telegram_id]
+        `UPDATE users SET telegram_username = $1, language = $2,
+         status = CASE WHEN $3::boolean THEN 'verified' ELSE status END,
+         casino_id = CASE WHEN $3::boolean AND casino_id IS NULL THEN 'admin' ELSE casino_id END
+         WHERE telegram_id = $4 RETURNING *`,
+        [telegram_username || null, language, needsVerify, telegram_id]
       );
       user = result.rows[0];
     }
