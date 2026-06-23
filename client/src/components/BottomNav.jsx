@@ -9,7 +9,7 @@ const BottomNav = () => {
   const location = useLocation();
   const { user, isAdmin } = useApp();
 
-  if (!user || user.status !== 'verified') return null;
+  if (!user || (user.status !== 'verified' && !user.is_admin)) return null;
 
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
 

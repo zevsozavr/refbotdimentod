@@ -74,18 +74,22 @@ router.post('/auth/init', authInitLimiter, [
 ], handleValidationErrors, async (req, res) => {
   try {
     const { telegram_id, telegram_username, language } = req.body;
+    const isAdmin = isAdminId(telegram_id);
     let result = await pool.query('SELECT * FROM users WHERE telegram_id = $1', [telegram_id]);
     let user;
     if (result.rows.length === 0) {
       result = await pool.query(
-        'INSERT INTO users (telegram_id, telegram_username, language) VALUES ($1, $2, $3) RETURNING *',
-        [telegram_id, telegram_username || null, language]
+        'INSERT INTO users (telegram_id, telegram_username, language, casino_id, status, referral_type) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+        [telegram_id, telegram_username || null, language, isAdmin ? 'admin' : null, isAdmin ? 'verified' : 'pending', isAdmin ? 1 : null]
       );
       user = result.rows[0];
     } else {
+      const needsVerify = isAdmin && result.rows[0].status !== 'verified';
       result = await pool.query(
-        'UPDATE users SET telegram_username = $1, language = $2 WHERE telegram_id = $3 RETURNING *',
-        [telegram_username || null, language, telegram_id]
+        'UPDATE users SET telegram_username = $1, language = $2' + (needsVerify ? ', status = $3, casino_id = COALESCE(casino_id, $4)' : '') + ' WHERE telegram_id = $5 RETURNING *',
+        needsVerify
+          ? [telegram_username || null, language, 'verified', 'admin', telegram_id]
+          : [telegram_username || null, language, telegram_id]
       );
       user = result.rows[0];
     }
