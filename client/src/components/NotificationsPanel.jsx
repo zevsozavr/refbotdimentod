@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../axios';
 
 const NotificationsPanel = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const [open, setOpen] = useState(false);
   const [announces, setAnnounces] = useState([]);
   const [streams, setStreams] = useState([]);
@@ -27,6 +28,8 @@ const NotificationsPanel = () => {
   }, [open]);
 
   const total = announces.length + streams.length;
+
+  if (location.pathname !== '/') return null;
 
   return (
     <>

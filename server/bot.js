@@ -266,4 +266,19 @@ const notifyUser = async (telegramId, textUk, textRu, language) => {
   }
 };
 
-module.exports = { bot, notifyWinner, notifyAdmin, notifyUser, notifyAdminChange };
+const notifyAllUsers = async (textUk, textRu) => {
+  try {
+    const users = await pool.query("SELECT telegram_id, language FROM users WHERE status = 'verified'");
+    for (const u of users.rows) {
+      try {
+        const msg = u.language === 'uk' ? textUk : textRu;
+        await bot.telegram.sendMessage(u.telegram_id, msg);
+      } catch (e) { /* user may have blocked bot */ }
+    }
+    console.log(`Notified ${users.rows.length} users`);
+  } catch (err) {
+    console.error('Error notifying all users:', err);
+  }
+};
+
+module.exports = { bot, notifyWinner, notifyAdmin, notifyUser, notifyAdminChange, notifyAllUsers };

@@ -5,7 +5,7 @@ const multer = require('multer');
 const path = require('path');
 const { pool } = require('./db');
 const { verifyTelegramAuth, verifyAdminAuth, isAdminId, generateSessionToken } = require('./middleware');
-const { notifyWinner, notifyAdmin, notifyUser, notifyAdminChange } = require('./bot');
+const { notifyWinner, notifyAdmin, notifyUser, notifyAdminChange, notifyAllUsers } = require('./bot');
 
 const router = express.Router();
 
@@ -963,7 +963,7 @@ router.get('/admin/pending-changes', verifyTelegramAuth, verifyAdminAuth, adminL
 router.post('/admin/pending-changes/:id/approve', verifyTelegramAuth, verifyAdminAuth, adminLimiter, async (req, res) => {
   try {
     const changeId = parseInt(req.params.id);
-    const changeResult = await pool.query("SELECT * FROM pending_changes WHERE id = $1 AND status = 'pending'", [changeId]);
+    const changeResult = await pool.query("SELECT pc.*, u.telegram_id, u.language FROM pending_changes pc JOIN users u ON u.id = pc.user_id WHERE pc.id = $1 AND pc.status = 'pending'", [changeId]);
     if (changeResult.rows.length === 0) {
       return res.status(404).json({ error: 'Pending change not found or already processed' });
     }
@@ -987,6 +987,13 @@ router.post('/admin/pending-changes/:id/approve', verifyTelegramAuth, verifyAdmi
       "UPDATE pending_changes SET status = 'approved', reviewed_at = NOW() WHERE id = $1",
       [changeId]
     );
+
+    const casinoName = change.field.startsWith('casino_id_topmatch') || change.field.startsWith('wallet_topmatch') ? 'TopMatch' : 'TonPlay';
+    const fieldLabel = change.field.startsWith('casino_id') ? `${casinoName} ID` : `${casinoName} TRC20`;
+    const msg = change.language === 'uk'
+      ? `✅ Ваш запит на зміну ${fieldLabel} було підтверджено адміністратором. Нове значення: ${change.new_value}`
+      : `✅ Ваш запрос на изменение ${fieldLabel} был подтвержден администратором. Новое значение: ${change.new_value}`;
+    try { await notifyUser(change.telegram_id, msg, msg, change.language); } catch (e) { console.error('Notify approval error:', e); }
 
     res.json({ success: true });
   } catch (err) {
@@ -1106,6 +1113,12 @@ router.post('/admin/streams', verifyTelegramAuth, verifyAdminAuth, adminLimiter,
        VALUES ($1, $2, $3, $4, $5) RETURNING *`,
       [banner_image || null, link, start_time, text_ru || null, text_uk || null]
     );
+    const startDate = new Date(start_time);
+    const timeStr = startDate.toLocaleString('uk-UA', { timeZone: 'Europe/Kyiv' });
+    notifyAllUsers(
+      `📺 Новий стрім!${text_uk ? `\n${text_uk}` : ''}\n🕐 ${timeStr}\n🔗 ${link}`,
+      `📺 Новый стрим!${text_ru ? `\n${text_ru}` : ''}\n🕐 ${timeStr}\n🔗 ${link}`
+    );
     res.status(201).json(result.rows[0]);
   } catch (err) {
     console.error('Create stream error:', err);
@@ -1173,6 +1186,10 @@ router.post('/admin/announcements', verifyTelegramAuth, verifyAdminAuth, adminLi
       `INSERT INTO announcements (title_uk, title_ru, text_uk, text_ru, banner_image)
        VALUES ($1, $2, $3, $4, $5) RETURNING *`,
       [title_uk, title_ru, text_uk || null, text_ru || null, banner_image || null]
+    );
+    notifyAllUsers(
+      `📢 ${title_uk}`,
+      `📢 ${title_ru}`
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
