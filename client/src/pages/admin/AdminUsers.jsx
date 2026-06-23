@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../axios';
@@ -13,24 +13,32 @@ const AdminUsers = () => {
   const [filterStatus, setFilterStatus] = useState('');
   const [filterType, setFilterType] = useState('');
 
-  useEffect(() => {
-    const fetch = async () => {
-      setLoading(true);
-      try {
-        const params = { page, limit: 20 };
-        if (filterStatus) params.status = filterStatus;
-        if (filterType) params.referral_type = filterType;
-        const res = await api.get('/admin/users', { params });
-        setUsers(res.data.users);
-        setTotalPages(res.data.pagination.totalPages);
-      } catch (e) {
-        console.error('Users fetch error:', e);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetch();
+  const fetch = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = { page, limit: 20 };
+      if (filterStatus) params.status = filterStatus;
+      if (filterType) params.referral_type = filterType;
+      const res = await api.get('/admin/users', { params });
+      setUsers(res.data.users);
+      setTotalPages(res.data.pagination.totalPages);
+    } catch (e) {
+      console.error('Users fetch error:', e);
+    } finally {
+      setLoading(false);
+    }
   }, [page, filterStatus, filterType]);
+
+  useEffect(() => { fetch(); }, [fetch]);
+
+  const handleQuickAction = async (userId, action) => {
+    try {
+      await api.post(`/admin/users/${userId}/verify`, { action });
+      fetch();
+    } catch (e) {
+      console.error('Quick action error:', e);
+    }
+  };
 
   const getStatusBadge = (status) => {
     const map = { pending: 'badge-pending', verified: 'badge-verified', rejected: 'badge-rejected', banned: 'badge-banned' };
@@ -69,17 +77,29 @@ const AdminUsers = () => {
         <>
           <div className="card">
             {users.map((u) => (
-              <div key={u.id} className="user-row" onClick={() => navigate(`/admin/users/${u.id}`)}>
-                <div className="user-row-info">
+              <div key={u.id} className="user-row">
+                <div className="user-row-info" onClick={() => navigate(`/admin/users/${u.id}`)}>
                   <span className="user-row-name">@{u.telegram_username || `ID: ${u.telegram_id}`}</span>
+                  {u.casino_id && (
+                    <span className="text-sm" style={{ color: 'var(--accent)', marginTop: 2 }}>ID: {u.casino_id}</span>
+                  )}
                   <div className="user-row-meta">
                     <span className={`badge ${getStatusBadge(u.status)}`}>{statusLabel[u.status]}</span>
                     {u.referral_type && <span className="badge badge-type">Type {u.referral_type}</span>}
                   </div>
                 </div>
-                <span className="text-sm text-secondary">
-                  {new Date(u.created_at).toLocaleDateString()}
-                </span>
+                <div className="user-row-actions">
+                  {u.status === 'pending' && u.casino_id && (
+                    <>
+                      <button className="btn btn-success btn-xs" onClick={(e) => { e.stopPropagation(); handleQuickAction(u.id, 'approve'); }}>
+                        ✓
+                      </button>
+                      <button className="btn btn-danger btn-xs" onClick={(e) => { e.stopPropagation(); handleQuickAction(u.id, 'reject'); }}>
+                        ✕
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
             ))}
           </div>
