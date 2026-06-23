@@ -1312,3 +1312,30 @@ textarea.input { resize: vertical; min-height: 80px; }
   padding: 32px 0;
   font-size: 14px;
 }
+
+.notif-view-all {
+  text-align: center;
+  padding: 12px;
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  border-top: 1px solid var(--border);
+  transition: background var(--transition);
+  border-radius: 0 0 12px 12px;
+}
+
+.notif-view-all:hover { background: var(--surface); }
+
+.announce-type-badge {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.announce-badge { color: var(--warning); }
+
+.stream-card { cursor: pointer; }
+.stream-card:active { transform: scale(0.99); opacity: 0.9; }

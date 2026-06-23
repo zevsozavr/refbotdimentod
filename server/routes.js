@@ -3,14 +3,20 @@ const { body, param, query, validationResult } = require('express-validator');
 const rateLimit = require('express-rate-limit');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 const { pool } = require('./db');
 const { verifyTelegramAuth, verifyAdminAuth, isAdminId, generateSessionToken } = require('./middleware');
 const { notifyWinner, notifyAdmin, notifyUser, notifyAdminChange, notifyAllUsers } = require('./bot');
 
 const router = express.Router();
 
+const uploadDir = path.join(__dirname, 'uploads/banners');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, path.join(__dirname, 'uploads/banners')),
+  destination: (req, file, cb) => cb(null, uploadDir),
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);
     cb(null, `${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`);
@@ -1158,8 +1164,18 @@ router.delete('/admin/streams/:id', verifyTelegramAuth, verifyAdminAuth, adminLi
 
 router.get('/announcements', verifyTelegramAuth, async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM announcements ORDER BY created_at DESC');
-    res.json(result.rows);
+    const announces = await pool.query("SELECT * FROM announcements ORDER BY created_at DESC");
+    const streams = await pool.query("SELECT * FROM streams ORDER BY start_time DESC");
+    const combined = [
+      ...announces.rows.map(a => ({ ...a, type: 'announce' })),
+      ...streams.rows.map(s => ({ ...s, type: 'stream' })),
+    ];
+    combined.sort((a, b) => {
+      const dateA = new Date(a.type === 'announce' ? a.created_at : a.start_time);
+      const dateB = new Date(b.type === 'announce' ? b.created_at : b.start_time);
+      return dateB - dateA;
+    });
+    res.json(combined);
   } catch (err) {
     console.error('Get announcements error:', err);
     res.status(500).json({ error: 'Internal server error' });

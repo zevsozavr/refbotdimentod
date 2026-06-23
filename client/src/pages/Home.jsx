@@ -8,7 +8,7 @@ const Home = () => {
   const navigate = useNavigate();
   const [casinos, setCasinos] = useState([]);
   const [levels, setLevels] = useState({});
-  const [announces, setAnnounces] = useState([]);
+  const [feed, setFeed] = useState([]);
   const lang = user?.language || 'uk';
 
   useEffect(() => {
@@ -20,7 +20,7 @@ const Home = () => {
         });
       });
     });
-    api.get('/announcements').then(res => setAnnounces(res.data.slice(0, 3))).catch(() => {});
+    api.get('/announcements').then(res => setFeed(res.data.slice(0, 4))).catch(() => {});
   }, []);
 
   return (
@@ -31,22 +31,32 @@ const Home = () => {
         </h1>
       </div>
 
-      {announces.length > 0 && (
+      {feed.length > 0 && (
         <div className="dashboard-section">
           <div className="section-header">
-            <span>{lang === 'uk' ? '📢 Оголошення' : '📢 Объявления'}</span>
+            <span>{lang === 'uk' ? '📢 Останні події' : '📢 Последние события'}</span>
             <button className="section-link" onClick={() => navigate('/announces')}>
               {lang === 'uk' ? 'Всі' : 'Все'} →
             </button>
           </div>
-          {announces.map(a => (
-            <div key={a.id} className="dashboard-announce" onClick={() => navigate('/announces')}>
-              {a.banner_image && <img className="dash-announce-banner" src={a.banner_image} alt="" />}
-              <div className="dash-announce-body">
-                <div className="dash-announce-title">{lang === 'uk' ? a.title_uk : a.title_ru}</div>
-                <div className="dash-announce-text">{(lang === 'uk' ? a.text_uk : a.text_ru || '').slice(0, 80)}{(lang === 'uk' ? a.text_uk : a.text_ru || '').length > 80 ? '...' : ''}</div>
+          {feed.map(item => (
+            item.type === 'stream' ? (
+              <div key={`s-${item.id}`} className="dashboard-announce" onClick={() => window.open(item.link, '_blank')}>
+                {item.banner_image && <img className="dash-announce-banner" src={item.banner_image} alt="" />}
+                <div className="dash-announce-body">
+                  <div className="dash-announce-title">📺 {lang === 'uk' ? item.text_uk || 'Стрім' : item.text_ru || 'Стрим'}</div>
+                  <div className="dash-announce-text">🕐 {new Date(item.start_time).toLocaleString([], { timeZone: 'Europe/Kyiv' })}</div>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div key={`a-${item.id}`} className="dashboard-announce" onClick={() => navigate('/announces')}>
+                {item.banner_image && <img className="dash-announce-banner" src={item.banner_image} alt="" />}
+                <div className="dash-announce-body">
+                  <div className="dash-announce-title">{lang === 'uk' ? item.title_uk : item.title_ru}</div>
+                  <div className="dash-announce-text">{(lang === 'uk' ? item.text_uk : item.text_ru || '').slice(0, 80)}</div>
+                </div>
+              </div>
+            )
           ))}
         </div>
       )}

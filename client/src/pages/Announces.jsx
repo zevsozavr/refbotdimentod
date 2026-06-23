@@ -6,12 +6,12 @@ import api from '../axios';
 const Announces = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const [announces, setAnnounces] = useState([]);
+  const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const lang = i18n.language === 'uk' ? 'uk' : 'ru';
 
   useEffect(() => {
-    api.get('/announcements').then(res => setAnnounces(res.data)).catch(console.error).finally(() => setLoading(false));
+    api.get('/announcements').then(res => setItems(res.data)).catch(console.error).finally(() => setLoading(false));
   }, []);
 
   if (loading) return <div className="page"><div className="loading-center"><div className="spinner" /></div></div>;
@@ -22,16 +22,28 @@ const Announces = () => {
         <button className="back-btn" onClick={() => navigate('/')}>←</button>
         <h1 className="page-title" style={{ margin: 0 }}>{t('nav.announces')}</h1>
       </div>
-      {announces.length === 0 ? (
+
+      {items.length === 0 ? (
         <p className="text-secondary">{t('announces.empty') || (lang === 'uk' ? 'Немає оголошень' : 'Нет объявлений')}</p>
       ) : (
-        announces.map(a => (
-          <div key={a.id} className="announce-card">
-            {a.banner_image && <img className="announce-banner" src={a.banner_image} alt="" />}
-            <div className="announce-title">{lang === 'uk' ? a.title_uk : a.title_ru}</div>
-            {(lang === 'uk' ? a.text_uk : a.text_ru) && <div className="announce-text">{lang === 'uk' ? a.text_uk : a.text_ru}</div>}
-            <div className="announce-date">{new Date(a.created_at).toLocaleString()}</div>
-          </div>
+        items.map(item => (
+          item.type === 'stream' ? (
+            <div key={`s-${item.id}`} className="announce-card stream-card" onClick={() => { window.open(item.link, '_blank'); }}>
+              {item.banner_image && <img className="announce-banner" src={item.banner_image} alt="" />}
+              <div className="announce-type-badge">📺 {lang === 'uk' ? 'Стрім' : 'Стрим'}</div>
+              <div className="announce-title">{lang === 'uk' ? item.text_uk : item.text_ru || 'Stream'}</div>
+              {item.link && <div className="announce-text">🔗 {item.link}</div>}
+              <div className="announce-date">🕐 {new Date(item.start_time).toLocaleString([], { timeZone: 'Europe/Kyiv' })}</div>
+            </div>
+          ) : (
+            <div key={`a-${item.id}`} className="announce-card">
+              {item.banner_image && <img className="announce-banner" src={item.banner_image} alt="" />}
+              <div className="announce-type-badge announce-badge">📢 {lang === 'uk' ? 'Оголошення' : 'Объявление'}</div>
+              <div className="announce-title">{lang === 'uk' ? item.title_uk : item.title_ru}</div>
+              {(lang === 'uk' ? item.text_uk : item.text_ru) && <div className="announce-text">{lang === 'uk' ? item.text_uk : item.text_ru}</div>}
+              <div className="announce-date">{new Date(item.created_at).toLocaleString()}</div>
+            </div>
+          )
         ))
       )}
     </div>
