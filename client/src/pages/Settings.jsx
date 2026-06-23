@@ -22,18 +22,18 @@ const Settings = () => {
     <div className="page">
       <h1 className="page-title">{t('settings.title')}</h1>
 
-      <div className="card mb-4">
-        <div className="toggle-row">
-          <span>{t('settings.language')}</span>
-          <div className="flex gap-2">
+      <div className="settings-section">
+        <div className="settings-row">
+          <span className="settings-label">{t('settings.language')}</span>
+          <div className="lang-toggle">
             <button
-              className={`btn btn-sm ${user?.language === 'uk' ? 'btn-primary' : 'btn-secondary'}`}
+              className={`lang-btn ${user?.language === 'uk' ? 'active' : ''}`}
               onClick={() => changeLanguage('uk')}
             >
               UK
             </button>
             <button
-              className={`btn btn-sm ${user?.language === 'ru' ? 'btn-primary' : 'btn-secondary'}`}
+              className={`lang-btn ${user?.language === 'ru' ? 'active' : ''}`}
               onClick={() => changeLanguage('ru')}
             >
               RU
@@ -41,26 +41,26 @@ const Settings = () => {
           </div>
         </div>
 
-        <div className="toggle-row">
-          <span>{t('settings.theme')}</span>
-          <button className={`toggle ${theme === 'light' ? 'on' : ''}`} onClick={toggleTheme}>
-            <div className="toggle-knob" />
+        <div className="settings-row">
+          <span className="settings-label">{t('settings.theme')}</span>
+          <button className={`theme-toggle ${theme === 'light' ? 'active' : ''}`} onClick={toggleTheme}>
+            <div className="theme-toggle-knob" />
           </button>
         </div>
       </div>
 
-      <div className="card">
-        <div className="toggle-row">
-          <span className="text-sm text-secondary">{t('settings.username')}</span>
-          <span>@{user?.telegram_username || t('settings.not_set')}</span>
+      <div className="settings-section">
+        <div className="settings-row">
+          <span className="settings-value">{t('settings.username')}</span>
+          <span className="settings-value">@{user?.telegram_username || t('settings.not_set')}</span>
         </div>
-        <div className="toggle-row">
-          <span className="text-sm text-secondary">TopMatch ID</span>
-          <span>{user?.casino_id_topmatch || t('settings.not_set')}</span>
+        <div className="settings-row">
+          <span className="settings-value">TopMatch ID</span>
+          <span className="settings-value">{user?.casino_id_topmatch || t('settings.not_set')}</span>
         </div>
-        <div className="toggle-row">
-          <span className="text-sm text-secondary">TonPlay ID</span>
-          <span>{user?.casino_id_tonplay || t('settings.not_set')}</span>
+        <div className="settings-row">
+          <span className="settings-value">TonPlay ID</span>
+          <span className="settings-value">{user?.casino_id_tonplay || t('settings.not_set')}</span>
         </div>
       </div>
     </div>

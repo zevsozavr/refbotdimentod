@@ -14,4 +14,16 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+export const adminApi = axios.create({
+  baseURL: '/api',
+});
+
+adminApi.interceptors.request.use((config) => {
+  const initData = window.Telegram?.WebApp?.initData || '';
+  const adminToken = sessionStorage.getItem('adminToken') || '';
+  config.headers['x-telegram-init-data'] = initData;
+  config.headers['x-admin-token'] = adminToken;
+  return config;
+});
+
 export default api;

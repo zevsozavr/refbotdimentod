@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import api from '../../axios';
+import { adminApi } from '../../axios';
 import AdminNav from '../../components/AdminNav';
 
 const AdminContests = () => {
@@ -21,7 +21,7 @@ const AdminContests = () => {
 
   const fetchContests = async () => {
     try {
-      const res = await api.get('/admin/contests');
+      const res = await adminApi.get('/admin/contests');
       setContests(res.data);
     } catch (e) {
       console.error('Fetch contests error:', e);
@@ -63,9 +63,9 @@ const AdminContests = () => {
       };
 
       if (editing) {
-        await api.put(`/admin/contests/${editing.id}`, payload);
+        await adminApi.put(`/admin/contests/${editing.id}`, payload);
       } else {
-        await api.post('/admin/contests', payload);
+        await adminApi.post('/admin/contests', payload);
       }
       setShowForm(false);
       fetchContests();
@@ -76,7 +76,7 @@ const AdminContests = () => {
 
   const handleDelete = async (id) => {
     try {
-      await api.delete(`/admin/contests/${id}`);
+      await adminApi.delete(`/admin/contests/${id}`);
       fetchContests();
     } catch (e) {
       alert(e.response?.data?.error || t('common.error'));
@@ -85,7 +85,7 @@ const AdminContests = () => {
 
   const handlePickWinner = async (id) => {
     try {
-      await api.post(`/admin/contests/${id}/pick-winner`);
+      await adminApi.post(`/admin/contests/${id}/pick-winner`);
       fetchContests();
     } catch (e) {
       alert(e.response?.data?.error || t('common.error'));

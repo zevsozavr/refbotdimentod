@@ -22,7 +22,7 @@ const BottomNav = () => {
   if (isAdmin) {
     const adminPath = location.pathname;
     const isOnAdmin = adminPath.startsWith('/admin');
-    items.push({ path: isOnAdmin ? adminPath : '/admin/stats', icon: '📊', label: t('nav.admin') });
+    items.push({ path: isOnAdmin ? adminPath : '/admin/stats', icon: '🛡️', label: t('nav.admin') });
   }
 
   return (

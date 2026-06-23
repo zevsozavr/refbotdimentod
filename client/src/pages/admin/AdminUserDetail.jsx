@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import api from '../../axios';
+import { adminApi } from '../../axios';
 import AdminNav from '../../components/AdminNav';
 
 const AdminUserDetail = () => {
@@ -16,7 +16,7 @@ const AdminUserDetail = () => {
   useEffect(() => {
     const fetch = async () => {
       try {
-        const res = await api.get(`/admin/users/${id}`);
+        const res = await adminApi.get(`/admin/users/${id}`);
         setUser(res.data);
         setTopMatchLevel(res.data.level_topmatch ? String(res.data.level_topmatch) : '');
         setTonPlayLevel(res.data.level_tonplay ? String(res.data.level_tonplay) : '');
@@ -34,16 +34,16 @@ const AdminUserDetail = () => {
       let res;
       switch (action) {
         case 'approve':
-          res = await api.post(`/admin/users/${id}/verify`, { action: 'approve' });
+          res = await adminApi.post(`/admin/users/${id}/verify`, { action: 'approve' });
           break;
         case 'reject':
-          res = await api.post(`/admin/users/${id}/verify`, { action: 'reject' });
+          res = await adminApi.post(`/admin/users/${id}/verify`, { action: 'reject' });
           break;
         case 'ban':
-          res = await api.post(`/admin/users/${id}/ban`);
+          res = await adminApi.post(`/admin/users/${id}/ban`);
           break;
         case 'unban':
-          res = await api.post(`/admin/users/${id}/unban`);
+          res = await adminApi.post(`/admin/users/${id}/unban`);
           break;
         default:
           return;
@@ -57,8 +57,8 @@ const AdminUserDetail = () => {
   const setLevel = async (casino, level) => {
     if (!level) return;
     try {
-      await api.post(`/admin/users/${id}/set-level`, { casino, level: parseInt(level) });
-      const res = await api.get(`/admin/users/${id}`);
+      await adminApi.post(`/admin/users/${id}/set-level`, { casino, level: parseInt(level) });
+      const res = await adminApi.get(`/admin/users/${id}`);
       setUser(res.data);
       setTopMatchLevel(res.data.level_topmatch ? String(res.data.level_topmatch) : '');
       setTonPlayLevel(res.data.level_tonplay ? String(res.data.level_tonplay) : '');
@@ -75,7 +75,7 @@ const AdminUserDetail = () => {
   };
 
   const getStatusBadge = (status) => {
-    const map = { pending: 'badge-pending', verified: 'badge-verified', rejected: 'badge-rejected', banned: 'badge-banned' };
+    const map = { pending: 'pending', verified: 'verified', rejected: 'rejected', banned: 'banned' };
     return map[status] || '';
   };
 
@@ -128,7 +128,7 @@ const AdminUserDetail = () => {
         </div>
         <div className="form-group">
           <span className="form-label">{t('admin.user_detail.status')}</span>
-          <span className={`badge ${getStatusBadge(user.status)}`}>{statusLabel[user.status]}</span>
+          <span className={`status-badge ${getStatusBadge(user.status)}`}>{statusLabel[user.status]}</span>
         </div>
         <div className="form-group">
           <span className="form-label">TopMatch {t('admin.user_detail.referral_type')}</span>

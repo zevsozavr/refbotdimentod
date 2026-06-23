@@ -726,9 +726,12 @@ router.get('/admin/stats', verifyTelegramAuth, verifyAdminAuth, adminLimiter, as
     const pendingResult = await pool.query("SELECT COUNT(*) FROM users WHERE status = 'pending'");
     const verifiedResult = await pool.query("SELECT COUNT(*) FROM users WHERE status = 'verified'");
     const bannedResult = await pool.query("SELECT COUNT(*) FROM users WHERE status = 'banned'");
-    const type1Result = await pool.query('SELECT COUNT(*) FROM users WHERE referral_type = 1');
-    const type2Result = await pool.query('SELECT COUNT(*) FROM users WHERE referral_type = 2');
-    const type3Result = await pool.query('SELECT COUNT(*) FROM users WHERE referral_type = 3');
+    const type1TopResult = await pool.query('SELECT COUNT(*) FROM users WHERE level_topmatch = 1');
+    const type2TopResult = await pool.query('SELECT COUNT(*) FROM users WHERE level_topmatch = 2');
+    const type3TopResult = await pool.query('SELECT COUNT(*) FROM users WHERE level_topmatch = 3');
+    const type1TonResult = await pool.query('SELECT COUNT(*) FROM users WHERE level_tonplay = 1');
+    const type2TonResult = await pool.query('SELECT COUNT(*) FROM users WHERE level_tonplay = 2');
+    const type3TonResult = await pool.query('SELECT COUNT(*) FROM users WHERE level_tonplay = 3');
     const activeContestsResult = await pool.query("SELECT COUNT(*) FROM contests WHERE status = 'active'");
     const winnersPickedResult = await pool.query("SELECT COUNT(*) FROM contests WHERE status = 'winner_picked'");
     const broadcastsResult = await pool.query('SELECT COUNT(*) FROM broadcasts');
@@ -738,10 +741,17 @@ router.get('/admin/stats', verifyTelegramAuth, verifyAdminAuth, adminLimiter, as
       pending: parseInt(pendingResult.rows[0].count),
       verified: parseInt(verifiedResult.rows[0].count),
       banned: parseInt(bannedResult.rows[0].count),
-      usersByType: {
-        type1: parseInt(type1Result.rows[0].count),
-        type2: parseInt(type2Result.rows[0].count),
-        type3: parseInt(type3Result.rows[0].count),
+      levelsByCasino: {
+        topmatch: {
+          level1: parseInt(type1TopResult.rows[0].count),
+          level2: parseInt(type2TopResult.rows[0].count),
+          level3: parseInt(type3TopResult.rows[0].count),
+        },
+        tonplay: {
+          level1: parseInt(type1TonResult.rows[0].count),
+          level2: parseInt(type2TonResult.rows[0].count),
+          level3: parseInt(type3TonResult.rows[0].count),
+        },
       },
       activeContests: parseInt(activeContestsResult.rows[0].count),
       winnersPicked: parseInt(winnersPickedResult.rows[0].count),

@@ -108,7 +108,7 @@ const AppContent = () => {
 
   return (
     <HashRouter>
-      <div className="app">
+      <div className="app-container">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/casino/:casinoId" element={<Casino />} />

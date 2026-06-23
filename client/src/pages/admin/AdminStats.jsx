@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import api from '../../axios';
+import { adminApi } from '../../axios';
 import AdminNav from '../../components/AdminNav';
 
 const AdminStats = () => {
@@ -11,7 +11,7 @@ const AdminStats = () => {
   const fetch = async () => {
     setLoading(true);
     try {
-      const res = await api.get('/admin/stats');
+      const res = await adminApi.get('/admin/stats');
       setStats(res.data);
     } catch (e) {
       console.error('Stats error:', e);
@@ -25,6 +25,7 @@ const AdminStats = () => {
   if (loading) {
     return (
       <div className="page">
+        <AdminNav />
         <h1 className="page-title">{t('admin.stats.title')}</h1>
         <div className="loading-center"><div className="spinner" /></div>
       </div>
@@ -34,6 +35,7 @@ const AdminStats = () => {
   if (!stats) {
     return (
       <div className="page">
+        <AdminNav />
         <h1 className="page-title">{t('admin.stats.title')}</h1>
         <p className="text-secondary">{t('common.error')}</p>
         <button className="btn btn-secondary mt-2" onClick={fetch}>{t('common.retry')}</button>
@@ -46,53 +48,55 @@ const AdminStats = () => {
       <AdminNav />
       <div className="flex items-center justify-between mb-4">
         <h1 className="page-title" style={{ marginBottom: 0 }}>{t('admin.stats.title')}</h1>
-        <button className="btn btn-secondary btn-sm" onClick={fetch}>{t('admin.stats.refresh')}</button>
+        <button className="btn btn-secondary" style={{ width: 'auto', padding: '8px 16px', fontSize: 13 }} onClick={fetch}>{t('admin.stats.refresh')}</button>
       </div>
 
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-value">{stats.totalUsers}</div>
-          <div className="stat-label">{t('admin.stats.total')}</div>
+      <div className="admin-stat-grid">
+        <div className="admin-stat-card">
+          <div className="admin-stat-number">{stats.totalUsers}</div>
+          <div className="admin-stat-label">{t('admin.stats.total')}</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-value">{stats.pending}</div>
-          <div className="stat-label">{t('admin.stats.pending')}</div>
+        <div className="admin-stat-card">
+          <div className="admin-stat-number">{stats.pending}</div>
+          <div className="admin-stat-label">{t('admin.stats.pending')}</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-value">{stats.verified}</div>
-          <div className="stat-label">{t('admin.stats.verified')}</div>
+        <div className="admin-stat-card">
+          <div className="admin-stat-number">{stats.verified}</div>
+          <div className="admin-stat-label">{t('admin.stats.verified')}</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-value">{stats.banned}</div>
-          <div className="stat-label">{t('admin.stats.banned')}</div>
+        <div className="admin-stat-card">
+          <div className="admin-stat-number">{stats.banned}</div>
+          <div className="admin-stat-label">{t('admin.stats.banned')}</div>
         </div>
       </div>
 
-      <div className="card mb-4">
-        <h3 className="admin-section-title">{t('admin.stats.by_type')}</h3>
-        {[1, 2, 3].map((level) => {
-          const key = `type${level}`;
-          return (
-            <div key={level} className="user-row">
-              <span>{t('contests.level')} {level}</span>
-              <span className="badge badge-type">{stats.usersByType[key] || 0}</span>
-            </div>
-          );
-        })}
+      <div className="admin-stat-grid">
+        <div className="admin-stat-card">
+          <div className="admin-section-title" style={{ fontSize: 13, marginBottom: 8 }}>TopMatch</div>
+          <div className="admin-stat-label">Рівень 1: {stats.levelsByCasino?.topmatch?.level1 || 0}</div>
+          <div className="admin-stat-label">Рівень 2: {stats.levelsByCasino?.topmatch?.level2 || 0}</div>
+          <div className="admin-stat-label">Рівень 3: {stats.levelsByCasino?.topmatch?.level3 || 0}</div>
+        </div>
+        <div className="admin-stat-card">
+          <div className="admin-section-title" style={{ fontSize: 13, marginBottom: 8 }}>TonPlay</div>
+          <div className="admin-stat-label">Рівень 1: {stats.levelsByCasino?.tonplay?.level1 || 0}</div>
+          <div className="admin-stat-label">Рівень 2: {stats.levelsByCasino?.tonplay?.level2 || 0}</div>
+          <div className="admin-stat-label">Рівень 3: {stats.levelsByCasino?.tonplay?.level3 || 0}</div>
+        </div>
       </div>
 
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-value">{stats.activeContests}</div>
-          <div className="stat-label">{t('admin.stats.active_contests')}</div>
+      <div className="admin-stat-grid">
+        <div className="admin-stat-card">
+          <div className="admin-stat-number">{stats.activeContests}</div>
+          <div className="admin-stat-label">{t('admin.stats.active_contests')}</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-value">{stats.winnersPicked}</div>
-          <div className="stat-label">{t('admin.stats.winners_picked')}</div>
+        <div className="admin-stat-card">
+          <div className="admin-stat-number">{stats.winnersPicked}</div>
+          <div className="admin-stat-label">{t('admin.stats.winners_picked')}</div>
         </div>
-        <div className="stat-card" style={{ gridColumn: '1 / -1' }}>
-          <div className="stat-value">{stats.broadcastsSent}</div>
-          <div className="stat-label">{t('admin.stats.broadcasts')}</div>
+        <div className="admin-stat-card" style={{ gridColumn: '1 / -1' }}>
+          <div className="admin-stat-number">{stats.broadcastsSent}</div>
+          <div className="admin-stat-label">{t('admin.stats.broadcasts')}</div>
         </div>
       </div>
     </div>

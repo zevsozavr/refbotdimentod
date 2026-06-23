@@ -36,28 +36,31 @@ const Casino = () => {
   if (!casinoData) return <div className="loading">{lang === 'uk' ? 'Завантаження...' : 'Загрузка...'}</div>;
 
   return (
-    <div className="casino-page">
-      <button className="back-btn" onClick={() => navigate('/')}>←</button>
-      <img src={`/photos/${casinoId}.jpg`} alt={casinoId} className="casino-header-photo" />
-
-      <div className="level-section">
-        <span className="level-badge">
-          {casinoData.level
-            ? `${lang === 'uk' ? 'Рівень' : 'Уровень'} ${casinoData.level}`
-            : lang === 'uk' ? 'Без рівня' : 'Без уровня'}
-        </span>
+    <div className="page">
+      <div className={`casino-hero ${casinoId}`}>
+        <button className="back-btn" onClick={() => navigate('/')}>←</button>
+        <img className="casino-hero-img" src={`/photos/${casinoId}.jpg`} alt={casinoId} />
+        <div className="casino-hero-overlay">
+          <span className="casino-hero-title">{casinoId === 'topmatch' ? 'TopMatch' : 'TonPlay'}</span>
+          <span className={`level-badge ${casinoData?.level ? casinoId : 'none'}`}>
+            {casinoData?.level ? `${lang === 'uk' ? 'Рівень' : 'Уровень'} ${casinoData.level}` : (lang === 'uk' ? 'Без рівня' : 'Без уровня')}
+          </span>
+        </div>
       </div>
 
       <div className="referral-card">
         <p className="referral-label">{lang === 'uk' ? 'Реферальне посилання' : 'Реферальная ссылка'}</p>
-        <a
-          href={casinoData.referral_link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="referral-link-btn"
-        >
-          {lang === 'uk' ? '🎰 Відкрити казино' : '🎰 Открыть казино'}
-        </a>
+        <button className={`btn btn-${casinoId}`} onClick={() => {
+          const link = casinoData?.referral_link;
+          if (!link) return;
+          if (window.Telegram?.WebApp?.openLink) {
+            window.Telegram.WebApp.openLink(link);
+          } else {
+            window.open(link, '_blank');
+          }
+        }}>
+          🎰 {lang === 'uk' ? 'Відкрити казино' : 'Открыть казино'}
+        </button>
       </div>
 
       <div className="casino-id-section">
@@ -76,7 +79,7 @@ const Casino = () => {
           maxLength={32}
         />
         <button
-          className="casino-id-submit-btn"
+          className="btn btn-primary"
           onClick={submitCasinoId}
           disabled={!casinoIdInput.trim()}
         >
@@ -86,18 +89,18 @@ const Casino = () => {
       </div>
 
       <div className="contests-section">
-        <div className="contests-header">
-          <h2>{lang === 'uk' ? 'Активні конкурси' : 'Активные конкурсы'}</h2>
-          <button onClick={() => navigate(`/contests?casino=${casinoId}`)}>
+        <div className="contests-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>{lang === 'uk' ? 'Активні конкурси' : 'Активные конкурсы'}</h2>
+          <button className="btn-ghost" style={{ width: 'auto', padding: '8px 16px', fontSize: 13 }} onClick={() => navigate(`/contests?casino=${casinoId}`)}>
             {lang === 'uk' ? 'Всі конкурси' : 'Все конкурсы'}
           </button>
         </div>
         {contests.length === 0
-          ? <p>{lang === 'uk' ? 'Немає активних конкурсів' : 'Нет активных конкурсов'}</p>
+          ? <p className="text-secondary">{lang === 'uk' ? 'Немає активних конкурсів' : 'Нет активных конкурсов'}</p>
           : contests.slice(0, 3).map(c => (
-            <div key={c.id} className="contest-card">
-              <h3>{c.title}</h3>
-              <p>{c.prize}</p>
+            <div key={c.id} className={`contest-card ${c.casino}`}>
+              <div className="contest-title">{c.title}</div>
+              <div className="contest-prize">{c.prize}</div>
             </div>
           ))}
       </div>

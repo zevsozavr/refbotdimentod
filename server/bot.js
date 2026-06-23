@@ -43,12 +43,13 @@ bot.action('lang_uk', async (ctx) => {
   await ctx.answerCbQuery();
   try {
     await pool.query(
-      `INSERT INTO users (telegram_id, telegram_username, language) VALUES ($1, $2, 'uk')
+      `INSERT INTO users (telegram_id, telegram_username, language, status)
+       VALUES ($1, $2, 'uk', 'verified')
        ON CONFLICT (telegram_id) DO UPDATE SET language = 'uk', telegram_username = $2`,
       [ctx.from.id, ctx.from.username || null]
     );
   } catch (e) { console.error('lang_uk error:', e); }
-  await ctx.editMessageText('✅ Мову встановлено: Українська\n\nНатисніть кнопку нижче, щоб відкрити додаток:', {
+  await ctx.editMessageText('✅ Мову встановлено: Українська', {
     reply_markup: {
       inline_keyboard: [[
         { text: '🚀 Відкрити додаток', web_app: { url: process.env.APP_URL } },
@@ -61,12 +62,13 @@ bot.action('lang_ru', async (ctx) => {
   await ctx.answerCbQuery();
   try {
     await pool.query(
-      `INSERT INTO users (telegram_id, telegram_username, language) VALUES ($1, $2, 'ru')
+      `INSERT INTO users (telegram_id, telegram_username, language, status)
+       VALUES ($1, $2, 'ru', 'verified')
        ON CONFLICT (telegram_id) DO UPDATE SET language = 'ru', telegram_username = $2`,
       [ctx.from.id, ctx.from.username || null]
     );
   } catch (e) { console.error('lang_ru error:', e); }
-  await ctx.editMessageText('✅ Язык установлен: Русский\n\nНажмите кнопку ниже, чтобы открыть приложение:', {
+  await ctx.editMessageText('✅ Язык установлен: Русский', {
     reply_markup: {
       inline_keyboard: [[
         { text: '🚀 Открыть приложение', web_app: { url: process.env.APP_URL } },

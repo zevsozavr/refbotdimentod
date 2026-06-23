@@ -1,260 +1,648 @@
+/* ── Base ── */
 :root {
-  --bg: #111827;
-  --surface: #1f2937;
-  --surface-2: #374151;
-  --text-primary: #f9fafb;
-  --text-secondary: #9ca3af;
-  --accent: #2563eb;
-  --accent-hover: #1d4ed8;
-  --border: #374151;
-  --success: #10b981;
-  --error: #ef4444;
-  --warning: #f59e0b;
-  --radius: 16px;
+  --bg: #0a0a0f;
+  --bg-secondary: #12121a;
+  --surface: #1a1a2e;
+  --surface-elevated: #1e1e35;
+  --border: rgba(255,255,255,0.06);
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255,255,255,0.55);
+  --text-caption: rgba(255,255,255,0.35);
+  --accent: #2563EB;
+  --accent-glow: rgba(37,99,235,0.3);
+  --success: #00C853;
+  --error: #E53935;
+  --warning: #FF6F00;
+
+  /* Casino brand colors */
+  --topmatch: #E53935;
+  --topmatch-glow: rgba(229,57,53,0.25);
+  --topmatch-gradient: linear-gradient(135deg, #B71C1C 0%, #E53935 50%, #FF7043 100%);
+  --tonplay: #00C853;
+  --tonplay-glow: rgba(0,200,83,0.25);
+  --tonplay-gradient: linear-gradient(135deg, #004D1A 0%, #00C853 50%, #69F0AE 100%);
+
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
   --transition: 200ms ease;
-  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  --nav-height: 64px;
 }
 
-[data-theme='light'] {
-  --bg: #f3f4f6;
+/* Light theme */
+[data-theme="light"] {
+  --bg: #f0f2f8;
+  --bg-secondary: #e4e8f0;
   --surface: #ffffff;
-  --surface-2: #e5e7eb;
-  --text-primary: #111827;
-  --text-secondary: #6b7280;
-  --border: #d1d5db;
-  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --surface-elevated: #f8f9ff;
+  --border: rgba(0,0,0,0.08);
+  --text-primary: #0a0a1a;
+  --text-secondary: rgba(0,0,0,0.55);
+  --text-caption: rgba(0,0,0,0.35);
+  --accent-glow: rgba(37,99,235,0.15);
+  --topmatch-glow: rgba(229,57,53,0.15);
+  --tonplay-glow: rgba(0,200,83,0.15);
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   background: var(--bg);
   color: var(--text-primary);
-  transition: background var(--transition), color var(--transition);
-  -webkit-font-smoothing: antialiased;
-}
-
-.app {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  padding-bottom: 80px;
+  overflow-x: hidden;
 }
 
-/* Cards */
+/* ── Layout ── */
+.app-container {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding-bottom: var(--nav-height);
+  position: relative;
+}
+
+.page {
+  padding: 20px 16px;
+  animation: fadeIn 200ms ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Typography ── */
+.page-title {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin-bottom: 24px;
+  background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Cards ── */
 .card {
   background: var(--surface);
-  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
   padding: 16px;
-  box-shadow: var(--shadow);
-  transition: all var(--transition);
+  margin-bottom: 12px;
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.card:active { transform: scale(0.98); }
+
+/* ── Casino Cards (Home screen) ── */
+.casino-list { display: flex; flex-direction: column; gap: 16px; }
+
+.casino-card {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  height: 160px;
+  cursor: pointer;
+  transition: transform var(--transition), box-shadow var(--transition);
   border: 1px solid var(--border);
 }
 
-/* Buttons */
-.btn {
+.casino-card:active { transform: scale(0.97); }
+
+.casino-card.topmatch {
+  box-shadow: 0 8px 32px var(--topmatch-glow);
+  border-color: rgba(229,57,53,0.3);
+}
+
+.casino-card.tonplay {
+  box-shadow: 0 8px 32px var(--tonplay-glow);
+  border-color: rgba(0,200,83,0.3);
+}
+
+.casino-card-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.casino-card-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 20px;
+}
+
+.casino-card.topmatch .casino-card-overlay {
+  background: linear-gradient(to top, rgba(183,28,28,0.92) 0%, rgba(183,28,28,0.4) 50%, transparent 100%);
+}
+
+.casino-card.tonplay .casino-card-overlay {
+  background: linear-gradient(to top, rgba(0,77,26,0.92) 0%, rgba(0,77,26,0.4) 50%, transparent 100%);
+}
+
+.casino-card-name {
+  font-size: 22px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.3px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+
+/* ── Level Badge ── */
+.level-badge {
   display: inline-flex;
   align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-top: 6px;
+  width: fit-content;
+}
+
+.level-badge.topmatch {
+  background: var(--topmatch-gradient);
+  color: #fff;
+  box-shadow: 0 2px 8px var(--topmatch-glow);
+}
+
+.level-badge.tonplay {
+  background: var(--tonplay-gradient);
+  color: #fff;
+  box-shadow: 0 2px 8px var(--tonplay-glow);
+}
+
+.level-badge.none {
+  background: rgba(255,255,255,0.1);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+/* ── Casino Hero Banner ── */
+.casino-hero {
+  position: relative;
+  width: calc(100% + 32px);
+  margin: -20px -16px 24px;
+  height: 220px;
+  overflow: hidden;
+}
+
+.casino-hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.casino-hero-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 20px 16px;
+}
+
+.casino-hero.topmatch .casino-hero-overlay {
+  background: linear-gradient(to top, rgba(183,28,28,0.95) 0%, rgba(183,28,28,0.5) 40%, transparent 100%);
+}
+
+.casino-hero.tonplay .casino-hero-overlay {
+  background: linear-gradient(to top, rgba(0,77,26,0.95) 0%, rgba(0,77,26,0.5) 40%, transparent 100%);
+}
+
+.casino-hero-title {
+  font-size: 32px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: -1px;
+  text-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+
+.back-btn {
+  position: absolute;
+  top: 28px;
+  left: 16px;
+  z-index: 10;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
   justify-content: center;
-  padding: 12px 24px;
-  border: none;
-  border-radius: 12px;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.back-btn:active { background: rgba(0,0,0,0.7); }
+
+/* ── Buttons ── */
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: var(--radius-md);
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 700;
+  border: none;
   cursor: pointer;
   transition: all var(--transition);
-  text-decoration: none;
-  gap: 8px;
+  letter-spacing: 0.2px;
 }
 
-.btn:active {
-  transform: scale(0.97);
-}
+.btn:active { transform: scale(0.97); }
 
 .btn-primary {
-  background: var(--accent);
-  color: white;
+  background: linear-gradient(135deg, #1d4ed8, #2563eb, #3b82f6);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(37,99,235,0.4);
 }
 
-.btn-primary:hover {
-  background: var(--accent-hover);
+.btn-topmatch {
+  background: var(--topmatch-gradient);
+  color: #fff;
+  box-shadow: 0 4px 16px var(--topmatch-glow);
+}
+
+.btn-tonplay {
+  background: var(--tonplay-gradient);
+  color: #fff;
+  box-shadow: 0 4px 16px var(--tonplay-glow);
 }
 
 .btn-secondary {
-  background: var(--surface-2);
+  background: var(--surface-elevated);
   color: var(--text-primary);
-}
-
-.btn-danger {
-  background: var(--error);
-  color: white;
-}
-
-.btn-success {
-  background: var(--success);
-  color: white;
-}
-
-.btn-sm {
-  padding: 8px 16px;
-  font-size: 13px;
-}
-
-.btn-xs {
-  padding: 4px 8px;
-  font-size: 12px;
-  min-width: 28px;
-}
-
-.btn-block {
-  width: 100%;
-}
-
-/* Input */
-.input {
-  width: 100%;
-  padding: 12px 16px;
   border: 1px solid var(--border);
-  border-radius: 12px;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+/* ── Referral Card ── */
+.referral-card {
   background: var(--surface);
-  color: var(--text-primary);
-  font-size: 16px;
-  transition: border-color var(--transition);
-  outline: none;
-}
-
-.input:focus {
-  border-color: var(--accent);
-}
-
-.input::placeholder {
-  color: var(--text-secondary);
-}
-
-textarea.input {
-  resize: vertical;
-  min-height: 80px;
-}
-
-.select {
-  width: 100%;
-  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  padding: 20px;
+  margin-bottom: 16px;
   border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--surface);
-  color: var(--text-primary);
-  font-size: 16px;
-  outline: none;
-  cursor: pointer;
-  appearance: auto;
 }
 
-/* Badge */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 10px;
-  border-radius: 20px;
+.referral-label {
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-caption);
+  margin-bottom: 12px;
 }
 
-.badge-pending { background: var(--warning); color: #000; }
-.badge-verified { background: var(--success); color: #fff; }
-.badge-rejected { background: var(--error); color: #fff; }
-.badge-banned { background: #6b7280; color: #fff; }
-.badge-type { background: var(--accent); color: #fff; }
-.badge-active { background: var(--success); color: #fff; }
-.badge-ended { background: var(--surface-2); color: var(--text-secondary); }
-.badge-winner { background: var(--warning); color: #000; }
+/* ── Casino ID Section ── */
+.casino-id-section {
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+}
 
-/* Bottom Nav */
+.casino-id-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-caption);
+  margin-bottom: 8px;
+}
+
+.casino-id-current {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.casino-id-input {
+  width: 100%;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  color: var(--text-primary);
+  font-size: 16px;
+  margin-bottom: 10px;
+  outline: none;
+  transition: border-color var(--transition);
+}
+
+.casino-id-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.casino-id-msg {
+  font-size: 13px;
+  margin-top: 8px;
+  text-align: center;
+}
+
+/* ── Contests ── */
+.contest-card {
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+.contest-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--accent);
+}
+
+.contest-card.topmatch::before { background: var(--topmatch-gradient); }
+.contest-card.tonplay::before { background: var(--tonplay-gradient); }
+
+.contest-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+.contest-prize {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.contest-timer {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--warning);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── Bottom Nav ── */
 .bottom-nav {
   position: fixed;
   bottom: 0;
-  left: 0;
-  right: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  height: var(--nav-height);
   background: var(--surface);
   border-top: 1px solid var(--border);
   display: flex;
-  justify-content: space-around;
-  padding: 8px 0;
-  padding-bottom: max(8px, env(safe-area-inset-bottom));
+  align-items: center;
+  backdrop-filter: blur(12px);
   z-index: 100;
 }
 
 .nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  font-size: 11px;
-  cursor: pointer;
-  padding: 4px 12px;
-  transition: color var(--transition);
-}
-
-.nav-item.active {
-  color: var(--accent);
-}
-
-.nav-icon {
-  font-size: 20px;
-  line-height: 1;
-}
-
-/* Page container */
-.page {
-  padding: 16px;
   flex: 1;
-}
-
-.page-title {
-  font-size: 24px;
-  font-weight: 700;
-  margin-bottom: 16px;
-}
-
-/* Language select */
-.lang-select {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
-  padding: 32px;
-  gap: 16px;
+  gap: 4px;
+  padding: 8px 0;
+  cursor: pointer;
+  transition: all var(--transition);
+  border: none;
+  background: transparent;
+  color: var(--text-caption);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  position: relative;
+}
+
+.nav-item.active { color: var(--accent); }
+
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 0 0 2px 2px;
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+
+.nav-icon {
+  font-size: 22px;
+  transition: transform var(--transition);
+}
+
+.nav-item.active .nav-icon {
+  transform: translateY(-2px);
+  filter: drop-shadow(0 0 6px var(--accent-glow));
+}
+
+/* ── Settings ── */
+.settings-section {
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-row:last-child { border-bottom: none; }
+
+.settings-label {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.settings-value {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* Language toggle */
+.lang-toggle {
+  display: flex;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+  gap: 2px;
 }
 
 .lang-btn {
-  width: 100%;
-  max-width: 300px;
-  padding: 20px;
-  border: 2px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
-  color: var(--text-primary);
-  font-size: 20px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  border: none;
   cursor: pointer;
   transition: all var(--transition);
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.lang-btn.active {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+
+/* Theme toggle */
+.theme-toggle {
+  width: 48px;
+  height: 28px;
+  border-radius: 14px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  position: relative;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.theme-toggle.active { background: var(--accent); }
+
+.theme-toggle-knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform var(--transition);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.theme-toggle.active .theme-toggle-knob { transform: translateX(20px); }
+
+/* ── Admin ── */
+.admin-stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.admin-stat-card {
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  border: 1px solid var(--border);
   text-align: center;
 }
 
-.lang-btn:hover {
-  border-color: var(--accent);
-  background: var(--surface-2);
+.admin-stat-number {
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--accent);
+  line-height: 1;
+  margin-bottom: 4px;
 }
 
-/* Pending / Banned / Rejected screens */
+.admin-stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-caption);
+}
+
+.user-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.user-row:active { background: var(--surface-elevated); }
+
+.status-badge {
+  display: inline-flex;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.verified { background: rgba(0,200,83,0.15); color: #00C853; }
+.status-badge.pending { background: rgba(255,111,0,0.15); color: #FF6F00; }
+.status-badge.banned { background: rgba(229,57,53,0.15); color: #E53935; }
+.status-badge.rejected { background: rgba(255,255,255,0.08); color: var(--text-secondary); }
+
+/* ── Loading ── */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  color: var(--text-secondary);
+  font-size: 15px;
+}
+
+.loading-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Status screen (banned) */
 .status-screen {
   display: flex;
   flex-direction: column;
@@ -266,12 +654,42 @@ textarea.input {
   gap: 16px;
 }
 
-.status-icon {
-  font-size: 64px;
-  margin-bottom: 8px;
+/* ── Input ── */
+.input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 16px;
+  outline: none;
+  transition: border-color var(--transition);
 }
 
-/* Form group */
+.input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.input::placeholder { color: var(--text-secondary); }
+
+textarea.input { resize: vertical; min-height: 80px; }
+
+.select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 16px;
+  outline: none;
+  cursor: pointer;
+  appearance: auto;
+}
+
+/* ── Form group ── */
 .form-group {
   display: flex;
   flex-direction: column;
@@ -280,257 +698,76 @@ textarea.input {
 }
 
 .form-label {
-  font-size: 13px;
-  color: var(--text-secondary);
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-caption);
+}
+
+/* ── Badge (legacy contest status badges) ── */
+.badge {
+  display: inline-flex;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-/* Contest card */
-.contest-card {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 12px;
-}
+.badge-active { background: rgba(0,200,83,0.15); color: #00C853; }
+.badge-ended { background: rgba(255,255,255,0.08); color: var(--text-secondary); }
+.badge-winner { background: rgba(255,111,0,0.15); color: #FF6F00; }
+.badge-type { background: rgba(37,99,235,0.15); color: var(--accent); }
 
-.contest-title {
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.contest-desc {
-  font-size: 14px;
-  color: var(--text-secondary);
-  line-height: 1.5;
-}
-
-.contest-meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-/* User row */
-.user-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.user-row-info {
-  cursor: pointer;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.user-row-actions {
-  display: flex;
-  gap: 4px;
-  margin-left: 8px;
-}
-
-.user-row:last-child {
-  border-bottom: none;
-}
-
-.user-row-name {
-  font-size: 16px;
-  font-weight: 500;
-}
-
-.user-row-meta {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-/* Admin nav */
+/* ── Admin Nav ── */
 .admin-nav {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   overflow-x: auto;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   padding-bottom: 4px;
 }
 
 .admin-nav-item {
   flex-shrink: 0;
   padding: 8px 14px;
-  border-radius: 10px;
+  border-radius: 999px;
   background: var(--surface);
   border: 1px solid var(--border);
   color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
   transition: all var(--transition);
 }
 
 .admin-nav-item.active {
   background: var(--accent);
-  color: white;
+  color: #fff;
   border-color: var(--accent);
 }
 
-.admin-nav-item:hover:not(.active) {
-  color: var(--text-primary);
-  border-color: var(--text-secondary);
-}
-
-/* Admin sections */
-.admin-section {
-  margin-bottom: 24px;
-}
-
-.admin-section-title {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 12px;
-}
-
-/* Stats grid */
-.stats-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.stat-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px;
-  text-align: center;
-}
-
-.stat-value {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--accent);
-}
-
-.stat-label {
-  font-size: 12px;
-  color: var(--text-secondary);
-  margin-top: 4px;
-}
-
-/* Referral link */
-.referral-link-card {
-  background: var(--surface-2);
-  padding: 12px;
-  border-radius: 12px;
-  word-break: break-all;
-  font-size: 13px;
-  color: var(--text-primary);
-}
-
-/* Countdown */
-.countdown {
-  font-size: 13px;
-  color: var(--warning);
-  font-weight: 600;
-}
-
-/* Tabs */
-.tabs {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.tab {
-  padding: 8px 16px;
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  background: transparent;
-  color: var(--text-secondary);
-  cursor: pointer;
-  font-size: 14px;
-  transition: all var(--transition);
-}
-
-.tab.active {
-  background: var(--accent);
-  color: white;
-  border-color: var(--accent);
-}
-
-/* Spacing helpers */
-.mt-2 { margin-top: 8px; }
-.mt-4 { margin-top: 16px; }
-.mb-2 { margin-bottom: 8px; }
-.mb-4 { margin-bottom: 16px; }
-.gap-2 { gap: 8px; }
-.gap-3 { gap: 12px; }
-.flex { display: flex; }
-.flex-col { flex-direction: column; }
-.items-center { align-items: center; }
-.justify-between { justify-content: space-between; }
-.flex-1 { flex: 1; }
-.text-center { text-align: center; }
-.text-secondary { color: var(--text-secondary); }
-.text-sm { font-size: 13px; }
-.w-full { width: 100%; }
-
-/* Filter bar */
+/* ── Filter bar ── */
 .filter-bar {
   display: flex;
   gap: 8px;
   margin-bottom: 16px;
 }
 
-.filter-bar select {
-  flex: 1;
-}
+.filter-bar select { flex: 1; }
 
-/* Toggle switch */
-.toggle-row {
+/* ── Pagination ── */
+.pagination {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 12px 0;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 0;
 }
 
-.toggle {
-  width: 48px;
-  height: 28px;
-  border-radius: 14px;
-  background: var(--surface-2);
-  border: none;
-  cursor: pointer;
-  position: relative;
-  transition: background var(--transition);
-}
-
-.toggle.on {
-  background: var(--accent);
-}
-
-.toggle-knob {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: white;
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  transition: transform var(--transition);
-}
-
-.toggle.on .toggle-knob {
-  transform: translateX(20px);
-}
-
-/* Admin token input */
+/* ── Admin Login ── */
 .admin-login {
   display: flex;
   flex-direction: column;
@@ -541,319 +778,49 @@ textarea.input {
   gap: 16px;
 }
 
-/* Pagination */
-.pagination {
+/* ── Tabs ── */
+.tabs {
   display: flex;
-  align-items: center;
-  justify-content: center;
   gap: 8px;
-  padding: 16px 0;
-}
-
-/* Loading spinner */
-.spinner {
-  width: 24px;
-  height: 24px;
-  border: 3px solid var(--surface-2);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin 0.6s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.loading-center {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 200px;
-}
-
-.home-page {
-  padding: 16px;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.home-page h1 {
-  font-size: 24px;
-  margin-bottom: 20px;
-  color: var(--text-primary);
-}
-
-.casino-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.casino-card {
-  display: flex;
-  background: var(--surface);
-  border-radius: var(--radius);
-  overflow: hidden;
-  cursor: pointer;
-  transition: transform var(--transition), box-shadow var(--transition);
-  border: 1px solid var(--border);
-}
-
-.casino-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
-}
-
-.casino-photo {
-  width: 100px;
-  height: 100px;
-  object-fit: cover;
-  flex-shrink: 0;
-}
-
-.casino-info {
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  flex: 1;
-}
-
-.casino-info h2 {
-  font-size: 18px;
-  margin: 0 0 8px 0;
-  color: var(--text-primary);
-}
-
-.level-badge {
-  display: inline-block;
-  background: var(--accent);
-  color: #fff;
-  font-size: 13px;
-  font-weight: 600;
-  padding: 4px 12px;
-  border-radius: 20px;
-  align-self: flex-start;
-}
-
-.casino-page {
-  padding: 16px;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.back-btn {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--text-primary);
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  font-size: 20px;
-  cursor: pointer;
-  margin-bottom: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background var(--transition);
-}
-
-.back-btn:hover {
-  background: var(--surface-2);
-}
-
-.casino-header-photo {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-  border-radius: var(--radius);
   margin-bottom: 16px;
 }
 
-.level-section {
-  margin-bottom: 20px;
-}
-
-.referral-card {
-  background: var(--surface);
-  border-radius: var(--radius);
-  padding: 16px;
-  border: 1px solid var(--border);
-  margin-bottom: 24px;
-}
-
-.referral-label {
-  font-size: 13px;
-  color: var(--text-secondary);
-  margin: 0 0 8px 0;
-}
-
-.referral-link {
-  font-size: 14px;
-  color: var(--accent);
-  word-break: break-all;
-  margin: 0 0 16px 0;
-  font-family: monospace;
-}
-
-.copy-btn {
-  width: 100%;
-  background: var(--accent);
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  padding: 12px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background var(--transition);
-}
-
-.copy-btn:hover {
-  background: var(--accent-hover);
-}
-
-.no-level-msg {
-  background: var(--surface);
-  border-radius: var(--radius);
-  padding: 24px 16px;
-  text-align: center;
-  color: var(--text-secondary);
-  margin-bottom: 24px;
-  border: 1px solid var(--border);
-}
-
-.contests-section h2 {
-  font-size: 18px;
-  margin: 0;
-  color: var(--text-primary);
-}
-
-.contests-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.contests-header button {
-  background: none;
-  border: 1px solid var(--accent);
-  color: var(--accent);
-  border-radius: 12px;
+.tab {
   padding: 8px 16px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background var(--transition);
-}
-
-.contests-header button:hover {
-  background: var(--accent);
-  color: #fff;
-}
-
-.contest-card {
-  background: var(--surface);
-  border-radius: var(--radius);
-  padding: 16px;
-  margin-bottom: 12px;
   border: 1px solid var(--border);
-}
-
-.contest-card h3 {
-  font-size: 16px;
-  margin: 0 0 4px 0;
-  color: var(--text-primary);
-}
-
-.contest-card p {
-  font-size: 14px;
+  border-radius: 999px;
+  background: transparent;
   color: var(--text-secondary);
-  margin: 0;
-}
-
-.referral-link-btn {
-  display: block;
-  width: 100%;
-  background: var(--accent);
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  padding: 14px;
-  font-size: 16px;
-  font-weight: 600;
-  text-align: center;
-  text-decoration: none;
   cursor: pointer;
-  transition: background var(--transition);
-}
-
-.referral-link-btn:hover {
-  background: var(--accent-hover);
-}
-
-.casino-id-section {
-  background: var(--surface);
-  border-radius: var(--radius);
-  padding: 16px;
-  border: 1px solid var(--border);
-  margin-bottom: 24px;
-}
-
-.casino-id-label {
   font-size: 13px;
-  color: var(--text-secondary);
-  margin: 0 0 8px 0;
+  font-weight: 600;
+  transition: all var(--transition);
 }
 
-.casino-id-current {
-  font-size: 14px;
-  color: var(--text-primary);
-  margin: 0 0 12px 0;
-}
-
-.casino-id-input {
-  width: 100%;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 12px;
-  font-size: 16px;
-  color: var(--text-primary);
-  outline: none;
-  box-sizing: border-box;
-  margin-bottom: 12px;
-}
-
-.casino-id-input:focus {
+.tab.active {
+  background: var(--accent);
+  color: #fff;
   border-color: var(--accent);
 }
 
-.casino-id-submit-btn {
-  width: 100%;
-  background: var(--accent);
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  padding: 12px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background var(--transition);
-}
-
-.casino-id-submit-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.casino-id-submit-btn:hover:not(:disabled) {
-  background: var(--accent-hover);
-}
-
-.casino-id-msg {
-  margin-top: 12px;
-  font-size: 14px;
-  text-align: center;
-  font-weight: 600;
-}
+/* ── Utility ── */
+.mt-2 { margin-top: 8px; }
+.mt-4 { margin-top: 16px; }
+.mb-2 { margin-bottom: 8px; }
+.mb-4 { margin-bottom: 16px; }
+.mt-8 { margin-top: 8px; }
+.mt-16 { margin-top: 16px; }
+.mb-8 { margin-bottom: 8px; }
+.mb-16 { margin-bottom: 16px; }
+.text-center { text-align: center; }
+.text-secondary { color: var(--text-secondary); }
+.text-caption { color: var(--text-caption); }
+.gap-2 { gap: 8px; }
+.gap-3 { gap: 12px; }
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.flex-1 { flex: 1; }
+.text-sm { font-size: 13px; }
+.w-full { width: 100%; }

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import api from '../../axios';
+import { adminApi } from '../../axios';
 
 const AdminLogin = () => {
   const { t } = useTranslation();
@@ -16,7 +16,7 @@ const AdminLogin = () => {
     setError('');
     sessionStorage.setItem('adminToken', token);
     try {
-      await api.get('/admin/stats');
+      await adminApi.get('/admin/stats');
       navigate('/admin/stats');
     } catch (err) {
       sessionStorage.removeItem('adminToken');

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import api from '../../axios';
+import { adminApi } from '../../axios';
 import AdminNav from '../../components/AdminNav';
 
 const AdminBroadcast = () => {
@@ -18,7 +18,7 @@ const AdminBroadcast = () => {
     setError('');
     setShowConfirm(false);
     try {
-      const res = await api.post('/admin/broadcast', {
+      const res = await adminApi.post('/admin/broadcast', {
         message_uk: messageUk,
         message_ru: messageRu,
         target_referral_type: targetType || null,

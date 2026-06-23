@@ -72,14 +72,10 @@ const Contests = () => {
           <p className="text-secondary">{t('contests.no_active')}</p>
         ) : (
           active.map((c) => (
-            <div key={c.id} className="card mb-4">
+            <div key={c.id} className={`contest-card ${c.casino}`}>
               <div className="contest-title">{c.title}</div>
-              <div className="contest-desc mt-2">{c.description}</div>
-              <div className="contest-meta mt-2">
-                <span className="badge badge-active">{t('contests.prize')}: {c.prize}</span>
-                <span className="badge badge-type">{t('contests.level')}: {c.eligible_level}</span>
-              </div>
-              <div className="countdown mt-2">{t('contests.ends_in')}: {getTimeRemaining(c.end_date)}</div>
+              <div className="contest-prize">{t('contests.prize')}: {c.prize}</div>
+              <div className="contest-timer">{t('contests.ends_in')}: {getTimeRemaining(c.end_date)}</div>
             </div>
           ))
         )
@@ -90,17 +86,11 @@ const Contests = () => {
           <p className="text-secondary">{t('contests.no_history')}</p>
         ) : (
           history.map((c) => (
-            <div key={c.id} className="card mb-4">
+            <div key={c.id} className={`contest-card ${c.casino || ''}`}>
               <div className="contest-title">{c.title}</div>
-              <div className="contest-desc mt-2">{c.description}</div>
-              <div className="contest-meta mt-2">
-                <span className="badge badge-ended">{t('contests.prize')}: {c.prize}</span>
-                <span className={`badge ${c.status === 'winner_picked' ? 'badge-winner' : 'badge-ended'}`}>
-                  {c.status === 'winner_picked' ? t('contests.winner') : t('contests.ended')}
-                </span>
-              </div>
+              <div className="contest-prize">{t('contests.prize')}: {c.prize}</div>
               {c.winner && (
-                <div className="mt-2 text-sm" style={{ color: 'var(--warning)' }}>
+                <div className="contest-timer" style={{ color: 'var(--warning)' }}>
                   {t('contests.winner')}: @{c.winner.telegram_username}
                 </div>
               )}

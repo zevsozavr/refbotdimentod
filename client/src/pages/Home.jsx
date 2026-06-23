@@ -22,18 +22,16 @@ const Home = () => {
   }, []);
 
   return (
-    <div className="home-page">
-      <h1>{lang === 'uk' ? 'Головна' : 'Главная'}</h1>
+    <div className="page">
+      <h1 className="page-title">{lang === 'uk' ? 'Головна' : 'Главная'}</h1>
       <div className="casino-list">
         {casinos.map(casino => (
-          <div key={casino.id} className="casino-card" onClick={() => navigate(`/casino/${casino.id}`)}>
-            <img src={casino.photo} alt={casino.name_uk} className="casino-photo" />
-            <div className="casino-info">
-              <h2>{lang === 'uk' ? casino.name_uk : casino.name_ru}</h2>
-              <span className="level-badge">
-                {levels[casino.id]
-                  ? `${lang === 'uk' ? 'Рівень' : 'Уровень'} ${levels[casino.id]}`
-                  : lang === 'uk' ? 'Без рівня' : 'Без уровня'}
+          <div key={casino.id} className={`casino-card ${casino.id}`} onClick={() => navigate(`/casino/${casino.id}`)}>
+            <img className="casino-card-bg" src={casino.photo} alt={casino.id} />
+            <div className="casino-card-overlay">
+              <span className="casino-card-name">{lang === 'uk' ? casino.name_uk : casino.name_ru}</span>
+              <span className={`level-badge ${levels[casino.id] ? casino.id : 'none'}`}>
+                {levels[casino.id] ? `${lang === 'uk' ? 'Рівень' : 'Уровень'} ${levels[casino.id]}` : (lang === 'uk' ? 'Без рівня' : 'Без уровня')}
               </span>
             </div>
           </div>
