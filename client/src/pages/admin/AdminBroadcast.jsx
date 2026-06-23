@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../../axios';
+import AdminNav from '../../components/AdminNav';
 
 const AdminBroadcast = () => {
   const { t } = useTranslation();
@@ -37,6 +38,7 @@ const AdminBroadcast = () => {
 
   return (
     <div className="page">
+      <AdminNav />
       <h1 className="page-title">{t('admin.broadcast.title')}</h1>
 
       <div className="card mb-4">

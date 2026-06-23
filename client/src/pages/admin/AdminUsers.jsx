@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../axios';
+import AdminNav from '../../components/AdminNav';
 
 const AdminUsers = () => {
   const { t } = useTranslation();
@@ -12,9 +13,11 @@ const AdminUsers = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [filterStatus, setFilterStatus] = useState('');
   const [filterType, setFilterType] = useState('');
+  const [fetchError, setFetchError] = useState('');
 
   const fetch = useCallback(async () => {
     setLoading(true);
+    setFetchError('');
     try {
       const params = { page, limit: 20 };
       if (filterStatus) params.status = filterStatus;
@@ -24,6 +27,7 @@ const AdminUsers = () => {
       setTotalPages(res.data.pagination.totalPages);
     } catch (e) {
       console.error('Users fetch error:', e);
+      setFetchError(e.response?.data?.error || e.message || 'Failed to load users');
     } finally {
       setLoading(false);
     }
@@ -54,6 +58,7 @@ const AdminUsers = () => {
 
   return (
     <div className="page">
+      <AdminNav />
       <h1 className="page-title">{t('admin.users.title')}</h1>
 
       <div className="filter-bar">
@@ -70,6 +75,12 @@ const AdminUsers = () => {
           <option value="3">Type 3</option>
         </select>
       </div>
+
+      {fetchError && (
+        <div className="card" style={{ background: 'var(--error)', color: 'white', marginBottom: 16, padding: 12, borderRadius: 12 }}>
+          {fetchError}
+        </div>
+      )}
 
       {loading ? (
         <div className="loading-center"><div className="spinner" /></div>

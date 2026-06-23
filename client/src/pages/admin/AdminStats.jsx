@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../../axios';
+import AdminNav from '../../components/AdminNav';
 
 const AdminStats = () => {
   const { t } = useTranslation();
@@ -42,6 +43,7 @@ const AdminStats = () => {
 
   return (
     <div className="page">
+      <AdminNav />
       <div className="flex items-center justify-between mb-4">
         <h1 className="page-title" style={{ marginBottom: 0 }}>{t('admin.stats.title')}</h1>
         <button className="btn btn-secondary btn-sm" onClick={fetch}>{t('admin.stats.refresh')}</button>

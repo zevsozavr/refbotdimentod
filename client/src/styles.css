@@ -351,6 +351,39 @@ textarea.input {
   align-items: center;
 }
 
+/* Admin nav */
+.admin-nav {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin-bottom: 16px;
+  padding-bottom: 4px;
+}
+
+.admin-nav-item {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.admin-nav-item.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.admin-nav-item:hover:not(.active) {
+  color: var(--text-primary);
+  border-color: var(--text-secondary);
+}
+
 /* Admin sections */
 .admin-section {
   margin-bottom: 24px;

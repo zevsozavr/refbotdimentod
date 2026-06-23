@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../../axios';
+import AdminNav from '../../components/AdminNav';
 
 const AdminContests = () => {
   const { t } = useTranslation();
@@ -102,6 +103,7 @@ const AdminContests = () => {
   if (loading) {
     return (
       <div className="page">
+        <AdminNav />
         <h1 className="page-title">{t('admin.contests.title')}</h1>
         <div className="loading-center"><div className="spinner" /></div>
       </div>
@@ -110,6 +112,7 @@ const AdminContests = () => {
 
   return (
     <div className="page">
+      <AdminNav />
       <div className="flex items-center justify-between mb-4">
         <h1 className="page-title" style={{ marginBottom: 0 }}>{t('admin.contests.title')}</h1>
         <button className="btn btn-primary btn-sm" onClick={openCreate}>{t('admin.contests.create')}</button>

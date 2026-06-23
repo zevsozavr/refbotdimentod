@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../axios';
+import AdminNav from '../../components/AdminNav';
 
 const AdminUserDetail = () => {
   const { t } = useTranslation();
@@ -76,6 +77,7 @@ const AdminUserDetail = () => {
   if (loading) {
     return (
       <div className="page">
+        <AdminNav />
         <div className="loading-center"><div className="spinner" /></div>
       </div>
     );
@@ -84,6 +86,7 @@ const AdminUserDetail = () => {
   if (!user) {
     return (
       <div className="page">
+        <AdminNav />
         <p className="text-secondary">{t('common.error')}</p>
         <button className="btn btn-secondary mt-2" onClick={() => navigate('/admin/users')}>
           {t('common.back')}
@@ -94,8 +97,9 @@ const AdminUserDetail = () => {
 
   return (
     <div className="page">
+      <AdminNav />
       <button className="btn btn-secondary btn-sm mb-4" onClick={() => navigate('/admin/users')}>
-        ← {t('common.back')}
+        ← {t('admin.users.title')}
       </button>
 
       <h1 className="page-title">{t('admin.user_detail.title')}</h1>
