@@ -61,7 +61,14 @@ const AppContent = () => {
           } catch (e) { /* ignore */ }
         }
 
-        const telegramId = telegramUser?.id || 1;
+        if (!telegramUser?.id) {
+          setInitError('This app must be opened from Telegram');
+          setLoading(false);
+          setInitDone(true);
+          return;
+        }
+
+        const telegramId = telegramUser.id;
         const savedLang = localStorage.getItem('language') || 'uk';
 
         const res = await api.post('/auth/init', {

@@ -64,6 +64,10 @@ const migrate = async () => {
     `);
 
     await client.query(`
+      DELETE FROM users WHERE telegram_id = 1 AND telegram_username IS NULL
+    `);
+
+    await client.query(`
       CREATE TABLE IF NOT EXISTS contests (
         id SERIAL PRIMARY KEY,
         title_uk VARCHAR(500) NOT NULL,
