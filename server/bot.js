@@ -8,15 +8,19 @@ const getMiniAppUrl = async () => {
   if (process.env.MINI_APP_URL) return process.env.MINI_APP_URL;
   if (!miniAppUrlPromise) {
     miniAppUrlPromise = (async () => {
+      const fallback = (process.env.WEBHOOK_URL || '').trim().replace(/\/webhook\/[^/]+$/, '');
+      if (fallback) {
+        console.log('MINI_APP_URL not set, using web app URL:', fallback);
+        return fallback;
+      }
       try {
         const me = await bot.telegram.getMe();
         const url = `https://t.me/${me.username}/app`;
         console.log('MINI_APP_URL not set, constructed:', url);
         return url;
       } catch {
-        const fallback = (process.env.WEBHOOK_URL || '').trim().replace(/\/webhook\/[^/]+$/, '');
-        console.log('MINI_APP_URL not set, fallback:', fallback || 'missing');
-        return fallback || 'https://t.me/your_bot/your_app';
+        console.log('MINI_APP_URL not set and could not determine URL');
+        return 'https://t.me/your_bot/your_app';
       }
     })();
   }

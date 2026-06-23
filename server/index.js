@@ -118,9 +118,11 @@ const start = async () => {
   try {
     await migrate();
 
-    if (process.env.WEBHOOK_URL && process.env.WEBHOOK_URL.startsWith('https://')) {
+    const webhookUrlBase = (process.env.WEBHOOK_URL || '').trim();
+
+    if (webhookUrlBase && webhookUrlBase.startsWith('https://')) {
       try {
-        const webhookUrl = `${process.env.WEBHOOK_URL}/webhook/${process.env.WEBHOOK_SECRET_PATH}`;
+        const webhookUrl = `${webhookUrlBase}/webhook/${process.env.WEBHOOK_SECRET_PATH}`;
         await bot.telegram.setWebhook(webhookUrl);
         console.log(`Bot webhook set to: ${webhookUrl}`);
       } catch (webhookErr) {
