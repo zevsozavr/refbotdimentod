@@ -18,9 +18,9 @@
   --topmatch: #E53935;
   --topmatch-glow: rgba(229,57,53,0.25);
   --topmatch-gradient: linear-gradient(135deg, #B71C1C 0%, #E53935 50%, #FF7043 100%);
-  --tonplay: #2979FF;
-  --tonplay-glow: rgba(41,121,255,0.25);
-  --tonplay-gradient: linear-gradient(135deg, #0D47A1 0%, #2979FF 50%, #82B1FF 100%);
+  --tonplay: #5ab5f2;
+  --tonplay-glow: rgba(90,181,242,0.25);
+  --tonplay-gradient: linear-gradient(135deg, #1a6fa0 0%, #5ab5f2 50%, #a0d4f7 100%);
 
   --radius-sm: 8px;
   --radius-md: 16px;
@@ -42,7 +42,7 @@
   --text-caption: rgba(0,0,0,0.35);
   --accent-glow: rgba(37,99,235,0.15);
   --topmatch-glow: rgba(229,57,53,0.15);
-  --tonplay-glow: rgba(41,121,255,0.15);
+  --tonplay-glow: rgba(90,181,242,0.15);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
