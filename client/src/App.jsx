@@ -42,13 +42,41 @@ const AppContent = () => {
 
         i18nInstance.changeLanguage(savedLang);
 
-        const tgUser = tg?.initDataUnsafe?.user;
-        // Outside Telegram: auto-login as dev ID 1 (matches server dev bypass)
-        const telegramId = tgUser?.id || 1;
+        // Try multiple sources for Telegram user data
+        let telegramUser = tg?.initDataUnsafe?.user;
+
+        // Fallback: parse tgWebAppData from URL hash directly
+        if (!telegramUser?.id) {
+          try {
+            const hashStr = window.location.hash.replace(/^#/, '');
+            const hashParams = new URLSearchParams(hashStr);
+            const rawData = hashParams.get('tgWebAppData');
+            if (rawData) {
+              const dataParams = new URLSearchParams(rawData);
+              const userStr = dataParams.get('user');
+              if (userStr) telegramUser = JSON.parse(userStr);
+            }
+          } catch (e) { /* ignore */ }
+        }
+
+        // Fallback: query param
+        if (!telegramUser?.id) {
+          try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const rawData = urlParams.get('tgWebAppData');
+            if (rawData) {
+              const dataParams = new URLSearchParams(rawData);
+              const userStr = dataParams.get('user');
+              if (userStr) telegramUser = JSON.parse(userStr);
+            }
+          } catch (e) { /* ignore */ }
+        }
+
+        const telegramId = telegramUser?.id || 1;
 
         const res = await api.post('/auth/init', {
           telegram_id: telegramId,
-          telegram_username: tgUser?.username || 'dev',
+          telegram_username: telegramUser?.username || 'dev',
           language: savedLang,
         });
         if (!cancelled) {
