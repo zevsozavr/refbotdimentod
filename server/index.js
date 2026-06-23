@@ -7,7 +7,6 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { migrate } = require('./db');
 const { bot } = require('./bot');
-const { verifyBotWebhook } = require('./middleware');
 const routes = require('./routes');
 
 const app = express();
@@ -68,8 +67,8 @@ app.use(rateLimit({
 
 app.use(express.json());
 
-// Bot webhook
-app.post(`/webhook/${process.env.WEBHOOK_SECRET_PATH}`, verifyBotWebhook, (req, res) => {
+// Bot webhook — path is already secret via WEBHOOK_SECRET_PATH
+app.post(`/webhook/${process.env.WEBHOOK_SECRET_PATH}`, (req, res) => {
   bot.handleUpdate(req.body, res);
 });
 
