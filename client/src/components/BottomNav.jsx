@@ -3,6 +3,12 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../contexts/AppContext';
 
+const NAV_ICONS = {
+  '/': '🏠',
+  '/announces': '📢',
+  '/settings': '⚙️',
+};
+
 const BottomNav = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -11,33 +17,33 @@ const BottomNav = () => {
 
   if (!user) return null;
 
-  const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
+  const mainPaths = ['/', '/announces', '/settings'];
+  const isActive = (path) => location.pathname === path;
 
-  const items = [
-    { path: '/', icon: '🏠', label: t('nav.home') },
-    { path: '/contests', icon: '🏆', label: t('nav.contests') },
-    { path: '/announces', icon: '📢', label: t('nav.announces') },
-    { path: '/settings', icon: '⚙️', label: t('nav.settings') },
-  ];
-
-  if (isAdmin) {
-    const adminPath = location.pathname;
-    const isOnAdmin = adminPath.startsWith('/admin');
-    items.push({ path: isOnAdmin ? adminPath : '/admin/stats', icon: '🛡️', label: t('nav.admin') });
-  }
+  const adminPath = location.pathname;
+  const isOnAdmin = adminPath.startsWith('/admin');
 
   return (
     <nav className="bottom-nav">
-      {items.map((item) => (
+      {mainPaths.map((path) => (
         <button
-          key={item.path}
-          className={`nav-item ${isActive(item.path) ? 'active' : ''}`}
-          onClick={() => navigate(item.path)}
+          key={path}
+          className={`nav-item ${isActive(path) ? 'active' : ''}`}
+          onClick={() => navigate(path)}
         >
-          <span className="nav-icon">{item.icon}</span>
-          <span>{item.label}</span>
+          <span className="nav-icon">{NAV_ICONS[path]}</span>
+          <span>{t(`nav.${path === '/' ? 'home' : path.replace('/', '')}`)}</span>
         </button>
       ))}
+      {isAdmin && (
+        <button
+          className={`nav-item ${isOnAdmin ? 'active' : ''}`}
+          onClick={() => navigate(isOnAdmin ? adminPath : '/admin/stats')}
+        >
+          <span className="nav-icon">🛡️</span>
+          <span>{t('nav.admin')}</span>
+        </button>
+      )}
     </nav>
   );
 };
