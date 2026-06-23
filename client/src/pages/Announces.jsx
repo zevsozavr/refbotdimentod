@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import api from '../axios';
 
 const Announces = () => {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const [announces, setAnnounces] = useState([]);
   const [loading, setLoading] = useState(true);
   const lang = i18n.language === 'uk' ? 'uk' : 'ru';
@@ -16,7 +18,10 @@ const Announces = () => {
 
   return (
     <div className="page">
-      <h1 className="page-title">{t('nav.announces')}</h1>
+      <div className="page-header">
+        <button className="back-btn" onClick={() => navigate('/')}>←</button>
+        <h1 className="page-title" style={{ margin: 0 }}>{t('nav.announces')}</h1>
+      </div>
       {announces.length === 0 ? (
         <p className="text-secondary">{t('announces.empty') || (lang === 'uk' ? 'Немає оголошень' : 'Нет объявлений')}</p>
       ) : (

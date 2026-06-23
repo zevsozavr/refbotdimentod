@@ -72,7 +72,7 @@ const AdminAnnounces = () => {
   return (
     <div className="page">
       <h1 className="page-title">{t('nav.announces')}</h1>
-      <button className="btn btn-primary btn-sm mb-4" onClick={openCreate}>{t('admin.contests.create')}</button>
+      <button className="btn btn-primary btn-sm mb-4" onClick={openCreate}>Create Announce</button>
 
       {showForm && (
         <div className="card" style={{ padding: 16, marginBottom: 16 }}>

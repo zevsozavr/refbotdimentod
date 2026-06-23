@@ -74,6 +74,17 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.page-header .back-btn {
+  flex-shrink: 0;
+}
+
 /* ── Typography ── */
 .page-title {
   font-size: 28px;

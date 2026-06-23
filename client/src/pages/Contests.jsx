@@ -11,6 +11,8 @@ const Contests = () => {
   const navigate = useNavigate();
   const paramCasino = searchParams.get('casino');
   const [casinoId, setCasinoId] = useState(paramCasino || (user?.level_topmatch ? 'topmatch' : user?.level_tonplay ? 'tonplay' : null));
+
+  const goBack = () => navigate(-1);
   const [active, setActive] = useState([]);
   const [history, setHistory] = useState([]);
   const [tab, setTab] = useState('active');
@@ -114,7 +116,10 @@ const Contests = () => {
 
   return (
     <div className="page">
-      <h1 className="page-title">{t('contests.title')}</h1>
+      <div className="page-header">
+        <button className="back-btn" onClick={goBack}>←</button>
+        <h1 className="page-title" style={{ margin: 0 }}>{t('contests.title')}</h1>
+      </div>
 
       <div className="tabs">
         <button className={`tab ${tab === 'active' ? `active ${casinoId}` : ''}`} onClick={() => setTab('active')}>
