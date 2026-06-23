@@ -22,12 +22,6 @@ const handleValidationErrors = (req, res, next) => {
 
 const validateLanguage = body('language').isIn(['uk', 'ru']).withMessage('Language must be uk or ru');
 const validateTelegramId = body('telegram_id').isInt({ min: 1 }).withMessage('telegram_id must be a positive integer');
-const validateCasinoId = body('casino_id')
-  .trim()
-  .isAlphanumeric()
-  .isLength({ max: 32 })
-  .withMessage('casino_id must be alphanumeric and max 32 characters')
-  .customSanitizer(v => sanitizeHtml(v));
 const validateReferralType = body('referral_type').isIn([1, 2, 3]).withMessage('referral_type must be 1, 2, or 3');
 const validateAction = body('action').isIn(['approve', 'reject']).withMessage('action must be approve or reject');
 const validateCasino = body('casino').isIn(['topmatch', 'tonplay']).withMessage('casino must be topmatch or tonplay');
@@ -48,15 +42,6 @@ const authInitLimiter = rateLimit({
   message: { error: 'Too many requests, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
-});
-
-const casinoSubmitLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 5,
-  message: { error: 'Too many casino ID submissions, please try again later' },
-  standardHeaders: true,
-  legacyHeaders: false,
-  keyGenerator: (req) => req.telegramUser ? String(req.telegramUser.id) : req.ip,
 });
 
 const adminLimiter = rateLimit({
@@ -82,16 +67,15 @@ router.post('/auth/init', authInitLimiter, [
     let user;
     if (result.rows.length === 0) {
       result = await pool.query(
-        'INSERT INTO users (telegram_id, telegram_username, language, casino_id, status, level_topmatch, level_tonplay) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-        [telegram_id, telegram_username || null, language, isAdmin ? 'admin' : null, isAdmin ? 'verified' : 'pending', isAdmin ? 1 : null, isAdmin ? 1 : null]
+        'INSERT INTO users (telegram_id, telegram_username, language, status, level_topmatch, level_tonplay) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+        [telegram_id, telegram_username || null, language, 'verified', isAdmin ? 1 : null, isAdmin ? 1 : null]
       );
       user = result.rows[0];
     } else {
       const needsVerify = isAdmin && result.rows[0].status !== 'verified';
       result = await pool.query(
         `UPDATE users SET telegram_username = $1, language = $2,
-         status = CASE WHEN $3::boolean THEN 'verified' ELSE status END,
-         casino_id = CASE WHEN $3::boolean AND casino_id IS NULL THEN 'admin' ELSE casino_id END
+         status = CASE WHEN $3::boolean THEN 'verified' ELSE status END
          WHERE telegram_id = $4 RETURNING *`,
         [telegram_username || null, language, needsVerify, telegram_id]
       );
@@ -102,10 +86,11 @@ router.post('/auth/init', authInitLimiter, [
       telegram_id: user.telegram_id,
       telegram_username: user.telegram_username,
       language: user.language,
-      casino_id: user.casino_id,
       status: user.status,
       level_topmatch: user.level_topmatch,
       level_tonplay: user.level_tonplay,
+      casino_id_topmatch: user.casino_id_topmatch,
+      casino_id_tonplay: user.casino_id_tonplay,
       created_at: user.created_at,
       is_admin: isAdminId(telegram_id),
       token: generateSessionToken(telegram_id),
@@ -133,51 +118,15 @@ router.post('/auth/language', verifyTelegramAuth, [
       telegram_id: result.rows[0].telegram_id,
       telegram_username: result.rows[0].telegram_username,
       language: result.rows[0].language,
-      casino_id: result.rows[0].casino_id,
       status: result.rows[0].status,
       level_topmatch: result.rows[0].level_topmatch,
       level_tonplay: result.rows[0].level_tonplay,
+      casino_id_topmatch: result.rows[0].casino_id_topmatch,
+      casino_id_tonplay: result.rows[0].casino_id_tonplay,
       created_at: result.rows[0].created_at,
     });
   } catch (err) {
     console.error('Language update error:', err);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-// ─── USER ───
-
-router.post('/user/submit-casino-id', verifyTelegramAuth, casinoSubmitLimiter, [
-  validateCasinoId,
-], handleValidationErrors, async (req, res) => {
-  try {
-    const result = await pool.query(
-      'SELECT * FROM users WHERE telegram_id = $1',
-      [req.telegramUser.id]
-    );
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    const user = result.rows[0];
-    if (user.status !== 'pending' && user.status !== 'rejected') {
-      return res.status(403).json({ error: 'Casino ID can only be submitted when pending or rejected' });
-    }
-    const updateResult = await pool.query(
-      'UPDATE users SET casino_id = $1, status = $2 WHERE telegram_id = $3 RETURNING *',
-      [req.body.casino_id, 'pending', req.telegramUser.id]
-    );
-    res.json({
-      id: updateResult.rows[0].id,
-      telegram_id: updateResult.rows[0].telegram_id,
-      telegram_username: updateResult.rows[0].telegram_username,
-      language: updateResult.rows[0].language,
-      casino_id: updateResult.rows[0].casino_id,
-      status: updateResult.rows[0].status,
-      referral_type: updateResult.rows[0].referral_type,
-      created_at: updateResult.rows[0].created_at,
-    });
-  } catch (err) {
-    console.error('Casino ID submit error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -197,34 +146,16 @@ router.get('/user/me', verifyTelegramAuth, async (req, res) => {
       telegram_id: user.telegram_id,
       telegram_username: user.telegram_username,
       language: user.language,
-      casino_id: user.casino_id,
       status: user.status,
       level_topmatch: user.level_topmatch,
       level_tonplay: user.level_tonplay,
+      casino_id_topmatch: user.casino_id_topmatch,
+      casino_id_tonplay: user.casino_id_tonplay,
       created_at: user.created_at,
       is_admin: isAdminId(req.telegramUser.id),
     });
   } catch (err) {
     console.error('Get user error:', err);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-router.get('/user/referral-link', verifyTelegramAuth, async (req, res) => {
-  try {
-    const result = await pool.query(
-      'SELECT * FROM users WHERE telegram_id = $1',
-      [req.telegramUser.id]
-    );
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    if (result.rows[0].status !== 'verified') {
-      return res.status(403).json({ error: 'Referral link is only available to verified users' });
-    }
-    res.json({ link: process.env.REFERRAL_LINK });
-  } catch (err) {
-    console.error('Referral link error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -251,10 +182,48 @@ router.get('/casino/:casinoId/me', verifyTelegramAuth, async (req, res) => {
     res.json({
       casino_id: casino.id,
       level,
-      referral_link: level ? casino.referral_link : null,
+      casino_account_id: user[casino.casino_id_column],
+      referral_link: casino.referral_link,
     });
   } catch (err) {
     console.error('Casino me error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.post('/casino/:casinoId/submit-id', verifyTelegramAuth, [
+  body('casino_account_id')
+    .trim()
+    .isAlphanumeric()
+    .isLength({ max: 32 })
+    .withMessage('casino_account_id must be alphanumeric and max 32 characters'),
+], handleValidationErrors, async (req, res) => {
+  try {
+    const casinos = require('./casinos');
+    const casino = casinos[req.params.casinoId];
+    if (!casino) return res.status(404).json({ error: 'Casino not found' });
+
+    const result = await pool.query(
+      `UPDATE users
+       SET ${casino.casino_id_column} = $1,
+           ${casino.level_column} = COALESCE(${casino.level_column}, 1)
+       WHERE telegram_id = $2
+       RETURNING *`,
+      [req.body.casino_account_id, req.telegramUser.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const u = result.rows[0];
+    res.json({
+      casino_id: casino.id,
+      casino_account_id: u[casino.casino_id_column],
+      level: u[casino.level_column],
+    });
+  } catch (err) {
+    console.error('Submit casino ID error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -379,7 +348,7 @@ router.get('/admin/users', verifyTelegramAuth, verifyAdminAuth, adminLimiter, as
     const total = parseInt(countResult.rows[0].count);
 
     const result = await pool.query(
-      `SELECT id, telegram_id, telegram_username, language, casino_id, status, level_topmatch, level_tonplay, created_at
+      `SELECT id, telegram_id, telegram_username, language, status, level_topmatch, level_tonplay, casino_id_topmatch, casino_id_tonplay, created_at
        FROM users ${whereClause}
        ORDER BY created_at DESC
        LIMIT $${paramIndex++} OFFSET $${paramIndex++}`,
@@ -450,10 +419,11 @@ router.post('/admin/users/:id/verify', verifyTelegramAuth, verifyAdminAuth, admi
       telegram_id: result.rows[0].telegram_id,
       telegram_username: result.rows[0].telegram_username,
       language: result.rows[0].language,
-      casino_id: result.rows[0].casino_id,
       status: result.rows[0].status,
       level_topmatch: result.rows[0].level_topmatch,
       level_tonplay: result.rows[0].level_tonplay,
+      casino_id_topmatch: result.rows[0].casino_id_topmatch,
+      casino_id_tonplay: result.rows[0].casino_id_tonplay,
       created_at: result.rows[0].created_at,
     });
   } catch (err) {
@@ -481,10 +451,11 @@ router.post('/admin/users/:id/set-level', verifyTelegramAuth, verifyAdminAuth, a
       telegram_id: u.telegram_id,
       telegram_username: u.telegram_username,
       language: u.language,
-      casino_id: u.casino_id,
       status: u.status,
       level_topmatch: u.level_topmatch,
       level_tonplay: u.level_tonplay,
+      casino_id_topmatch: u.casino_id_topmatch,
+      casino_id_tonplay: u.casino_id_tonplay,
       created_at: u.created_at,
     });
   } catch (err) {
@@ -518,10 +489,11 @@ router.post('/admin/users/:id/ban', verifyTelegramAuth, verifyAdminAuth, adminLi
       telegram_id: result.rows[0].telegram_id,
       telegram_username: result.rows[0].telegram_username,
       language: result.rows[0].language,
-      casino_id: result.rows[0].casino_id,
       status: result.rows[0].status,
       level_topmatch: result.rows[0].level_topmatch,
       level_tonplay: result.rows[0].level_tonplay,
+      casino_id_topmatch: result.rows[0].casino_id_topmatch,
+      casino_id_tonplay: result.rows[0].casino_id_tonplay,
       created_at: result.rows[0].created_at,
     });
   } catch (err) {
@@ -557,10 +529,11 @@ router.post('/admin/users/:id/unban', verifyTelegramAuth, verifyAdminAuth, admin
       telegram_id: result.rows[0].telegram_id,
       telegram_username: result.rows[0].telegram_username,
       language: result.rows[0].language,
-      casino_id: result.rows[0].casino_id,
       status: result.rows[0].status,
       level_topmatch: result.rows[0].level_topmatch,
       level_tonplay: result.rows[0].level_tonplay,
+      casino_id_topmatch: result.rows[0].casino_id_topmatch,
+      casino_id_tonplay: result.rows[0].casino_id_tonplay,
       created_at: result.rows[0].created_at,
     });
   } catch (err) {
@@ -697,7 +670,6 @@ router.post('/admin/contests/:id/pick-winner', verifyTelegramAuth, verifyAdminAu
     res.json({
       telegram_id: winner.telegram_id,
       telegram_username: winner.telegram_username,
-      casino_id: winner.casino_id,
     });
   } catch (err) {
     console.error('Pick winner error:', err);

@@ -10,14 +10,16 @@ const AdminUserDetail = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [referralType, setReferralType] = useState('');
+  const [topMatchLevel, setTopMatchLevel] = useState('');
+  const [tonPlayLevel, setTonPlayLevel] = useState('');
 
   useEffect(() => {
     const fetch = async () => {
       try {
         const res = await api.get(`/admin/users/${id}`);
         setUser(res.data);
-        setReferralType(res.data.referral_type ? String(res.data.referral_type) : '');
+        setTopMatchLevel(res.data.level_topmatch ? String(res.data.level_topmatch) : '');
+        setTonPlayLevel(res.data.level_tonplay ? String(res.data.level_tonplay) : '');
       } catch (e) {
         console.error('User detail error:', e);
       } finally {
@@ -52,13 +54,16 @@ const AdminUserDetail = () => {
     }
   };
 
-  const handleSetType = async () => {
-    if (!referralType) return;
+  const setLevel = async (casino, level) => {
+    if (!level) return;
     try {
-      const res = await api.post(`/admin/users/${id}/set-referral-type`, { referral_type: parseInt(referralType) });
+      await api.post(`/admin/users/${id}/set-level`, { casino, level: parseInt(level) });
+      const res = await api.get(`/admin/users/${id}`);
       setUser(res.data);
+      setTopMatchLevel(res.data.level_topmatch ? String(res.data.level_topmatch) : '');
+      setTonPlayLevel(res.data.level_tonplay ? String(res.data.level_tonplay) : '');
     } catch (e) {
-      console.error('Set type error:', e);
+      console.error('Set level error:', e);
     }
   };
 
@@ -114,16 +119,24 @@ const AdminUserDetail = () => {
           <span>@{user.telegram_username || t('settings.not_set')}</span>
         </div>
         <div className="form-group">
-          <span className="form-label">{t('admin.user_detail.casino_id')}</span>
-          <span>{user.casino_id || t('settings.not_set')}</span>
+          <span className="form-label">TopMatch ID</span>
+          <span>{user.casino_id_topmatch || t('settings.not_set')}</span>
+        </div>
+        <div className="form-group">
+          <span className="form-label">TonPlay ID</span>
+          <span>{user.casino_id_tonplay || t('settings.not_set')}</span>
         </div>
         <div className="form-group">
           <span className="form-label">{t('admin.user_detail.status')}</span>
           <span className={`badge ${getStatusBadge(user.status)}`}>{statusLabel[user.status]}</span>
         </div>
         <div className="form-group">
-          <span className="form-label">{t('admin.user_detail.referral_type')}</span>
-          <span>{user.referral_type ? `Type ${user.referral_type}` : '—'}</span>
+          <span className="form-label">TopMatch {t('admin.user_detail.referral_type')}</span>
+          <span>{user.level_topmatch || '—'}</span>
+        </div>
+        <div className="form-group">
+          <span className="form-label">TonPlay {t('admin.user_detail.referral_type')}</span>
+          <span>{user.level_tonplay || '—'}</span>
         </div>
         <div className="form-group">
           <span className="form-label">{t('admin.user_detail.language')}</span>
@@ -160,16 +173,33 @@ const AdminUserDetail = () => {
         </div>
       </div>
 
-      <div className="card">
-        <h3 className="mb-2" style={{ fontSize: 16, fontWeight: 600 }}>{t('admin.user_detail.set_type')}</h3>
+      <div className="card mb-4">
+        <h3 className="mb-2" style={{ fontSize: 16, fontWeight: 600 }}>TopMatch {t('admin.user_detail.set_type')}</h3>
+        <p className="text-sm text-secondary mb-2">{t('admin.user_detail.current')}: {user.level_topmatch || '—'}</p>
         <div className="flex gap-2">
-          <select className="select" value={referralType} onChange={(e) => setReferralType(e.target.value)} style={{ flex: 1 }}>
-            <option value="">—</option>
-            <option value="1">Type 1</option>
-            <option value="2">Type 2</option>
-            <option value="3">Type 3</option>
+          <select className="select" value={topMatchLevel} onChange={(e) => setTopMatchLevel(e.target.value)} style={{ flex: 1 }}>
+            <option value="">— {t('admin.users.no_level')} —</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
           </select>
-          <button className="btn btn-primary btn-sm" onClick={handleSetType} disabled={!referralType}>
+          <button className="btn btn-primary btn-sm" onClick={() => setLevel('topmatch', topMatchLevel)} disabled={!topMatchLevel}>
+            {t('admin.user_detail.set_type')}
+          </button>
+        </div>
+      </div>
+
+      <div className="card">
+        <h3 className="mb-2" style={{ fontSize: 16, fontWeight: 600 }}>TonPlay {t('admin.user_detail.set_type')}</h3>
+        <p className="text-sm text-secondary mb-2">{t('admin.user_detail.current')}: {user.level_tonplay || '—'}</p>
+        <div className="flex gap-2">
+          <select className="select" value={tonPlayLevel} onChange={(e) => setTonPlayLevel(e.target.value)} style={{ flex: 1 }}>
+            <option value="">— {t('admin.users.no_level')} —</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+          </select>
+          <button className="btn btn-primary btn-sm" onClick={() => setLevel('tonplay', tonPlayLevel)} disabled={!tonPlayLevel}>
             {t('admin.user_detail.set_type')}
           </button>
         </div>

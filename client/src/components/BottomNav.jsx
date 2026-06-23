@@ -9,14 +9,13 @@ const BottomNav = () => {
   const location = useLocation();
   const { user, isAdmin } = useApp();
 
-  if (!user || (user.status !== 'verified' && !user.is_admin)) return null;
+  if (!user) return null;
 
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
 
   const items = [
     { path: '/', icon: '🏠', label: t('nav.home') },
     { path: '/contests', icon: '🏆', label: t('nav.contests') },
-
     { path: '/settings', icon: '⚙️', label: t('nav.settings') },
   ];
 

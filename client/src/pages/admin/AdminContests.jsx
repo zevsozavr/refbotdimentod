@@ -11,7 +11,7 @@ const AdminContests = () => {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({
     title_uk: '', title_ru: '', description_uk: '', description_ru: '',
-    prize_uk: '', prize_ru: '', referral_type: '1', start_date: '', end_date: '',
+    prize_uk: '', prize_ru: '', referral_type: '1', casino: 'topmatch', start_date: '', end_date: '',
   });
   const [error, setError] = useState('');
 
@@ -32,7 +32,7 @@ const AdminContests = () => {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ title_uk: '', title_ru: '', description_uk: '', description_ru: '', prize_uk: '', prize_ru: '', referral_type: '1', start_date: '', end_date: '' });
+    setForm({ title_uk: '', title_ru: '', description_uk: '', description_ru: '', prize_uk: '', prize_ru: '', referral_type: '1', casino: 'topmatch', start_date: '', end_date: '' });
     setShowForm(true);
     setError('');
   };
@@ -44,6 +44,7 @@ const AdminContests = () => {
       description_uk: contest.description_uk, description_ru: contest.description_ru,
       prize_uk: contest.prize_uk, prize_ru: contest.prize_ru,
       referral_type: String(contest.eligible_referral_type),
+      casino: contest.casino || 'topmatch',
       start_date: contest.start_date.slice(0, 16), end_date: contest.end_date.slice(0, 16),
     });
     setShowForm(true);
@@ -56,6 +57,7 @@ const AdminContests = () => {
       const payload = {
         ...form,
         referral_type: parseInt(form.referral_type),
+        casino: form.casino,
         start_date: new Date(form.start_date).toISOString(),
         end_date: new Date(form.end_date).toISOString(),
       };
@@ -149,11 +151,18 @@ const AdminContests = () => {
             <input className="input" value={form.prize_ru} onChange={(e) => setForm({ ...form, prize_ru: e.target.value })} maxLength={500} />
           </div>
           <div className="form-group">
+            <label className="form-label">{t('admin.contests.form.casino')}</label>
+            <select className="select" value={form.casino} onChange={(e) => setForm({ ...form, casino: e.target.value })}>
+              <option value="topmatch">TopMatch</option>
+              <option value="tonplay">TonPlay</option>
+            </select>
+          </div>
+          <div className="form-group">
             <label className="form-label">{t('admin.contests.form.type')}</label>
             <select className="select" value={form.referral_type} onChange={(e) => setForm({ ...form, referral_type: e.target.value })}>
-              <option value="1">Type 1</option>
-              <option value="2">Type 2</option>
-              <option value="3">Type 3</option>
+              <option value="1">{t('contests.level')} 1</option>
+              <option value="2">{t('contests.level')} 2</option>
+              <option value="3">{t('contests.level')} 3</option>
             </select>
           </div>
           <div className="form-group">
@@ -182,7 +191,7 @@ const AdminContests = () => {
           </div>
           <div className="contest-desc">{c.description_uk}</div>
           <div className="contest-meta mt-2">
-            <span className="badge badge-type">Type {c.eligible_referral_type}</span>
+            <span className="badge badge-type">{c.casino === 'topmatch' ? 'TopMatch' : 'TonPlay'} — {t('contests.level')} {c.eligible_level}</span>
             <span className="text-sm text-secondary">
               {new Date(c.start_date).toLocaleDateString()} — {new Date(c.end_date).toLocaleDateString()}
             </span>

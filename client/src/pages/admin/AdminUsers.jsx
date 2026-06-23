@@ -12,7 +12,6 @@ const AdminUsers = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [filterStatus, setFilterStatus] = useState('');
-  const [filterType, setFilterType] = useState('');
   const [fetchError, setFetchError] = useState('');
 
   const fetch = useCallback(async () => {
@@ -21,7 +20,6 @@ const AdminUsers = () => {
     try {
       const params = { page, limit: 20 };
       if (filterStatus) params.status = filterStatus;
-      if (filterType) params.referral_type = filterType;
       const res = await api.get('/admin/users', { params });
       setUsers(res.data.users);
       setTotalPages(res.data.pagination.totalPages);
@@ -31,7 +29,7 @@ const AdminUsers = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, filterStatus, filterType]);
+  }, [page, filterStatus]);
 
   useEffect(() => { fetch(); }, [fetch]);
 
@@ -68,12 +66,7 @@ const AdminUsers = () => {
             <option key={key} value={key}>{label}</option>
           ))}
         </select>
-        <select className="select" value={filterType} onChange={(e) => { setFilterType(e.target.value); setPage(1); }}>
-          <option value="">{t('admin.users.filter_type')}: {t('admin.users.all')}</option>
-          <option value="1">Type 1</option>
-          <option value="2">Type 2</option>
-          <option value="3">Type 3</option>
-        </select>
+
       </div>
 
       {fetchError && (
@@ -91,26 +84,16 @@ const AdminUsers = () => {
               <div key={u.id} className="user-row">
                 <div className="user-row-info" onClick={() => navigate(`/admin/users/${u.id}`)}>
                   <span className="user-row-name">@{u.telegram_username || `ID: ${u.telegram_id}`}</span>
-                  {u.casino_id && (
-                    <span className="text-sm" style={{ color: 'var(--accent)', marginTop: 2 }}>ID: {u.casino_id}</span>
-                  )}
+                  <span className="text-sm" style={{ color: 'var(--text-secondary)', marginTop: 2 }}>
+                    TM: {u.casino_id_topmatch || '—'} | TP: {u.casino_id_tonplay || '—'}
+                  </span>
                   <div className="user-row-meta">
                     <span className={`badge ${getStatusBadge(u.status)}`}>{statusLabel[u.status]}</span>
-                    {u.referral_type && <span className="badge badge-type">Type {u.referral_type}</span>}
+                    <span className="badge badge-type">TopMatch: {u.level_topmatch || '—'}</span>
+                    <span className="badge badge-type">TonPlay: {u.level_tonplay || '—'}</span>
                   </div>
                 </div>
-                <div className="user-row-actions">
-                  {u.status === 'pending' && u.casino_id && (
-                    <>
-                      <button className="btn btn-success btn-xs" onClick={(e) => { e.stopPropagation(); handleQuickAction(u.id, 'approve'); }}>
-                        ✓
-                      </button>
-                      <button className="btn btn-danger btn-xs" onClick={(e) => { e.stopPropagation(); handleQuickAction(u.id, 'reject'); }}>
-                        ✕
-                      </button>
-                    </>
-                  )}
-                </div>
+                <div className="user-row-actions" />
               </div>
             ))}
           </div>

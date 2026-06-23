@@ -6,6 +6,7 @@ const casinos = {
     referral_link: process.env.REFERRAL_LINK_TOPMATCH,
     photo: 'topmatch.jpg',
     level_column: 'level_topmatch',
+    casino_id_column: 'casino_id_topmatch',
   },
   tonplay: {
     id: 'tonplay',
@@ -14,6 +15,7 @@ const casinos = {
     referral_link: process.env.REFERRAL_LINK_TONPLAY,
     photo: 'tonplay.jpg',
     level_column: 'level_tonplay',
+    casino_id_column: 'casino_id_tonplay',
   },
 };
 module.exports = casinos;

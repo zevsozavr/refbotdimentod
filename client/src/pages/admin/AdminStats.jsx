@@ -70,11 +70,11 @@ const AdminStats = () => {
 
       <div className="card mb-4">
         <h3 className="admin-section-title">{t('admin.stats.by_type')}</h3>
-        {[1, 2, 3].map((type) => {
-          const key = `type${type}`;
+        {[1, 2, 3].map((level) => {
+          const key = `type${level}`;
           return (
-            <div key={type} className="user-row">
-              <span>{t('admin.stats.type')} {type}</span>
+            <div key={level} className="user-row">
+              <span>{t('contests.level')} {level}</span>
               <span className="badge badge-type">{stats.usersByType[key] || 0}</span>
             </div>
           );

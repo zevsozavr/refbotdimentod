@@ -55,8 +55,12 @@ const Settings = () => {
           <span>@{user?.telegram_username || t('settings.not_set')}</span>
         </div>
         <div className="toggle-row">
-          <span className="text-sm text-secondary">{t('settings.casino_id')}</span>
-          <span>{user?.casino_id || t('settings.not_set')}</span>
+          <span className="text-sm text-secondary">TopMatch ID</span>
+          <span>{user?.casino_id_topmatch || t('settings.not_set')}</span>
+        </div>
+        <div className="toggle-row">
+          <span className="text-sm text-secondary">TonPlay ID</span>
+          <span>{user?.casino_id_tonplay || t('settings.not_set')}</span>
         </div>
       </div>
     </div>

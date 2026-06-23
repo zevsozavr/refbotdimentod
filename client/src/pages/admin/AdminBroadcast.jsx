@@ -54,9 +54,9 @@ const AdminBroadcast = () => {
           <label className="form-label">{t('admin.broadcast.target')}</label>
           <select className="select" value={targetType} onChange={(e) => setTargetType(e.target.value)}>
             <option value="">{t('admin.broadcast.all')}</option>
-            <option value="1">Type 1</option>
-            <option value="2">Type 2</option>
-            <option value="3">Type 3</option>
+            <option value="1">{t('contests.level')} 1</option>
+            <option value="2">{t('contests.level')} 2</option>
+            <option value="3">{t('contests.level')} 3</option>
           </select>
         </div>
 

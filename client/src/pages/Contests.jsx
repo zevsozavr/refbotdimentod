@@ -1,20 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import api from '../axios';
 
 const Contests = () => {
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const casinoId = searchParams.get('casino');
   const [active, setActive] = useState([]);
   const [history, setHistory] = useState([]);
   const [tab, setTab] = useState('active');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!casinoId) {
+      navigate('/');
+      return;
+    }
     const fetch = async () => {
       try {
         const [activeRes, historyRes] = await Promise.all([
-          api.get('/contests'),
-          api.get('/contests/history'),
+          api.get(`/contests?casino=${casinoId}`),
+          api.get(`/contests/history?casino=${casinoId}`),
         ]);
         setActive(activeRes.data);
         setHistory(historyRes.data);
@@ -25,7 +33,7 @@ const Contests = () => {
       }
     };
     fetch();
-  }, []);
+  }, [casinoId, navigate]);
 
   const getTimeRemaining = (endDate) => {
     const diff = new Date(endDate) - new Date();
@@ -69,7 +77,7 @@ const Contests = () => {
               <div className="contest-desc mt-2">{c.description}</div>
               <div className="contest-meta mt-2">
                 <span className="badge badge-active">{t('contests.prize')}: {c.prize}</span>
-                <span className="badge badge-type">Type {c.eligible_referral_type}</span>
+                <span className="badge badge-type">{t('contests.level')}: {c.eligible_level}</span>
               </div>
               <div className="countdown mt-2">{t('contests.ends_in')}: {getTimeRemaining(c.end_date)}</div>
             </div>

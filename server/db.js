@@ -28,11 +28,27 @@ const migrate = async () => {
     `);
 
     await client.query(`
+      ALTER TABLE users DROP COLUMN IF EXISTS casino_id
+    `);
+
+    await client.query(`
       ALTER TABLE users ADD COLUMN IF NOT EXISTS level_topmatch INTEGER DEFAULT NULL
     `);
 
     await client.query(`
       ALTER TABLE users ADD COLUMN IF NOT EXISTS level_tonplay INTEGER DEFAULT NULL
+    `);
+
+    await client.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS casino_id_topmatch VARCHAR(32) DEFAULT NULL
+    `);
+
+    await client.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS casino_id_tonplay VARCHAR(32) DEFAULT NULL
+    `);
+
+    await client.query(`
+      ALTER TABLE users ALTER COLUMN status SET DEFAULT 'verified'
     `);
 
     await client.query(`

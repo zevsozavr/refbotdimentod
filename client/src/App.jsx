@@ -5,12 +5,10 @@ import { AppProvider, useApp } from './contexts/AppContext';
 import api from './axios';
 import i18n from './i18n';
 import BottomNav from './components/BottomNav';
-import LanguageSelect from './pages/LanguageSelect';
-import Pending from './pages/Pending';
 import Banned from './pages/Banned';
-import Rejected from './pages/Rejected';
 import Home from './pages/Home';
 import Contests from './pages/Contests';
+import Casino from './pages/Casino';
 import Settings from './pages/Settings';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminUserDetail from './pages/admin/AdminUserDetail';
@@ -31,14 +29,6 @@ const AppContent = () => {
       try {
         const tg = window.Telegram?.WebApp;
         if (tg) { tg.expand(); tg.ready(); }
-
-        const savedLang = localStorage.getItem('language');
-        if (!savedLang) {
-          if (!cancelled) { setLoading(false); setInitDone(true); }
-          return;
-        }
-
-        i18nInstance.changeLanguage(savedLang);
 
         // Try multiple sources for Telegram user data
         let telegramUser = tg?.initDataUnsafe?.user;
@@ -75,13 +65,16 @@ const AppContent = () => {
         const res = await api.post('/auth/init', {
           telegram_id: telegramId,
           telegram_username: telegramUser?.username || 'dev',
-          language: savedLang,
+          language: 'uk',
         });
         if (!cancelled) {
           setUser(res.data);
           if (res.data.token) {
             localStorage.setItem('session_token', res.data.token);
           }
+          const userLang = res.data.language || 'uk';
+          localStorage.setItem('language', userLang);
+          i18nInstance.changeLanguage(userLang);
         }
       } catch (err) {
         console.error('Init error:', err);
@@ -102,9 +95,6 @@ const AppContent = () => {
     );
   }
 
-  const hasLanguage = !!localStorage.getItem('language');
-  if (!hasLanguage) return <LanguageSelect />;
-
   if (!user) {
     return (
       <div className="status-screen">
@@ -120,12 +110,8 @@ const AppContent = () => {
     <HashRouter>
       <div className="app">
         <Routes>
-          <Route path="/" element={
-            isAdmin || user.status === 'verified' ? <Home /> :
-            user.status === 'pending' ? <Pending /> :
-            user.status === 'rejected' ? <Rejected /> :
-            <Home />
-          } />
+          <Route path="/" element={<Home />} />
+          <Route path="/casino/:casinoId" element={<Casino />} />
           <Route path="/contests" element={<Contests />} />
           <Route path="/settings" element={<Settings />} />
           {isAdmin && (
