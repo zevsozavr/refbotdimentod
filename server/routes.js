@@ -74,6 +74,7 @@ router.post('/auth/init', authInitLimiter, [
 ], handleValidationErrors, async (req, res) => {
   try {
     const { telegram_id, telegram_username, language } = req.body;
+    console.log('/auth/init called: telegram_id=%s, username=%s, lang=%s', String(telegram_id), telegram_username, language);
     const isAdmin = isAdminId(telegram_id);
     let result = await pool.query('SELECT * FROM users WHERE telegram_id = $1', [telegram_id]);
     let user;

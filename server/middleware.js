@@ -1,11 +1,16 @@
 const crypto = require('crypto');
 
 const getAdminIds = () => {
-  return (process.env.ADMIN_TELEGRAM_IDS || '').split(',').map(id => id.trim()).filter(Boolean);
+  const raw = process.env.ADMIN_TELEGRAM_IDS || '';
+  if (raw) console.log('ADMIN_TELEGRAM_IDS raw:', raw);
+  return raw.split(',').map(id => id.trim()).filter(Boolean);
 };
 
 const isAdminId = (telegramId) => {
-  return getAdminIds().includes(String(telegramId));
+  const ids = getAdminIds();
+  const result = ids.includes(String(telegramId));
+  console.log('isAdminId check: id=%s, adminIds=%j, result=%s', String(telegramId), ids, result);
+  return result;
 };
 
 // Session token — HMAC-signed telegram_id, used when Telegram initData is unavailable
