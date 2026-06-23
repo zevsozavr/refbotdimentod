@@ -5,6 +5,7 @@ import { AppProvider, useApp } from './contexts/AppContext';
 import api from './axios';
 import i18n from './i18n';
 import BottomNav from './components/BottomNav';
+import NotificationsPanel from './components/NotificationsPanel';
 import Banned from './pages/Banned';
 import Home from './pages/Home';
 import Contests from './pages/Contests';
@@ -121,6 +122,7 @@ const AppContent = () => {
   return (
     <HashRouter>
       <div className="app-container">
+        <NotificationsPanel />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/casino/:casinoId" element={<Casino />} />
