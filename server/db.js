@@ -109,6 +109,20 @@ const migrate = async () => {
       ALTER TABLE broadcasts ADD COLUMN IF NOT EXISTS target_level INTEGER
     `);
 
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS pending_changes (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        field VARCHAR(50) NOT NULL,
+        old_value VARCHAR(100),
+        new_value VARCHAR(100) NOT NULL,
+        status VARCHAR(20) DEFAULT 'pending',
+        created_at TIMESTAMP DEFAULT NOW(),
+        reviewed_at TIMESTAMP,
+        reviewed_by INTEGER REFERENCES users(id)
+      )
+    `);
+
     await client.query('COMMIT');
     console.log('Database migration completed successfully');
   } catch (err) {

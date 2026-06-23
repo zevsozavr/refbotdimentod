@@ -1,35 +1,93 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../axios';
 import { useApp } from '../contexts/AppContext';
+
+const TRC20_REGEX = /^T[1-9A-HJ-NP-Za-km-z]{33}$/;
 
 const Casino = () => {
   const { casinoId } = useParams();
   const { user } = useApp();
   const navigate = useNavigate();
+  const lang = user?.language || 'uk';
   const [casinoData, setCasinoData] = useState(null);
   const [casinoIdInput, setCasinoIdInput] = useState('');
-  const [idSubmitMsg, setIdSubmitMsg] = useState('');
-  const lang = user?.language || 'uk';
+  const [walletInput, setWalletInput] = useState('');
+  const [idMsg, setIdMsg] = useState('');
+  const [walletMsg, setWalletMsg] = useState('');
+  const [pendingChanges, setPendingChanges] = useState([]);
+  const [savingId, setSavingId] = useState(false);
+  const [savingWallet, setSavingWallet] = useState(false);
 
-  useEffect(() => {
+  const walletColumn = casinoId === 'topmatch' ? 'wallet_topmatch' : 'wallet_tonplay';
+  const idColumn = casinoId === 'topmatch' ? 'casino_id_topmatch' : 'casino_id_tonplay';
+
+  const fetchData = useCallback(() => {
     api.get(`/casino/${casinoId}/me`).then(res => setCasinoData(res.data));
+    api.get('/user/pending-changes').then(res => setPendingChanges(res.data));
   }, [casinoId]);
 
+  useEffect(() => { fetchData(); }, [fetchData]);
+
+  const getPendingStatus = (field) => {
+    const pc = pendingChanges.find(p => p.field === field);
+    if (!pc) return null;
+    return pc.status === 'pending' ? 'pending' : pc.status;
+  };
+
   const submitCasinoId = async () => {
+    setSavingId(true);
+    setIdMsg('');
     try {
-      const res = await api.post(`/casino/${casinoId}/submit-id`, {
+      await api.post(`/casino/${casinoId}/submit-id`, {
         casino_account_id: casinoIdInput.trim(),
       });
-      setCasinoData(prev => ({ ...prev, casino_account_id: res.data.casino_account_id, level: res.data.level }));
       setCasinoIdInput('');
-      setIdSubmitMsg(lang === 'uk' ? '✅ ID збережено!' : '✅ ID сохранён!');
-      setTimeout(() => setIdSubmitMsg(''), 3000);
+      setIdMsg(lang === 'uk'
+        ? '✅ Запит на зміну ID надіслано адміністратору'
+        : '✅ Запрос на изменение ID отправлен администратору');
+      fetchData();
     } catch (err) {
-      setIdSubmitMsg(lang === 'uk' ? '❌ Помилка. Перевірте ID.' : '❌ Ошибка. Проверьте ID.');
-      setTimeout(() => setIdSubmitMsg(''), 3000);
+      const msg = err.response?.data?.error || (lang === 'uk' ? '❌ Помилка' : '❌ Ошибка');
+      setIdMsg(msg);
+    } finally {
+      setSavingId(false);
     }
+    setTimeout(() => setIdMsg(''), 4000);
   };
+
+  const submitWallet = async () => {
+    if (walletInput && !TRC20_REGEX.test(walletInput)) {
+      setWalletMsg(lang === 'uk' ? '❌ Невірна TRC20 адреса' : '❌ Неверный TRC20 адрес');
+      setTimeout(() => setWalletMsg(''), 3000);
+      return;
+    }
+    setSavingWallet(true);
+    setWalletMsg('');
+    try {
+      await api.post(`/wallet/${casinoId}/submit`, {
+        casino: casinoId,
+        wallet_address: walletInput,
+      });
+      setWalletInput('');
+      setWalletMsg(lang === 'uk'
+        ? '✅ Запит на зміну гаманця надіслано адміністратору'
+        : '✅ Запрос на изменение кошелька отправлен администратору');
+      fetchData();
+    } catch (err) {
+      const msg = err.response?.data?.errors?.[0]?.message
+        || err.response?.data?.error
+        || (lang === 'uk' ? '❌ Помилка' : '❌ Ошибка');
+      setWalletMsg(msg);
+    } finally {
+      setSavingWallet(false);
+    }
+    setTimeout(() => setWalletMsg(''), 4000);
+  };
+
+  const currentWallet = user?.[walletColumn];
+  const walletPending = getPendingStatus(walletColumn);
+  const idPending = getPendingStatus(idColumn);
 
   if (!casinoData) return <div className="loading">{lang === 'uk' ? 'Завантаження...' : 'Загрузка...'}</div>;
 
@@ -62,30 +120,87 @@ const Casino = () => {
         </button>
       </div>
 
-      <div className="casino-id-section">
-        <p className="casino-id-label">{lang === 'uk' ? 'Ваш ID в казино' : 'Ваш ID в казино'}</p>
-        {casinoData.casino_account_id && (
-          <p className="casino-id-current">
-            {lang === 'uk' ? 'Поточний ID:' : 'Текущий ID:'} <strong>{casinoData.casino_account_id}</strong>
-          </p>
-        )}
-        <input
-          type="text"
-          className="casino-id-input"
-          placeholder={lang === 'uk' ? 'Введіть ваш ID' : 'Введите ваш ID'}
-          value={casinoIdInput}
-          onChange={e => setCasinoIdInput(e.target.value)}
-          maxLength={32}
-        />
-        <button
-          className="btn btn-primary"
-          onClick={submitCasinoId}
-          disabled={!casinoIdInput.trim()}
-        >
-          {lang === 'uk' ? 'Підтвердити ID' : 'Подтвердить ID'}
-        </button>
-        {idSubmitMsg && <p className="casino-id-msg">{idSubmitMsg}</p>}
+      <div className="wallet-card">
+        <div className="wallet-card-header">
+          <div className="wallet-card-icon">👤</div>
+          <div>
+            <div className="wallet-card-title">{lang === 'uk' ? 'ID в казино' : 'ID в казино'}</div>
+            {casinoData.casino_account_id && (
+              <div className="wallet-card-value">
+                <span className="wallet-current-label">{lang === 'uk' ? 'Поточний:' : 'Текущий:'}</span>
+                <span className="wallet-current-id">{casinoData.casino_account_id}</span>
+                {idPending === 'pending' && <span className="wallet-pending-badge">{lang === 'uk' ? 'Очікує' : 'Ожидает'}</span>}
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="wallet-card-input-row">
+          <input
+            className="input wallet-input"
+            placeholder={lang === 'uk' ? 'Введіть новий ID' : 'Введите новый ID'}
+            value={casinoIdInput}
+            onChange={e => setCasinoIdInput(e.target.value)}
+            maxLength={32}
+          />
+          <button
+            className="btn btn-primary btn-sm wallet-btn"
+            onClick={submitCasinoId}
+            disabled={!casinoIdInput.trim() || savingId}
+          >
+            {savingId ? '...' : (lang === 'uk' ? 'Змінити' : 'Изменить')}
+          </button>
+        </div>
+        {idMsg && <p className="wallet-card-msg">{idMsg}</p>}
       </div>
+
+      <div className="wallet-card">
+        <div className="wallet-card-header">
+          <div className="wallet-card-icon">💰</div>
+          <div>
+            <div className="wallet-card-title">TRC20 USDT {lang === 'uk' ? 'Гаманець' : 'Кошелек'}</div>
+            {currentWallet ? (
+              <div className="wallet-card-value">
+                <span className="wallet-current-label">{lang === 'uk' ? 'Поточний:' : 'Текущий:'}</span>
+                <span className="wallet-current-id wallet-address">{currentWallet}</span>
+                {walletPending === 'pending' && <span className="wallet-pending-badge">{lang === 'uk' ? 'Очікує' : 'Ожидает'}</span>}
+              </div>
+            ) : (
+              <div className="wallet-card-value">
+                <span className="wallet-not-set">{lang === 'uk' ? 'Не вказано' : 'Не указан'}</span>
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="wallet-card-input-row">
+          <input
+            className="input wallet-input"
+            placeholder={lang === 'uk' ? 'Введіть TRC20 адресу (починається з T)' : 'Введите TRC20 адрес (начинается с T)'}
+            value={walletInput}
+            onChange={e => setWalletInput(e.target.value)}
+            style={{ fontFamily: 'monospace', fontSize: 13 }}
+          />
+          <button
+            className="btn btn-primary btn-sm wallet-btn"
+            onClick={submitWallet}
+            disabled={!walletInput.trim() || savingWallet}
+          >
+            {savingWallet ? '...' : (lang === 'uk' ? 'Зберегти' : 'Сохранить')}
+          </button>
+        </div>
+        <p className="wallet-card-note">
+          {lang === 'uk'
+            ? 'Адміністратор підтвердить зміни перед застосуванням'
+            : 'Администратор подтвердит изменения перед применением'}
+        </p>
+        {walletMsg && <p className="wallet-card-msg">{walletMsg}</p>}
+      </div>
+
+      <button
+        className={`btn btn-block btn-${casinoId}`}
+        onClick={() => navigate(`/contests?casino=${casinoId}`)}
+      >
+        🏆 {lang === 'uk' ? 'Конкурси' : 'Конкурсы'}
+      </button>
     </div>
   );
 };

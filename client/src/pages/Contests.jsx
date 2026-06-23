@@ -12,6 +12,7 @@ const Contests = () => {
   const [history, setHistory] = useState([]);
   const [tab, setTab] = useState('active');
   const [loading, setLoading] = useState(true);
+  const [walletError, setWalletError] = useState(false);
 
   useEffect(() => {
     if (!casinoId) {
@@ -20,6 +21,7 @@ const Contests = () => {
     }
     const fetch = async () => {
       try {
+        setWalletError(false);
         const [activeRes, historyRes] = await Promise.all([
           api.get(`/contests?casino=${casinoId}`),
           api.get(`/contests/history?casino=${casinoId}`),
@@ -27,7 +29,11 @@ const Contests = () => {
         setActive(activeRes.data);
         setHistory(historyRes.data);
       } catch (e) {
-        console.error('Contests fetch error:', e);
+        if (e.response?.status === 403) {
+          setWalletError(true);
+        } else {
+          console.error('Contests fetch error:', e);
+        }
       } finally {
         setLoading(false);
       }
@@ -50,6 +56,26 @@ const Contests = () => {
       <div className="page">
         <h1 className="page-title">{t('contests.title')}</h1>
         <div className="loading-center"><div className="spinner" /></div>
+      </div>
+    );
+  }
+
+  if (walletError) {
+    return (
+      <div className="page">
+        <h1 className="page-title">{t('contests.title')}</h1>
+        <div className="card" style={{ padding: 20, textAlign: 'center', marginTop: 20 }}>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>💰</div>
+          <p style={{ fontSize: 15, fontWeight: 600, marginBottom: 8 }}>
+            {t('settings.wallet_title')}
+          </p>
+          <p className="text-secondary" style={{ fontSize: 13, marginBottom: 16 }}>
+            {t('settings.wallet_note')}
+          </p>
+          <button className={`btn btn-${casinoId}`} onClick={() => navigate(`/casino/${casinoId}`)}>
+            {t('settings.wallet_save')}
+          </button>
+        </div>
       </div>
     );
   }

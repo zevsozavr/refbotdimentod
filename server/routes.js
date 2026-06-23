@@ -216,25 +216,27 @@ router.post('/casino/:casinoId/submit-id', verifyTelegramAuth, [
     const casino = casinos[req.params.casinoId];
     if (!casino) return res.status(404).json({ error: 'Casino not found' });
 
-    const result = await pool.query(
-      `UPDATE users
-       SET ${casino.casino_id_column} = $1,
-           ${casino.level_column} = COALESCE(${casino.level_column}, 1)
-       WHERE telegram_id = $2
-       RETURNING *`,
-      [req.body.casino_account_id, req.telegramUser.id]
-    );
+    const userResult = await pool.query('SELECT id, ' + casino.casino_id_column + ' FROM users WHERE telegram_id = $1', [req.telegramUser.id]);
+    if (userResult.rows.length === 0) return res.status(404).json({ error: 'User not found' });
 
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
+    const user = userResult.rows[0];
+    const oldValue = user[casino.casino_id_column];
+
+    // Check if there's already a pending change for this field
+    const existing = await pool.query(
+      "SELECT id FROM pending_changes WHERE user_id = $1 AND field = $2 AND status = 'pending'",
+      [user.id, casino.casino_id_column]
+    );
+    if (existing.rows.length > 0) {
+      return res.status(400).json({ error: 'You already have a pending change for this field' });
     }
 
-    const u = result.rows[0];
-    res.json({
-      casino_id: casino.id,
-      casino_account_id: u[casino.casino_id_column],
-      level: u[casino.level_column],
-    });
+    await pool.query(
+      'INSERT INTO pending_changes (user_id, field, old_value, new_value) VALUES ($1, $2, $3, $4)',
+      [user.id, casino.casino_id_column, oldValue, req.body.casino_account_id]
+    );
+
+    res.json({ status: 'pending', field: casino.casino_id_column, new_value: req.body.casino_account_id });
   } catch (err) {
     console.error('Submit casino ID error:', err);
     res.status(500).json({ error: 'Internal server error' });
@@ -254,22 +256,45 @@ router.post('/wallet/:casinoId/submit', verifyTelegramAuth, [
 
     const walletColumn = casino.id === 'topmatch' ? 'wallet_topmatch' : 'wallet_tonplay';
 
-    const result = await pool.query(
-      `UPDATE users SET ${walletColumn} = $1 WHERE telegram_id = $2 RETURNING *`,
-      [req.body.wallet_address, req.telegramUser.id]
-    );
+    const userResult = await pool.query('SELECT id, ' + walletColumn + ' FROM users WHERE telegram_id = $1', [req.telegramUser.id]);
+    if (userResult.rows.length === 0) return res.status(404).json({ error: 'User not found' });
 
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
+    const user = userResult.rows[0];
+    const oldValue = user[walletColumn];
+
+    const existing = await pool.query(
+      "SELECT id FROM pending_changes WHERE user_id = $1 AND field = $2 AND status = 'pending'",
+      [user.id, walletColumn]
+    );
+    if (existing.rows.length > 0) {
+      return res.status(400).json({ error: 'You already have a pending change for this field' });
     }
 
-    const u = result.rows[0];
-    res.json({
-      wallet_topmatch: u.wallet_topmatch,
-      wallet_tonplay: u.wallet_tonplay,
-    });
+    await pool.query(
+      'INSERT INTO pending_changes (user_id, field, old_value, new_value) VALUES ($1, $2, $3, $4)',
+      [user.id, walletColumn, oldValue, req.body.wallet_address]
+    );
+
+    res.json({ status: 'pending', field: walletColumn, new_value: req.body.wallet_address });
   } catch (err) {
     console.error('Submit wallet error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get pending changes for current user
+router.get('/user/pending-changes', verifyTelegramAuth, async (req, res) => {
+  try {
+    const userResult = await pool.query('SELECT id FROM users WHERE telegram_id = $1', [req.telegramUser.id]);
+    if (userResult.rows.length === 0) return res.status(404).json({ error: 'User not found' });
+
+    const result = await pool.query(
+      "SELECT id, field, old_value, new_value, status, created_at FROM pending_changes WHERE user_id = $1 ORDER BY created_at DESC",
+      [userResult.rows[0].id]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Get pending changes error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -289,6 +314,12 @@ router.get('/contests', verifyTelegramAuth, async (req, res) => {
     const casinoConfig = casinos[casino];
     const userLevel = user[casinoConfig.level_column];
     if (!userLevel) return res.json([]);
+
+    const walletColumn = casino === 'topmatch' ? 'wallet_topmatch' : 'wallet_tonplay';
+    if (!user[walletColumn]) {
+      return res.status(403).json({ error: 'You must set a TRC20 USDT wallet for this casino before participating in contests' });
+    }
+
     const result = await pool.query(
       `SELECT * FROM contests WHERE casino = $1 AND eligible_referral_type = $2 AND status = 'active' AND end_date > NOW() ORDER BY end_date ASC`,
       [casino, userLevel]
@@ -694,10 +725,14 @@ router.post('/admin/contests/:id/pick-winner', verifyTelegramAuth, verifyAdminAu
       return res.status(403).json({ error: 'Contest has not ended yet' });
     }
 
+    const levelColumn = contest.casino === 'topmatch' ? 'level_topmatch' : 'level_tonplay';
+    const walletColumn = contest.casino === 'topmatch' ? 'wallet_topmatch' : 'wallet_tonplay';
+
     const usersResult = await pool.query(
       `SELECT * FROM users
        WHERE status = 'verified'
-       AND referral_type = $1
+       AND ${levelColumn} = $1
+       AND ${walletColumn} IS NOT NULL
        ORDER BY RANDOM() LIMIT 1`,
       [contest.eligible_referral_type]
     );
@@ -746,7 +781,7 @@ router.post('/admin/broadcast', verifyTelegramAuth, verifyAdminAuth, adminLimite
     const params = [];
 
     if (target_referral_type !== null && target_referral_type !== undefined && target_referral_type !== '') {
-      query += ' AND referral_type = $1';
+      query += ' AND (level_topmatch = $1 OR level_tonplay = $1)';
       params.push(parseInt(target_referral_type));
     }
 
@@ -774,6 +809,94 @@ router.post('/admin/broadcast', verifyTelegramAuth, verifyAdminAuth, adminLimite
   }
 });
 
+router.get('/admin/contests', verifyTelegramAuth, verifyAdminAuth, adminLimiter, async (req, res) => {
+  try {
+    const { casino } = req.query;
+    let query = 'SELECT * FROM contests';
+    const params = [];
+    if (casino && ['topmatch', 'tonplay'].includes(casino)) {
+      query += ' WHERE casino = $1';
+      params.push(casino);
+    }
+    query += ' ORDER BY created_at DESC';
+    const result = await pool.query(query, params);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Admin contests error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ─── ADMIN: PENDING CHANGES ───
+
+router.get('/admin/pending-changes', verifyTelegramAuth, verifyAdminAuth, adminLimiter, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT pc.*, u.telegram_id, u.telegram_username
+       FROM pending_changes pc
+       JOIN users u ON u.id = pc.user_id
+       WHERE pc.status = 'pending'
+       ORDER BY pc.created_at DESC`
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Admin pending changes error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.post('/admin/pending-changes/:id/approve', verifyTelegramAuth, verifyAdminAuth, adminLimiter, async (req, res) => {
+  try {
+    const changeId = parseInt(req.params.id);
+    const changeResult = await pool.query("SELECT * FROM pending_changes WHERE id = $1 AND status = 'pending'", [changeId]);
+    if (changeResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Pending change not found or already processed' });
+    }
+    const change = changeResult.rows[0];
+
+    await pool.query(
+      `UPDATE users SET ${change.field} = $1 WHERE id = $2`,
+      [change.new_value, change.user_id]
+    );
+
+    // If it's a casino_id, also set the level if not set
+    if (change.field.startsWith('casino_id_')) {
+      const levelColumn = change.field === 'casino_id_topmatch' ? 'level_topmatch' : 'level_tonplay';
+      await pool.query(
+        `UPDATE users SET ${levelColumn} = COALESCE(${levelColumn}, 1) WHERE id = $1 AND ${levelColumn} IS NULL`,
+        [change.user_id]
+      );
+    }
+
+    await pool.query(
+      "UPDATE pending_changes SET status = 'approved', reviewed_at = NOW() WHERE id = $1",
+      [changeId]
+    );
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Approve change error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.post('/admin/pending-changes/:id/reject', verifyTelegramAuth, verifyAdminAuth, adminLimiter, async (req, res) => {
+  try {
+    const changeId = parseInt(req.params.id);
+    const result = await pool.query(
+      "UPDATE pending_changes SET status = 'rejected', reviewed_at = NOW() WHERE id = $1 AND status = 'pending' RETURNING *",
+      [changeId]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Pending change not found or already processed' });
+    }
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Reject change error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 router.get('/admin/stats', verifyTelegramAuth, verifyAdminAuth, adminLimiter, async (req, res) => {
   try {
     const totalResult = await pool.query('SELECT COUNT(*) FROM users');
@@ -789,6 +912,7 @@ router.get('/admin/stats', verifyTelegramAuth, verifyAdminAuth, adminLimiter, as
     const activeContestsResult = await pool.query("SELECT COUNT(*) FROM contests WHERE status = 'active'");
     const winnersPickedResult = await pool.query("SELECT COUNT(*) FROM contests WHERE status = 'winner_picked'");
     const broadcastsResult = await pool.query('SELECT COUNT(*) FROM broadcasts');
+    const pendingChangesResult = await pool.query("SELECT COUNT(*) FROM pending_changes WHERE status = 'pending'");
 
     res.json({
       totalUsers: parseInt(totalResult.rows[0].count),
@@ -810,27 +934,10 @@ router.get('/admin/stats', verifyTelegramAuth, verifyAdminAuth, adminLimiter, as
       activeContests: parseInt(activeContestsResult.rows[0].count),
       winnersPicked: parseInt(winnersPickedResult.rows[0].count),
       broadcastsSent: parseInt(broadcastsResult.rows[0].count),
+      pendingChanges: parseInt(pendingChangesResult.rows[0].count),
     });
   } catch (err) {
     console.error('Admin stats error:', err);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-router.get('/admin/contests', verifyTelegramAuth, verifyAdminAuth, adminLimiter, async (req, res) => {
-  try {
-    const { casino } = req.query;
-    let query = 'SELECT * FROM contests';
-    const params = [];
-    if (casino && ['topmatch', 'tonplay'].includes(casino)) {
-      query += ' WHERE casino = $1';
-      params.push(casino);
-    }
-    query += ' ORDER BY created_at DESC';
-    const result = await pool.query(query, params);
-    res.json(result.rows);
-  } catch (err) {
-    console.error('Admin contests error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

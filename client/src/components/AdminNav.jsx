@@ -11,6 +11,7 @@ const AdminNav = () => {
     { path: '/admin/stats', label: t('admin.stats.title') },
     { path: '/admin/users', label: t('admin.users.title') },
     { path: '/admin/contests', label: t('admin.contests.title') },
+    { path: '/admin/pending-changes', label: 'Pending' },
     { path: '/admin/broadcast', label: t('admin.broadcast.title') },
   ];
 

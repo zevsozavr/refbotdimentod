@@ -1,0 +1,96 @@
+import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { adminApi } from '../../axios';
+import AdminNav from '../../components/AdminNav';
+
+const FIELD_LABELS = {
+  casino_id_topmatch: 'TopMatch ID',
+  casino_id_tonplay: 'TonPlay ID',
+  wallet_topmatch: 'TopMatch TRC20',
+  wallet_tonplay: 'TonPlay TRC20',
+};
+
+const AdminPendingChanges = () => {
+  const { t } = useTranslation();
+  const [changes, setChanges] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetch = async () => {
+    try {
+      const res = await adminApi.get('/admin/pending-changes');
+      setChanges(res.data);
+    } catch (e) {
+      console.error('Fetch pending changes error:', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetch(); }, []);
+
+  const handleApprove = async (id) => {
+    try {
+      await adminApi.post(`/admin/pending-changes/${id}/approve`);
+      fetch();
+    } catch (e) {
+      alert(e.response?.data?.error || t('common.error'));
+    }
+  };
+
+  const handleReject = async (id) => {
+    try {
+      await adminApi.post(`/admin/pending-changes/${id}/reject`);
+      fetch();
+    } catch (e) {
+      alert(e.response?.data?.error || t('common.error'));
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="page">
+        <AdminNav />
+        <div className="loading-center"><div className="spinner" /></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="page">
+      <AdminNav />
+      <h1 className="page-title">Pending Changes</h1>
+
+      {changes.length === 0 ? (
+        <p className="text-secondary">No pending changes</p>
+      ) : (
+        changes.map((c) => (
+          <div key={c.id} className="pending-change-row">
+            <div className="pending-change-header">
+              <span className="pending-change-user">@{c.telegram_username || `ID: ${c.telegram_id}`}</span>
+              <span className="pending-change-field">{FIELD_LABELS[c.field] || c.field}</span>
+            </div>
+            <div className="pending-change-values">
+              {c.old_value ? (
+                <>
+                  <span className="pending-change-old">{c.old_value}</span>
+                  <span className="pending-change-arrow">→</span>
+                </>
+              ) : null}
+              <span className="pending-change-new">{c.new_value}</span>
+            </div>
+            <div className="pending-change-actions">
+              <button className="btn btn-success btn-sm" onClick={() => handleApprove(c.id)}>
+                {t('admin.user_detail.approve')}
+              </button>
+              <button className="btn btn-danger btn-sm" onClick={() => handleReject(c.id)}>
+                {t('admin.user_detail.reject')}
+              </button>
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+  );
+};
+
+export default AdminPendingChanges;

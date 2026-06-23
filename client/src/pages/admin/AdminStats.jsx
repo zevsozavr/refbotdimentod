@@ -98,6 +98,10 @@ const AdminStats = () => {
           <div className="admin-stat-number">{stats.broadcastsSent}</div>
           <div className="admin-stat-label">{t('admin.stats.broadcasts')}</div>
         </div>
+        <div className="admin-stat-card" style={{ gridColumn: '1 / -1' }}>
+          <div className="admin-stat-number">{stats.pendingChanges || 0}</div>
+          <div className="admin-stat-label">Pending Changes</div>
+        </div>
       </div>
     </div>
   );
