@@ -3,11 +3,18 @@ const { isAdminId } = require('./middleware');
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
+let miniAppUrl = process.env.MINI_APP_URL;
+if (!miniAppUrl) {
+  const wh = process.env.WEBHOOK_URL || '';
+  miniAppUrl = wh.replace(/\/webhook\/[^/]+$/, '') || 'https://t.me/your_bot/your_app';
+  console.log('MINI_APP_URL not set, using fallback:', miniAppUrl);
+}
+
 const getKeyboard = (language) => ({
   inline_keyboard: [[
     {
       text: language === 'uk' ? 'Відкрити Mini App' : 'Открыть Mini App',
-      url: process.env.MINI_APP_URL || 'https://t.me/your_bot/your_app',
+      url: miniAppUrl,
     }
   ]]
 });
