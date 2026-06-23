@@ -910,6 +910,13 @@ textarea.input { resize: vertical; min-height: 80px; }
   margin-top: 10px;
   font-weight: 500;
 }
+.contest-note {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-caption);
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
 
 /* ── Admin Pending Changes ── */
 .pending-change-row {

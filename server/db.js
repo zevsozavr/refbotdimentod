@@ -60,6 +60,10 @@ const migrate = async () => {
     `);
 
     await client.query(`
+      UPDATE users SET telegram_username = NULL WHERE telegram_username = 'dev'
+    `);
+
+    await client.query(`
       CREATE TABLE IF NOT EXISTS contests (
         id SERIAL PRIMARY KEY,
         title_uk VARCHAR(500) NOT NULL,

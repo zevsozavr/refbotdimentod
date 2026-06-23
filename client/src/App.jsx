@@ -66,7 +66,7 @@ const AppContent = () => {
 
         const res = await api.post('/auth/init', {
           telegram_id: telegramId,
-          telegram_username: telegramUser?.username || 'dev',
+          telegram_username: telegramUser?.username || undefined,
           language: savedLang,
         });
         if (!cancelled) {
