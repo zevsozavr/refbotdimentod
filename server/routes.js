@@ -245,6 +245,7 @@ router.post('/casino/:casinoId/submit-id', verifyTelegramAuth, [
 router.post('/wallet/:casinoId/submit', verifyTelegramAuth, [
   validateCasino,
   validateTrc20Address('wallet_address'),
+  body('casino').custom((value, { req }) => value === req.params.casinoId).withMessage('casino must match the URL parameter'),
 ], handleValidationErrors, async (req, res) => {
   try {
     const casinos = require('./casinos');
