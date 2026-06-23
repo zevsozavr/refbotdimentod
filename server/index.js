@@ -36,10 +36,13 @@ app.use(helmet.referrerPolicy({ policy: 'no-referrer' }));
 // CORS
 app.use((req, res, next) => {
   const origin = req.headers.origin;
+  const host = req.headers['x-forwarded-host'] || req.headers['host'];
+  const serverOrigin = req.protocol + '://' + host;
   const allowed = [
     'https://web.telegram.org',
     'https://web.telegram.org.k',
     process.env.APP_URL,
+    serverOrigin,
   ].filter(Boolean);
 
   if (!origin || allowed.includes(origin)) {

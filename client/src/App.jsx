@@ -81,7 +81,12 @@ const AppContent = () => {
   if (!user) {
     return (
       <div className="status-screen">
-        <div className="spinner" />
+        <div className="status-icon">⚠️</div>
+        <h1 className="page-title">Connection Error</h1>
+        <p className="text-secondary">Failed to load user data. Check console for details.</p>
+        <button className="btn btn-primary mt-4" onClick={() => window.location.reload()}>
+          Retry
+        </button>
       </div>
     );
   }
