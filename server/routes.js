@@ -27,6 +27,13 @@ const validateAction = body('action').isIn(['approve', 'reject']).withMessage('a
 const validateCasino = body('casino').isIn(['topmatch', 'tonplay']).withMessage('casino must be topmatch or tonplay');
 const validateLevel = body('level').isIn([1, 2, 3]).withMessage('level must be 1, 2, or 3');
 
+// TRC20 (TRON) address validation: starts with T, 34 chars, base58
+const validateTrc20Address = (field) =>
+  body(field)
+    .trim()
+    .matches(/^T[1-9A-HJ-NP-Za-km-z]{33}$/)
+    .withMessage(`${field} must be a valid TRC20 (TRON) address`);
+
 const ALLOWED_STATUSES = ['pending', 'verified', 'rejected', 'banned'];
 
 const sanitizeContestFields = (field) =>
@@ -91,6 +98,8 @@ router.post('/auth/init', authInitLimiter, [
       level_tonplay: user.level_tonplay,
       casino_id_topmatch: user.casino_id_topmatch,
       casino_id_tonplay: user.casino_id_tonplay,
+      wallet_topmatch: user.wallet_topmatch,
+      wallet_tonplay: user.wallet_tonplay,
       created_at: user.created_at,
       is_admin: isAdminId(telegram_id),
       token: generateSessionToken(telegram_id),
@@ -123,6 +132,8 @@ router.post('/auth/language', verifyTelegramAuth, [
       level_tonplay: result.rows[0].level_tonplay,
       casino_id_topmatch: result.rows[0].casino_id_topmatch,
       casino_id_tonplay: result.rows[0].casino_id_tonplay,
+      wallet_topmatch: result.rows[0].wallet_topmatch,
+      wallet_tonplay: result.rows[0].wallet_tonplay,
       created_at: result.rows[0].created_at,
     });
   } catch (err) {
@@ -151,6 +162,8 @@ router.get('/user/me', verifyTelegramAuth, async (req, res) => {
       level_tonplay: user.level_tonplay,
       casino_id_topmatch: user.casino_id_topmatch,
       casino_id_tonplay: user.casino_id_tonplay,
+      wallet_topmatch: user.wallet_topmatch,
+      wallet_tonplay: user.wallet_tonplay,
       created_at: user.created_at,
       is_admin: isAdminId(req.telegramUser.id),
     });
@@ -224,6 +237,38 @@ router.post('/casino/:casinoId/submit-id', verifyTelegramAuth, [
     });
   } catch (err) {
     console.error('Submit casino ID error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// User wallet submission endpoint
+router.post('/wallet/:casinoId/submit', verifyTelegramAuth, [
+  validateCasino,
+  validateTrc20Address('wallet_address'),
+], handleValidationErrors, async (req, res) => {
+  try {
+    const casinos = require('./casinos');
+    const casino = casinos[req.params.casinoId];
+    if (!casino) return res.status(404).json({ error: 'Casino not found' });
+
+    const walletColumn = casino.id === 'topmatch' ? 'wallet_topmatch' : 'wallet_tonplay';
+
+    const result = await pool.query(
+      `UPDATE users SET ${walletColumn} = $1 WHERE telegram_id = $2 RETURNING *`,
+      [req.body.wallet_address, req.telegramUser.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const u = result.rows[0];
+    res.json({
+      wallet_topmatch: u.wallet_topmatch,
+      wallet_tonplay: u.wallet_tonplay,
+    });
+  } catch (err) {
+    console.error('Submit wallet error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -348,7 +393,7 @@ router.get('/admin/users', verifyTelegramAuth, verifyAdminAuth, adminLimiter, as
     const total = parseInt(countResult.rows[0].count);
 
     const result = await pool.query(
-      `SELECT id, telegram_id, telegram_username, language, status, level_topmatch, level_tonplay, casino_id_topmatch, casino_id_tonplay, created_at
+      `SELECT id, telegram_id, telegram_username, language, status, level_topmatch, level_tonplay, casino_id_topmatch, casino_id_tonplay, wallet_topmatch, wallet_tonplay, created_at
        FROM users ${whereClause}
        ORDER BY created_at DESC
        LIMIT $${paramIndex++} OFFSET $${paramIndex++}`,
@@ -424,6 +469,8 @@ router.post('/admin/users/:id/verify', verifyTelegramAuth, verifyAdminAuth, admi
       level_tonplay: result.rows[0].level_tonplay,
       casino_id_topmatch: result.rows[0].casino_id_topmatch,
       casino_id_tonplay: result.rows[0].casino_id_tonplay,
+      wallet_topmatch: result.rows[0].wallet_topmatch,
+      wallet_tonplay: result.rows[0].wallet_tonplay,
       created_at: result.rows[0].created_at,
     });
   } catch (err) {
@@ -456,6 +503,8 @@ router.post('/admin/users/:id/set-level', verifyTelegramAuth, verifyAdminAuth, a
       level_tonplay: u.level_tonplay,
       casino_id_topmatch: u.casino_id_topmatch,
       casino_id_tonplay: u.casino_id_tonplay,
+      wallet_topmatch: u.wallet_topmatch,
+      wallet_tonplay: u.wallet_tonplay,
       created_at: u.created_at,
     });
   } catch (err) {
@@ -494,6 +543,8 @@ router.post('/admin/users/:id/ban', verifyTelegramAuth, verifyAdminAuth, adminLi
       level_tonplay: result.rows[0].level_tonplay,
       casino_id_topmatch: result.rows[0].casino_id_topmatch,
       casino_id_tonplay: result.rows[0].casino_id_tonplay,
+      wallet_topmatch: result.rows[0].wallet_topmatch,
+      wallet_tonplay: result.rows[0].wallet_tonplay,
       created_at: result.rows[0].created_at,
     });
   } catch (err) {
@@ -534,6 +585,8 @@ router.post('/admin/users/:id/unban', verifyTelegramAuth, verifyAdminAuth, admin
       level_tonplay: result.rows[0].level_tonplay,
       casino_id_topmatch: result.rows[0].casino_id_topmatch,
       casino_id_tonplay: result.rows[0].casino_id_tonplay,
+      wallet_topmatch: result.rows[0].wallet_topmatch,
+      wallet_tonplay: result.rows[0].wallet_tonplay,
       created_at: result.rows[0].created_at,
     });
   } catch (err) {

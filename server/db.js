@@ -48,6 +48,14 @@ const migrate = async () => {
     `);
 
     await client.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS wallet_topmatch VARCHAR(100) DEFAULT NULL
+    `);
+
+    await client.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS wallet_tonplay VARCHAR(100) DEFAULT NULL
+    `);
+
+    await client.query(`
       ALTER TABLE users ALTER COLUMN status SET DEFAULT 'verified'
     `);
 

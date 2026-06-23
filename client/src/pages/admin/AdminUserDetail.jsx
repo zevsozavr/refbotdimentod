@@ -146,6 +146,18 @@ const AdminUserDetail = () => {
           <span className="form-label">{t('admin.user_detail.created')}</span>
           <span>{new Date(user.created_at).toLocaleString()}</span>
         </div>
+        <div className="form-group">
+          <span className="form-label">{t('admin.user_detail.wallet_topmatch')}</span>
+          <span style={{ fontFamily: 'monospace', fontSize: 13, wordBreak: 'break-all' }}>
+            {user.wallet_topmatch || t('settings.not_set')}
+          </span>
+        </div>
+        <div className="form-group">
+          <span className="form-label">{t('admin.user_detail.wallet_tonplay')}</span>
+          <span style={{ fontFamily: 'monospace', fontSize: 13, wordBreak: 'break-all' }}>
+            {user.wallet_tonplay || t('settings.not_set')}
+          </span>
+        </div>
       </div>
 
       <div className="card mb-4">
