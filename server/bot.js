@@ -1,5 +1,6 @@
 const { Telegraf } = require('telegraf');
 const { isAdminId } = require('./middleware');
+const { pool } = require('./db');
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
@@ -27,42 +28,51 @@ const getMiniAppUrl = async () => {
   return miniAppUrlPromise;
 };
 
-const getKeyboard = async (language) => ({
-  inline_keyboard: [[
-    {
-      text: language === 'uk' ? 'Відкрити Mini App' : 'Открыть Mini App',
-      url: await getMiniAppUrl(),
-    }
-  ]]
+bot.command('start', async (ctx) => {
+  await ctx.reply('🌐 Оберіть мову / Выберите язык:', {
+    reply_markup: {
+      inline_keyboard: [[
+        { text: '🇺🇦 Українська', callback_data: 'lang_uk' },
+        { text: '🇷🇺 Русский', callback_data: 'lang_ru' },
+      ]],
+    },
+  });
 });
 
-bot.start(async (ctx) => {
-  const telegramId = ctx.from.id;
-  const { pool } = require('./db');
+bot.action('lang_uk', async (ctx) => {
+  await ctx.answerCbQuery();
   try {
-    const result = await pool.query('SELECT * FROM users WHERE telegram_id = $1', [telegramId]);
-    const user = result.rows[0];
+    await pool.query(
+      `INSERT INTO users (telegram_id, telegram_username, language) VALUES ($1, $2, 'uk')
+       ON CONFLICT (telegram_id) DO UPDATE SET language = 'uk', telegram_username = $2`,
+      [ctx.from.id, ctx.from.username || null]
+    );
+  } catch (e) { console.error('lang_uk error:', e); }
+  await ctx.editMessageText('✅ Мову встановлено: Українська\n\nНатисніть кнопку нижче, щоб відкрити додаток:', {
+    reply_markup: {
+      inline_keyboard: [[
+        { text: '🚀 Відкрити додаток', web_app: { url: process.env.APP_URL } },
+      ]],
+    },
+  });
+});
 
-    const keyboard = await getKeyboard(user ? user.language : 'uk');
-    if (user && user.status === 'verified') {
-      await ctx.reply(
-        user.language === 'uk'
-          ? 'Ласкаво просимо назад! Натисніть кнопку нижче, щоб відкрити Mini App.'
-          : 'Добро пожаловать назад! Нажмите кнопку ниже, чтобы открыть Mini App.',
-        { reply_markup: keyboard }
-      );
-    } else {
-      const lang = user ? user.language : 'uk';
-      await ctx.reply(
-        lang === 'uk'
-          ? 'Ласкаво просимо! Натисніть кнопку нижче, щоб відкрити Mini App та зареєструватися.'
-          : 'Добро пожаловать! Нажмите кнопку ниже, чтобы открыть Mini App и зарегистрироваться.',
-        { reply_markup: keyboard }
-      );
-    }
-  } catch (err) {
-    console.error('Bot start error:', err);
-  }
+bot.action('lang_ru', async (ctx) => {
+  await ctx.answerCbQuery();
+  try {
+    await pool.query(
+      `INSERT INTO users (telegram_id, telegram_username, language) VALUES ($1, $2, 'ru')
+       ON CONFLICT (telegram_id) DO UPDATE SET language = 'ru', telegram_username = $2`,
+      [ctx.from.id, ctx.from.username || null]
+    );
+  } catch (e) { console.error('lang_ru error:', e); }
+  await ctx.editMessageText('✅ Язык установлен: Русский\n\nНажмите кнопку ниже, чтобы открыть приложение:', {
+    reply_markup: {
+      inline_keyboard: [[
+        { text: '🚀 Открыть приложение', web_app: { url: process.env.APP_URL } },
+      ]],
+    },
+  });
 });
 
 const notifyWinner = async (user, contest, language) => {

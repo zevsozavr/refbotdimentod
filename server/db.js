@@ -17,9 +17,22 @@ const migrate = async () => {
         language VARCHAR(2) DEFAULT 'uk',
         casino_id VARCHAR(32),
         status VARCHAR(20) DEFAULT 'pending',
-        referral_type INTEGER,
+        level_topmatch INTEGER DEFAULT NULL,
+        level_tonplay INTEGER DEFAULT NULL,
         created_at TIMESTAMP DEFAULT NOW()
       )
+    `);
+
+    await client.query(`
+      ALTER TABLE users DROP COLUMN IF EXISTS referral_type
+    `);
+
+    await client.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS level_topmatch INTEGER DEFAULT NULL
+    `);
+
+    await client.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS level_tonplay INTEGER DEFAULT NULL
     `);
 
     await client.query(`
@@ -32,11 +45,16 @@ const migrate = async () => {
         prize_uk VARCHAR(500) NOT NULL,
         prize_ru VARCHAR(500) NOT NULL,
         eligible_referral_type INTEGER NOT NULL,
+        casino VARCHAR(20) DEFAULT 'topmatch',
         start_date TIMESTAMP NOT NULL,
         end_date TIMESTAMP NOT NULL,
         status VARCHAR(20) DEFAULT 'active',
         created_at TIMESTAMP DEFAULT NOW()
       )
+    `);
+
+    await client.query(`
+      ALTER TABLE contests ADD COLUMN IF NOT EXISTS casino VARCHAR(20) DEFAULT 'topmatch'
     `);
 
     await client.query(`
@@ -53,9 +71,18 @@ const migrate = async () => {
         id SERIAL PRIMARY KEY,
         message_uk TEXT NOT NULL,
         message_ru TEXT NOT NULL,
-        target_referral_type INTEGER,
+        target_casino VARCHAR(20),
+        target_level INTEGER,
         sent_at TIMESTAMP DEFAULT NOW()
       )
+    `);
+
+    await client.query(`
+      ALTER TABLE broadcasts ADD COLUMN IF NOT EXISTS target_casino VARCHAR(20)
+    `);
+
+    await client.query(`
+      ALTER TABLE broadcasts ADD COLUMN IF NOT EXISTS target_level INTEGER
     `);
 
     await client.query('COMMIT');

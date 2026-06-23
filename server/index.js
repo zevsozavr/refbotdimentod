@@ -67,6 +67,9 @@ app.use(rateLimit({
 
 app.use(express.json());
 
+// photos
+app.use('/photos', express.static(path.join(__dirname, '../resources/photos')));
+
 // Bot webhook — path is already secret via WEBHOOK_SECRET_PATH
 app.post(`/webhook/${process.env.WEBHOOK_SECRET_PATH}`, (req, res) => {
   bot.handleUpdate(req.body, res);

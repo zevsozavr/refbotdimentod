@@ -30,6 +30,8 @@ const validateCasinoId = body('casino_id')
   .customSanitizer(v => sanitizeHtml(v));
 const validateReferralType = body('referral_type').isIn([1, 2, 3]).withMessage('referral_type must be 1, 2, or 3');
 const validateAction = body('action').isIn(['approve', 'reject']).withMessage('action must be approve or reject');
+const validateCasino = body('casino').isIn(['topmatch', 'tonplay']).withMessage('casino must be topmatch or tonplay');
+const validateLevel = body('level').isIn([1, 2, 3]).withMessage('level must be 1, 2, or 3');
 
 const ALLOWED_STATUSES = ['pending', 'verified', 'rejected', 'banned'];
 
@@ -80,8 +82,8 @@ router.post('/auth/init', authInitLimiter, [
     let user;
     if (result.rows.length === 0) {
       result = await pool.query(
-        'INSERT INTO users (telegram_id, telegram_username, language, casino_id, status, referral_type) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-        [telegram_id, telegram_username || null, language, isAdmin ? 'admin' : null, isAdmin ? 'verified' : 'pending', isAdmin ? 1 : null]
+        'INSERT INTO users (telegram_id, telegram_username, language, casino_id, status, level_topmatch, level_tonplay) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+        [telegram_id, telegram_username || null, language, isAdmin ? 'admin' : null, isAdmin ? 'verified' : 'pending', isAdmin ? 1 : null, isAdmin ? 1 : null]
       );
       user = result.rows[0];
     } else {
@@ -102,7 +104,8 @@ router.post('/auth/init', authInitLimiter, [
       language: user.language,
       casino_id: user.casino_id,
       status: user.status,
-      referral_type: user.referral_type,
+      level_topmatch: user.level_topmatch,
+      level_tonplay: user.level_tonplay,
       created_at: user.created_at,
       is_admin: isAdminId(telegram_id),
       token: generateSessionToken(telegram_id),
@@ -132,7 +135,8 @@ router.post('/auth/language', verifyTelegramAuth, [
       language: result.rows[0].language,
       casino_id: result.rows[0].casino_id,
       status: result.rows[0].status,
-      referral_type: result.rows[0].referral_type,
+      level_topmatch: result.rows[0].level_topmatch,
+      level_tonplay: result.rows[0].level_tonplay,
       created_at: result.rows[0].created_at,
     });
   } catch (err) {
@@ -195,7 +199,8 @@ router.get('/user/me', verifyTelegramAuth, async (req, res) => {
       language: user.language,
       casino_id: user.casino_id,
       status: user.status,
-      referral_type: user.referral_type,
+      level_topmatch: user.level_topmatch,
+      level_tonplay: user.level_tonplay,
       created_at: user.created_at,
       is_admin: isAdminId(req.telegramUser.id),
     });
@@ -224,43 +229,67 @@ router.get('/user/referral-link', verifyTelegramAuth, async (req, res) => {
   }
 });
 
+router.get('/casinos', verifyTelegramAuth, (req, res) => {
+  const casinos = require('./casinos');
+  res.json(Object.values(casinos).map(c => ({
+    id: c.id,
+    name_uk: c.name_uk,
+    name_ru: c.name_ru,
+    photo: `/photos/${c.photo}`,
+  })));
+});
+
+router.get('/casino/:casinoId/me', verifyTelegramAuth, async (req, res) => {
+  try {
+    const casinos = require('./casinos');
+    const casino = casinos[req.params.casinoId];
+    if (!casino) return res.status(404).json({ error: 'Casino not found' });
+    const result = await pool.query('SELECT * FROM users WHERE telegram_id = $1', [req.telegramUser.id]);
+    if (result.rows.length === 0) return res.status(404).json({ error: 'User not found' });
+    const user = result.rows[0];
+    const level = user[casino.level_column];
+    res.json({
+      casino_id: casino.id,
+      level,
+      referral_link: level ? casino.referral_link : null,
+    });
+  } catch (err) {
+    console.error('Casino me error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // ─── CONTESTS ───
 
 router.get('/contests', verifyTelegramAuth, async (req, res) => {
   try {
-    const userResult = await pool.query(
-      'SELECT * FROM users WHERE telegram_id = $1',
-      [req.telegramUser.id]
-    );
-    if (userResult.rows.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
+    const { casino } = req.query;
+    const casinos = require('./casinos');
+    if (!casino || !casinos[casino]) {
+      return res.status(400).json({ error: 'Valid casino param required' });
     }
+    const userResult = await pool.query('SELECT * FROM users WHERE telegram_id = $1', [req.telegramUser.id]);
+    if (userResult.rows.length === 0) return res.status(404).json({ error: 'User not found' });
     const user = userResult.rows[0];
-    if (user.status !== 'verified') {
-      return res.status(403).json({ error: 'Only verified users can view contests' });
-    }
-
+    const casinoConfig = casinos[casino];
+    const userLevel = user[casinoConfig.level_column];
+    if (!userLevel) return res.json([]);
     const result = await pool.query(
-      `SELECT * FROM contests
-       WHERE eligible_referral_type = $1
-       AND status = 'active'
-       AND end_date > NOW()
-       ORDER BY end_date ASC`,
-      [user.referral_type]
+      `SELECT * FROM contests WHERE casino = $1 AND eligible_referral_type = $2 AND status = 'active' AND end_date > NOW() ORDER BY end_date ASC`,
+      [casino, userLevel]
     );
-
     const lang = user.language;
-    const contests = result.rows.map(c => ({
+    res.json(result.rows.map(c => ({
       id: c.id,
       title: lang === 'uk' ? c.title_uk : c.title_ru,
       description: lang === 'uk' ? c.description_uk : c.description_ru,
       prize: lang === 'uk' ? c.prize_uk : c.prize_ru,
-      eligible_referral_type: c.eligible_referral_type,
+      eligible_level: c.eligible_referral_type,
+      casino: c.casino,
       start_date: c.start_date,
       end_date: c.end_date,
       status: c.status,
-    }));
-    res.json(contests);
+    })));
   } catch (err) {
     console.error('Get contests error:', err);
     res.status(500).json({ error: 'Internal server error' });
@@ -325,7 +354,7 @@ router.get('/contests/history', verifyTelegramAuth, async (req, res) => {
 
 router.get('/admin/users', verifyTelegramAuth, verifyAdminAuth, adminLimiter, async (req, res) => {
   try {
-    const { status, referral_type, page = 1, limit = 20 } = req.query;
+    const { status, level_topmatch, level_tonplay, page = 1, limit = 20 } = req.query;
     const conditions = [];
     const params = [];
     let paramIndex = 1;
@@ -334,9 +363,13 @@ router.get('/admin/users', verifyTelegramAuth, verifyAdminAuth, adminLimiter, as
       conditions.push(`status = $${paramIndex++}`);
       params.push(status);
     }
-    if (referral_type && ['1', '2', '3'].includes(referral_type)) {
-      conditions.push(`referral_type = $${paramIndex++}`);
-      params.push(parseInt(referral_type));
+    if (level_topmatch && ['1', '2', '3'].includes(level_topmatch)) {
+      conditions.push(`level_topmatch = $${paramIndex++}`);
+      params.push(parseInt(level_topmatch));
+    }
+    if (level_tonplay && ['1', '2', '3'].includes(level_tonplay)) {
+      conditions.push(`level_tonplay = $${paramIndex++}`);
+      params.push(parseInt(level_tonplay));
     }
 
     const whereClause = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';
@@ -346,7 +379,7 @@ router.get('/admin/users', verifyTelegramAuth, verifyAdminAuth, adminLimiter, as
     const total = parseInt(countResult.rows[0].count);
 
     const result = await pool.query(
-      `SELECT id, telegram_id, telegram_username, language, casino_id, status, referral_type, created_at
+      `SELECT id, telegram_id, telegram_username, language, casino_id, status, level_topmatch, level_tonplay, created_at
        FROM users ${whereClause}
        ORDER BY created_at DESC
        LIMIT $${paramIndex++} OFFSET $${paramIndex++}`,
@@ -419,7 +452,8 @@ router.post('/admin/users/:id/verify', verifyTelegramAuth, verifyAdminAuth, admi
       language: result.rows[0].language,
       casino_id: result.rows[0].casino_id,
       status: result.rows[0].status,
-      referral_type: result.rows[0].referral_type,
+      level_topmatch: result.rows[0].level_topmatch,
+      level_tonplay: result.rows[0].level_tonplay,
       created_at: result.rows[0].created_at,
     });
   } catch (err) {
@@ -428,30 +462,33 @@ router.post('/admin/users/:id/verify', verifyTelegramAuth, verifyAdminAuth, admi
   }
 });
 
-router.post('/admin/users/:id/set-referral-type', verifyTelegramAuth, verifyAdminAuth, adminLimiter, [
-  validateReferralType,
+router.post('/admin/users/:id/set-level', verifyTelegramAuth, verifyAdminAuth, adminLimiter, [
+  validateCasino,
+  validateLevel,
 ], handleValidationErrors, async (req, res) => {
   try {
+    const casinos = require('./casinos');
+    const casino = casinos[req.body.casino];
     const userId = parseInt(req.params.id);
     const result = await pool.query(
-      'UPDATE users SET referral_type = $1 WHERE id = $2 RETURNING *',
-      [req.body.referral_type, userId]
+      `UPDATE users SET ${casino.level_column} = $1 WHERE id = $2 RETURNING *`,
+      [req.body.level, userId]
     );
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
-    }
+    if (result.rows.length === 0) return res.status(404).json({ error: 'User not found' });
+    const u = result.rows[0];
     res.json({
-      id: result.rows[0].id,
-      telegram_id: result.rows[0].telegram_id,
-      telegram_username: result.rows[0].telegram_username,
-      language: result.rows[0].language,
-      casino_id: result.rows[0].casino_id,
-      status: result.rows[0].status,
-      referral_type: result.rows[0].referral_type,
-      created_at: result.rows[0].created_at,
+      id: u.id,
+      telegram_id: u.telegram_id,
+      telegram_username: u.telegram_username,
+      language: u.language,
+      casino_id: u.casino_id,
+      status: u.status,
+      level_topmatch: u.level_topmatch,
+      level_tonplay: u.level_tonplay,
+      created_at: u.created_at,
     });
   } catch (err) {
-    console.error('Set referral type error:', err);
+    console.error('Set level error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -476,7 +513,6 @@ router.post('/admin/users/:id/ban', verifyTelegramAuth, verifyAdminAuth, adminLi
       'Ваш аккаунт заблокирован. Если вы считаете, что это ошибка, обратитесь к администратору.',
       user.language
     );
-
     res.json({
       id: result.rows[0].id,
       telegram_id: result.rows[0].telegram_id,
@@ -484,7 +520,8 @@ router.post('/admin/users/:id/ban', verifyTelegramAuth, verifyAdminAuth, adminLi
       language: result.rows[0].language,
       casino_id: result.rows[0].casino_id,
       status: result.rows[0].status,
-      referral_type: result.rows[0].referral_type,
+      level_topmatch: result.rows[0].level_topmatch,
+      level_tonplay: result.rows[0].level_tonplay,
       created_at: result.rows[0].created_at,
     });
   } catch (err) {
@@ -500,6 +537,7 @@ router.post('/admin/users/:id/unban', verifyTelegramAuth, verifyAdminAuth, admin
     if (userResult.rows.length === 0) {
       return res.status(404).json({ error: 'User not found' });
     }
+
     const user = userResult.rows[0];
 
     const result = await pool.query(
@@ -521,7 +559,8 @@ router.post('/admin/users/:id/unban', verifyTelegramAuth, verifyAdminAuth, admin
       language: result.rows[0].language,
       casino_id: result.rows[0].casino_id,
       status: result.rows[0].status,
-      referral_type: result.rows[0].referral_type,
+      level_topmatch: result.rows[0].level_topmatch,
+      level_tonplay: result.rows[0].level_tonplay,
       created_at: result.rows[0].created_at,
     });
   } catch (err) {
@@ -538,15 +577,16 @@ router.post('/admin/contests', verifyTelegramAuth, verifyAdminAuth, adminLimiter
   sanitizeContestFields('prize_uk'),
   sanitizeContestFields('prize_ru'),
   validateReferralType,
+  validateCasino,
   body('start_date').isISO8601().withMessage('start_date must be valid ISO 8601'),
   body('end_date').isISO8601().withMessage('end_date must be valid ISO 8601'),
 ], handleValidationErrors, async (req, res) => {
   try {
-    const { title_uk, title_ru, description_uk, description_ru, prize_uk, prize_ru, referral_type, start_date, end_date } = req.body;
+    const { title_uk, title_ru, description_uk, description_ru, prize_uk, prize_ru, referral_type, casino, start_date, end_date } = req.body;
     const result = await pool.query(
-      `INSERT INTO contests (title_uk, title_ru, description_uk, description_ru, prize_uk, prize_ru, eligible_referral_type, start_date, end_date)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
-      [title_uk, title_ru, description_uk, description_ru, prize_uk, prize_ru, referral_type, start_date, end_date]
+      `INSERT INTO contests (title_uk, title_ru, description_uk, description_ru, prize_uk, prize_ru, eligible_referral_type, casino, start_date, end_date)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
+      [title_uk, title_ru, description_uk, description_ru, prize_uk, prize_ru, referral_type, casino, start_date, end_date]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -563,12 +603,13 @@ router.put('/admin/contests/:id', verifyTelegramAuth, verifyAdminAuth, adminLimi
   sanitizeContestFields('prize_uk'),
   sanitizeContestFields('prize_ru'),
   validateReferralType,
+  validateCasino,
   body('start_date').isISO8601(),
   body('end_date').isISO8601(),
 ], handleValidationErrors, async (req, res) => {
   try {
     const contestId = parseInt(req.params.id);
-    const { title_uk, title_ru, description_uk, description_ru, prize_uk, prize_ru, referral_type, start_date, end_date } = req.body;
+    const { title_uk, title_ru, description_uk, description_ru, prize_uk, prize_ru, referral_type, casino, start_date, end_date } = req.body;
 
     const existing = await pool.query('SELECT * FROM contests WHERE id = $1', [contestId]);
     if (existing.rows.length === 0) {
@@ -580,9 +621,9 @@ router.put('/admin/contests/:id', verifyTelegramAuth, verifyAdminAuth, adminLimi
 
     const result = await pool.query(
       `UPDATE contests SET title_uk=$1, title_ru=$2, description_uk=$3, description_ru=$4,
-       prize_uk=$5, prize_ru=$6, eligible_referral_type=$7, start_date=$8, end_date=$9
-       WHERE id=$10 RETURNING *`,
-      [title_uk, title_ru, description_uk, description_ru, prize_uk, prize_ru, referral_type, start_date, end_date, contestId]
+       prize_uk=$5, prize_ru=$6, eligible_referral_type=$7, casino=$8, start_date=$9, end_date=$10
+       WHERE id=$11 RETURNING *`,
+      [title_uk, title_ru, description_uk, description_ru, prize_uk, prize_ru, referral_type, casino, start_date, end_date, contestId]
     );
     res.json(result.rows[0]);
   } catch (err) {
@@ -742,7 +783,15 @@ router.get('/admin/stats', verifyTelegramAuth, verifyAdminAuth, adminLimiter, as
 
 router.get('/admin/contests', verifyTelegramAuth, verifyAdminAuth, adminLimiter, async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM contests ORDER BY created_at DESC');
+    const { casino } = req.query;
+    let query = 'SELECT * FROM contests';
+    const params = [];
+    if (casino && ['topmatch', 'tonplay'].includes(casino)) {
+      query += ' WHERE casino = $1';
+      params.push(casino);
+    }
+    query += ' ORDER BY created_at DESC';
+    const result = await pool.query(query, params);
     res.json(result.rows);
   } catch (err) {
     console.error('Admin contests error:', err);
