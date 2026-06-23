@@ -150,6 +150,12 @@ bot.command('start', async (ctx) => {
   });
 });
 
+bot.command('notifications', async (ctx) => {
+  const user = await pool.query('SELECT language FROM users WHERE telegram_id = $1', [ctx.from.id]);
+  const lang = user.rows[0]?.language || 'uk';
+  await sendNotificationMenu(ctx, lang);
+});
+
 const sendMainMenu = async (ctx, lang) => {
   const mainText = lang === 'uk'
     ? '👋 Вітаємо! Оберіть дію:'

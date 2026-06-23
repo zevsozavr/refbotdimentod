@@ -51,6 +51,16 @@ const Contests = () => {
     return `${hours}h ${minutes}m`;
   };
 
+  const getTimeToStart = (startDate) => {
+    const diff = new Date(startDate) - new Date();
+    if (diff <= 0) return null;
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    if (days > 0) return `${days}d ${hours}h`;
+    const minutes = Math.floor((diff / (1000 * 60)) % 60);
+    return `${hours}h ${minutes}m`;
+  };
+
   const handleJoin = async (contestId, joined) => {
     try {
       if (joined) {
@@ -107,26 +117,32 @@ const Contests = () => {
         active.length === 0 ? (
           <p className="text-secondary">{t('contests.no_active')}</p>
         ) : (
-          active.map((c) => (
-            <div key={c.id} className={`contest-card ${c.casino}`}>
-              {c.banner_image && (
-                <img className="contest-banner" src={c.banner_image} alt={c.title} />
-              )}
-              <div className="contest-title">{c.title}</div>
-              <div className="contest-prize">{t('contests.prize')}: {c.prize}</div>
-              <div className="contest-meta-info">
-                <span>👥 {c.participant_count} | 🏆 {c.winner_count}</span>
+          active.map((c) => {
+            const timeToStart = getTimeToStart(c.start_date);
+            return (
+              <div key={c.id} className={`contest-card ${c.casino}`}>
+                {c.banner_image && (
+                  <img className="contest-banner" src={c.banner_image} alt={c.title} />
+                )}
+                <div className="contest-title">{c.title}</div>
+                <div className="contest-prize">{t('contests.prize')}: {c.prize}</div>
+                <div className="contest-meta-info">
+                  <span>👥 {c.participant_count} | 🏆 {c.winner_count}</span>
+                </div>
+                <div className="contest-timer">
+                  {timeToStart ? `${t('contests.starts_in')}: ${timeToStart}` : `${t('contests.ends_in')}: ${getTimeRemaining(c.end_date)}`}
+                </div>
+                <button
+                  className={`btn btn-sm ${c.joined ? 'btn-secondary' : `btn-${casinoId}`}`}
+                  onClick={() => handleJoin(c.id, c.joined)}
+                  disabled={!c.started}
+                  style={{ marginTop: 10, width: '100%' }}
+                >
+                  {c.joined ? t('contests.leave') : (!c.started ? t('contests.not_started') : t('contests.join'))}
+                </button>
               </div>
-              <div className="contest-timer">{t('contests.ends_in')}: {getTimeRemaining(c.end_date)}</div>
-              <button
-                className={`btn btn-sm ${c.joined ? 'btn-secondary' : `btn-${casinoId}`}`}
-                onClick={() => handleJoin(c.id, c.joined)}
-                style={{ marginTop: 10, width: '100%' }}
-              >
-                {c.joined ? t('contests.leave') : t('contests.join')}
-              </button>
-            </div>
-          ))
+            );
+          })
         )
       )}
 

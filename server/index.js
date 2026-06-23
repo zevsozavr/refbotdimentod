@@ -142,6 +142,11 @@ const start = async () => {
       bot.launch();
     }
 
+    await bot.telegram.setMyCommands([
+      { command: 'start', description: 'Головне меню / Головне меню' },
+      { command: 'notifications', description: '🔔 Сповіщення / Уведомления' },
+    ]).catch(e => console.error('setMyCommands error:', e));
+
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });

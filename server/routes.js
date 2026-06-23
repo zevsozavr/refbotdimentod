@@ -379,6 +379,7 @@ router.get('/contests', verifyTelegramAuth, async (req, res) => {
         banner_image: c.banner_image,
         joined: joinResult.rows.length > 0,
         participant_count: parseInt(countResult.rows[0].count),
+        started: new Date(c.start_date) <= new Date(),
       };
     }));
     res.json(contestsWithJoin);
@@ -398,15 +399,23 @@ router.get('/contests/history', verifyTelegramAuth, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
     const user = userResult.rows[0];
+    const { casino } = req.query;
+    if (!casino || !['topmatch', 'tonplay'].includes(casino)) {
+      return res.status(400).json({ error: 'casino query parameter required (topmatch or tonplay)' });
+    }
+
+    const levelColumn = casino === 'topmatch' ? 'level_topmatch' : 'level_tonplay';
+    const userLevel = user[levelColumn];
+    if (!userLevel) return res.json([]);
 
     const result = await pool.query(
       `SELECT c.*, cw.picked_at as winner_picked_at
        FROM contests c
        LEFT JOIN contest_winners cw ON cw.contest_id = c.id
-       WHERE c.eligible_referral_type = $1
+       WHERE c.casino = $1 AND c.eligible_referral_type = $2
        AND c.status IN ('ended', 'winner_picked')
        ORDER BY c.end_date DESC`,
-      [user.referral_type]
+      [casino, userLevel]
     );
 
     const lang = user.language;
@@ -451,8 +460,8 @@ router.post('/contests/:id/join', verifyTelegramAuth, async (req, res) => {
     if (userResult.rows.length === 0) return res.status(404).json({ error: 'User not found' });
     const userId = userResult.rows[0].id;
 
-    const contest = await pool.query("SELECT * FROM contests WHERE id = $1 AND status = 'active' AND end_date > NOW()", [contestId]);
-    if (contest.rows.length === 0) return res.status(404).json({ error: 'Contest not found or not active' });
+    const contest = await pool.query("SELECT * FROM contests WHERE id = $1 AND status = 'active' AND start_date <= NOW() AND end_date > NOW()", [contestId]);
+    if (contest.rows.length === 0) return res.status(404).json({ error: 'Contest not found, not active, or not started yet' });
 
     await pool.query(
       'INSERT INTO contest_participants (contest_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',

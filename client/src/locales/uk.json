@@ -38,6 +38,8 @@
   "contests.no_history": "Немає завершених конкурсів",
   "contests.join": "Приєднатися",
   "contests.leave": "Покинути",
+  "contests.starts_in": "Починається через",
+  "contests.not_started": "Скоро розпочнеться",
   "settings.title": "Налаштування",
   "settings.language": "Мова",
   "settings.theme": "Тема",

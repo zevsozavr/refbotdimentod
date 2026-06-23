@@ -36,6 +36,8 @@
   "contests.no_history": "Нет завершенных конкурсов",
   "contests.join": "Участвовать",
   "contests.leave": "Выйти",
+  "contests.starts_in": "Начинается через",
+  "contests.not_started": "Скоро начнется",
   "settings.title": "Настройки",
   "settings.language": "Язык",
   "settings.theme": "Тема",

@@ -114,15 +114,6 @@ const AdminContests = () => {
     }
   };
 
-  const handlePickWinner = async (id) => {
-    try {
-      await adminApi.post(`/admin/contests/${id}/pick-winner`);
-      fetchContests();
-    } catch (e) {
-      alert(e.response?.data?.error || t('common.error'));
-    }
-  };
-
   const statusBadge = (status) => {
     const map = { active: 'badge-active', ended: 'badge-ended', winner_picked: 'badge-winner' };
     return map[status] || '';
@@ -247,11 +238,6 @@ const AdminContests = () => {
               <button className="btn btn-secondary btn-sm" onClick={() => openEdit(c)}>{t('admin.contests.edit')}</button>
             )}
             <button className="btn btn-danger btn-sm" onClick={() => handleDelete(c.id)}>{t('admin.contests.delete')}</button>
-            {c.status !== 'winner_picked' && new Date(c.end_date) < new Date() && (
-              <button className="btn btn-success btn-sm" onClick={() => handlePickWinner(c.id)}>
-                {t('admin.contests.pick_winner')}
-              </button>
-            )}
           </div>
         </div>
       ))}
