@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "build": "cd client && npm install && npm run build",
-    "start": "node server/index.js"
+    "start": "node server/index.js",
+    "vercel-build": "cd client && npm install && npm run build"
   },
   "dependencies": {
     "cors": "^2.8.5",
