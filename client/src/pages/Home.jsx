@@ -35,13 +35,10 @@ const Home = () => {
 
   return (
     <div className="page">
-      <header className="fixed top-0 w-full z-50" style={{ background: 'rgba(5,15,28,0.8)', backdropFilter: 'blur(24px)', borderBottom: '1px solid rgba(195,198,211,0.12)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 16px', height: '64px', left: 0, right: 0, maxWidth: 480, margin: '0 auto' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: 36, height: 36, borderRadius: '50%', overflow: 'hidden', background: 'var(--surface-container-high)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(195,198,211,0.2)' }}>
-            <span className="emoji-icon" style={{ fontSize: 18 }}>👤</span>
-          </div>
-          <h1 className="metallic-text" style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.02em' }}>PRO REFERRAL</h1>
-        </div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+        <h1 className="page-title" style={{ fontSize: 24, marginBottom: 0 }}>
+          {lang === 'uk' ? 'Головна' : 'Главная'}
+        </h1>
         <div className="bell-wrapper" style={{ position: 'relative' }}>
           <button className="bell-btn" onClick={() => setShowNotifications(!showNotifications)}>
             <span className="emoji-icon">🔔</span>
@@ -56,30 +53,28 @@ const Home = () => {
             }} />
           )}
         </div>
-      </header>
+      </div>
 
-      <div style={{ paddingTop: '80px' }}>
-        <h2 className="page-title" style={{ fontSize: 24, marginBottom: 20, textShadow: '0 0 10px rgba(255,255,255,0.3)' }}>
-          {lang === 'uk' ? 'Головна' : 'Главная'}
-        </h2>
-
-        <div className="casino-list">
-          {casinos.map(casino => (
-            <div key={casino.id} className={`casino-card ${casino.id} ${casino.id === 'topmatch' ? 'banner-float' : 'banner-float-delayed'}`} onClick={() => navigate(`/casino/${casino.id}`)}>
-              <div className="casino-card-glow" />
-              <img className="casino-card-bg" src={casino.photo} alt={casino.id} />
-              <div className="casino-card-overlay" style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '12px 14px', background: 'linear-gradient(transparent, rgba(9,20,33,0.85) 40%, rgba(9,20,33,0.95) 100%)', display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span className="casino-card-name" style={{ fontWeight: 700, fontSize: 17, letterSpacing: '-0.01em' }}>{lang === 'uk' ? casino.name_uk : casino.name_ru}</span>
-                {levels[casino.id] ? (
-                  <span className={`level-badge ${casino.id}`} style={{ fontSize: 11, padding: '2px 10px', marginLeft: 'auto' }}>
-                    LVL {levels[casino.id]}
-                  </span>
-                ) : null}
-                <span style={{ fontSize: 16, color: 'var(--on-surface-variant)' }}>→</span>
-              </div>
+      <div className="casino-list">
+        {casinos.map(casino => (
+          <div key={casino.id} className={`casino-card ${casino.id} ${casino.id === 'topmatch' ? 'banner-float' : 'banner-float-delayed'}`} onClick={() => navigate(`/casino/${casino.id}`)}>
+            <div className="casino-card-glow" />
+            <img className="casino-card-bg" src={casino.photo} alt={casino.id} />
+            <div className="casino-card-overlay" style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '12px 14px', background: 'linear-gradient(transparent, rgba(9,20,33,0.85) 40%, rgba(9,20,33,0.95) 100%)', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span className="casino-card-name" style={{ fontWeight: 700, fontSize: 17, letterSpacing: '-0.01em' }}>{lang === 'uk' ? casino.name_uk : casino.name_ru}</span>
+              {levels[casino.id] != null ? (
+                <span className={`level-badge ${casino.id}`} style={{ fontSize: 11, padding: '2px 10px', marginLeft: 'auto' }}>
+                  {lang === 'uk' ? 'Рівень' : 'Уровень'} {levels[casino.id]}
+                </span>
+              ) : (
+                <span className="level-badge none" style={{ fontSize: 11, padding: '2px 10px', marginLeft: 'auto', background: 'rgba(195,198,211,0.1)', color: 'var(--on-surface-variant)' }}>
+                  {lang === 'uk' ? 'Немає рівня' : 'Нет уровня'}
+                </span>
+              )}
+              <span style={{ fontSize: 16, color: 'var(--on-surface-variant)' }}>→</span>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
     </div>
   );
