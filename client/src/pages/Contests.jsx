@@ -116,10 +116,8 @@ const Contests = () => {
 
   return (
     <div className="page">
-      <div className="page-header">
-        <button className="back-btn" onClick={goBack}><span className="icon icon-arrow"></span></button>
-        <h1 className="page-title" style={{ margin: 0 }}>{t('contests.title')}</h1>
-      </div>
+      <button className="back-btn" onClick={goBack}><span className="icon icon-arrow"></span></button>
+      <h1 className="page-title" style={{ paddingLeft: 48 }}>{t('contests.title')}</h1>
 
       <div className="tabs">
         <button className={`tab ${tab === 'active' ? `active ${casinoId}` : ''}`} onClick={() => setTab('active')}>

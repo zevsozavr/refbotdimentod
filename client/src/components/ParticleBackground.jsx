@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 
-const PARTICLE_COUNT = 100;
+const PARTICLE_COUNT = 150;
 const PREFIXES = ['particle-shape-1', 'particle-shape-2', 'particle-shape-3',
   'particle-shape-4', 'particle-shape-5', 'particle-shape-6',
   'particle-shape-7', 'particle-shape-8', 'particle-shape-9',
@@ -23,9 +23,9 @@ const ParticleBackground = ({ lightweight }) => {
       el.style.cssText = `
         left: ${Math.random() * 100}%;
         font-size: ${18 + Math.random() * 24}px;
-        animation-duration: ${14 + Math.random() * 20}s;
-        animation-delay: ${-Math.random() * 25}s;
-        opacity: ${0.08 + Math.random() * 0.14};
+        animation-duration: ${8 + Math.random() * 10}s;
+        animation-delay: ${-Math.random() * 16}s;
+        opacity: ${0.1 + Math.random() * 0.16};
         color: rgba(200, 200, 255, 0.15);
       `;
       container.appendChild(el);
