@@ -87,10 +87,10 @@ const AdminPendingChanges = () => {
             </div>
             <div className="pending-change-actions">
               <button className="btn btn-success btn-sm" onClick={() => handleApprove(c.id)}>
-                <span className="emoji-icon">✅</span> {lang === 'uk' ? 'Підтвердити' : 'Подтвердить'}
+                {lang === 'uk' ? 'Підтвердити' : 'Подтвердить'}
               </button>
               <button className="btn btn-danger btn-sm" onClick={() => handleReject(c.id)}>
-                <span className="emoji-icon">❌</span> {lang === 'uk' ? 'Відхилити' : 'Отклонить'}
+                {lang === 'uk' ? 'Відхилити' : 'Отклонить'}
               </button>
             </div>
           </div>

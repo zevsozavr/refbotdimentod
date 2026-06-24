@@ -107,7 +107,7 @@ const Contests = () => {
           <p style={{ fontSize: 15, fontWeight: 600, marginBottom: 8 }}>{t('settings.wallet_title')}</p>
           <p className="text-secondary" style={{ fontSize: 13, marginBottom: 16 }}>{t('settings.wallet_note')}</p>
           <button className={`btn btn-${casinoId}`} onClick={() => navigate(`/casino/${casinoId}`)}>
-            {t('settings.wallet_save')}
+            {lang === 'uk' ? 'Зрозумів' : 'Понял'}
           </button>
         </div>
       </div>
