@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 
 const PARTICLE_COUNT = 150;
-const SYMBOLS = ['♠','♣','♥','♦','★','☆','✦','✧','◆','◇','▲','△','●','○','■','□','※','⁂','✿','❀','⚜','✤','✥','$','₿','₴'];
+const SYMBOLS = ['$'];
 const IMAGES = ['/photos/bonanza1000-removebg-preview.png', '/photos/gates1000-removebg-preview.png'];
 
 const ParticleBackground = ({ lightweight }) => {
@@ -24,8 +24,8 @@ const ParticleBackground = ({ lightweight }) => {
         el.appendChild(img);
         el.style.cssText = `
           left: ${Math.random() * 100}%;
-          width: ${30 + Math.random() * 50}px;
-          height: ${30 + Math.random() * 50}px;
+          width: ${24 + Math.random() * 26}px;
+          height: ${24 + Math.random() * 26}px;
           animation-duration: ${10 + Math.random() * 12}s;
           animation-delay: ${-Math.random() * 20}s;
           opacity: ${0.06 + Math.random() * 0.1};
