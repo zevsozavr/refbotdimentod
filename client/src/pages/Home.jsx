@@ -68,22 +68,14 @@ const Home = () => {
             <div key={casino.id} className={`casino-card ${casino.id} ${casino.id === 'topmatch' ? 'banner-float' : 'banner-float-delayed'}`} onClick={() => navigate(`/casino/${casino.id}`)}>
               <div className="casino-card-glow" />
               <img className="casino-card-bg" src={casino.photo} alt={casino.id} />
-              <div className="casino-card-overlay">
-                <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 8 }}>
-                  {levels[casino.id] ? (
-                    <span className={`level-badge ${casino.id} pulse-badge`}>
-                      {`LEVEL ${levels[casino.id]}`}
-                    </span>
-                  ) : (
-                    <span className="level-badge none">
-                      NO LEVEL
-                    </span>
-                  )}
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(22,32,46,0.6)', padding: '10px 16px', borderRadius: 12, backdropFilter: 'blur(8px)', marginTop: 'auto' }}>
-                  <span className="casino-card-name">{lang === 'uk' ? casino.name_uk : casino.name_ru}</span>
-                  <span style={{ marginLeft: 'auto', fontSize: 18 }}>→</span>
-                </div>
+              <div className="casino-card-overlay" style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '12px 14px', background: 'linear-gradient(transparent, rgba(9,20,33,0.85) 40%, rgba(9,20,33,0.95) 100%)', display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span className="casino-card-name" style={{ fontWeight: 700, fontSize: 17, letterSpacing: '-0.01em' }}>{lang === 'uk' ? casino.name_uk : casino.name_ru}</span>
+                {levels[casino.id] ? (
+                  <span className={`level-badge ${casino.id}`} style={{ fontSize: 11, padding: '2px 10px', marginLeft: 'auto' }}>
+                    LVL {levels[casino.id]}
+                  </span>
+                ) : null}
+                <span style={{ fontSize: 16, color: 'var(--on-surface-variant)' }}>→</span>
               </div>
             </div>
           ))}

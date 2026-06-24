@@ -5,7 +5,6 @@ import { AppProvider, useApp } from './contexts/AppContext';
 import api from './axios';
 import i18n from './i18n';
 import BottomNav from './components/BottomNav';
-import ParticleBackground from './components/ParticleBackground';
 import Banned from './pages/Banned';
 import Pending from './pages/Pending';
 import Rejected from './pages/Rejected';
@@ -159,7 +158,6 @@ const AppContent = () => {
   return (
     <HashRouter>
       <div className={`app-container ${lightweightAnimations ? 'lightweight' : ''}`}>
-        <ParticleBackground lightweight={lightweightAnimations} />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/casino/:casinoId" element={<Casino />} />
