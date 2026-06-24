@@ -42,7 +42,7 @@ const AdminStreams = () => {
   const openCreate = () => {
     setEditing(null);
     const now = new Date();
-    now.setHours(now.getHours() + 1);
+    now.setMinutes(now.getMinutes() + 15);
     setForm({ banner_image: '', link: '', start_time: toLocalDatetime(now.toISOString()), text_ru: '', text_uk: '' });
     setShowForm(true);
     setError('');

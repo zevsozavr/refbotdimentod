@@ -114,7 +114,7 @@ const Announces = () => {
                   <div className="announcement-type-badge announcement">📢 {lang === 'uk' ? 'Оголошення' : 'Объявление'}</div>
                   <div className="announcement-title">{lang === 'uk' ? item.title_uk : item.title_ru}</div>
                   {(lang === 'uk' ? item.text_uk : item.text_ru) && <div className="announcement-content">{lang === 'uk' ? item.text_uk : item.text_ru}</div>}
-                  <div className="announcement-date">{new Date(item.created_at).toLocaleString()}</div>
+                  <div className="announcement-date">{new Date(item.created_at).toLocaleString([], { timeZone: 'Europe/Kyiv' })}</div>
                 </>
               )}
             </div>
