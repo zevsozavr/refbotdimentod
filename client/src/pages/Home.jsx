@@ -71,7 +71,6 @@ const Home = () => {
                   {lang === 'uk' ? 'Немає рівня' : 'Нет уровня'}
                 </span>
               )}
-              <span style={{ fontSize: 16, color: 'var(--on-surface-variant)' }}>→</span>
             </div>
           </div>
         ))}
