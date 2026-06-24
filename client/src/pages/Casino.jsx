@@ -114,12 +114,12 @@ const Casino = () => {
 
   return (
     <div className="page">
-      <div className={`casino-hero ${casinoId}`} style={{ minHeight: 240, borderRadius: '0 0 24px 24px', overflow: 'hidden', position: 'relative' }}>
+      <div className={`casino-hero ${casinoId}`} style={{ minHeight: 220, borderRadius: '0 0 24px 24px', overflow: 'hidden', position: 'relative' }}>
         <button className="back-btn" onClick={() => navigate('/')} style={{ position: 'absolute', top: 12, left: 12, zIndex: 10, width: 36, height: 36, borderRadius: 10, background: 'rgba(5,15,28,0.5)', backdropFilter: 'blur(6px)', border: '1px solid rgba(195,198,211,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, cursor: 'pointer', color: '#fff' }}>
           <span className="emoji-icon" style={{ fontSize: 16, lineHeight: 1, filter: 'none' }}>◀</span>
         </button>
         <img className="casino-hero-img" src={`/photos/${casinoId}.jpg`} alt={casinoId} style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
-        <div className="casino-hero-overlay" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, transparent 30%, rgba(9,20,33,0.9) 85%, var(--surface-dim) 100%)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '24px 20px' }}>
+        <div className="casino-hero-overlay" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, transparent 30%, rgba(9,20,33,0.9) 85%, var(--surface-dim) 100%)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '20px 20px' }}>
           <span className="casino-hero-title metallic-text" style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 8, textShadow: '0 2px 12px rgba(0,0,0,0.6)' }}>{casinoId === 'topmatch' ? 'TopMatch' : 'TonPlay'}</span>
           {casinoData?.level ? (
             <span className={`level-badge ${casinoId}`} style={{ alignSelf: 'flex-start', margin: 0 }}>
@@ -152,81 +152,90 @@ const Casino = () => {
         </button>
       </div>
 
-      <div className="glass-panel stagger-item" style={{ margin: '16px 16px 0' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-          <div className="emoji-icon" style={{ fontSize: 24 }}>👤</div>
-          <div>
-            <div className="wallet-card-title" style={{ fontWeight: 700, fontSize: 16 }}>{lang === 'uk' ? 'ID в казино' : 'ID в казино'}</div>
+      <div className="glass-panel stagger-item" style={{ margin: '12px 16px 0', padding: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+          <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(195,198,211,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>
+            <span className="emoji-icon" style={{ filter: 'none' }}>👤</span>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--primary)' }}>{lang === 'uk' ? 'ID в казино' : 'ID в казино'}</div>
             {casinoData.casino_account_id ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, flexWrap: 'wrap' }}>
-                <span style={{ fontSize: 13, color: 'var(--on-surface-variant)' }}>{lang === 'uk' ? 'Поточний:' : 'Текущий:'}</span>
-                <span className="wallet-current-id" style={{ fontSize: 15, fontWeight: 600, fontFamily: 'monospace' }}>{casinoData.casino_account_id}</span>
-                {idPending === 'pending' && <span className="wallet-pending-badge">{lang === 'uk' ? 'Очікує' : 'Ожидает'}</span>}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: 12, color: 'var(--on-surface-variant)' }}>{lang === 'uk' ? 'Поточний:' : 'Текущий:'}</span>
+                <span style={{ fontSize: 14, fontWeight: 600, fontFamily: 'monospace', color: 'var(--tertiary)' }}>{casinoData.casino_account_id}</span>
+                {idPending === 'pending' && <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 999, background: 'rgba(233,195,73,0.15)', color: '#e9c349' }}>{lang === 'uk' ? 'Очікує' : 'Ожидает'}</span>}
               </div>
             ) : (
-              <span style={{ fontSize: 13, color: 'var(--on-surface-variant)' }}>{lang === 'uk' ? 'Не вказано' : 'Не указан'}</span>
+              <span style={{ fontSize: 12, color: 'var(--on-surface-variant)' }}>{lang === 'uk' ? 'Не вказано' : 'Не указан'}</span>
             )}
           </div>
         </div>
-        <input
-          className="glass-input"
-          placeholder={lang === 'uk' ? 'Введіть новий ID' : 'Введите новый ID'}
-          value={casinoIdInput}
-          onChange={e => setCasinoIdInput(e.target.value)}
-          maxLength={32}
-          disabled={idPending === 'pending'}
-        />
-        <button
-          className="btn btn-primary btn-sm wallet-btn"
-          style={{ marginTop: 10 }}
-          onClick={submitCasinoId}
-          disabled={!casinoIdInput.trim() || savingId || idPending === 'pending'}
-        >
-          {idPending === 'pending' ? (lang === 'uk' ? 'Очікує...' : 'Ожидает...') : (savingId ? '⋯' : (lang === 'uk' ? 'Надіслати' : 'Отправить'))}
-        </button>
-        {idPending === 'pending' && <p className="wallet-card-msg" style={{ color: 'var(--warning)' }}><span className="emoji-icon">⌛</span> {lang === 'uk' ? 'Запит на зміну очікує підтвердження адміністратора' : 'Запрос на изменение ожидает подтверждения администратора'}</p>}
-        {idMsg && <p className="wallet-card-msg">{idMsgType === 'success' ? <span className="emoji-icon">✅</span> : <span className="emoji-icon">❌</span>} {idMsg}</p>}
+        <div style={{ display: 'flex', gap: 8 }}>
+          <input
+            className="glass-input"
+            placeholder={lang === 'uk' ? 'Новий ID' : 'Новый ID'}
+            value={casinoIdInput}
+            onChange={e => setCasinoIdInput(e.target.value)}
+            maxLength={32}
+            disabled={idPending === 'pending'}
+            style={{ flex: 1, padding: '10px 14px', fontSize: 14, borderRadius: 10 }}
+          />
+          <button
+            className="btn btn-primary"
+            style={{ width: 'auto', padding: '10px 18px', fontSize: 13, borderRadius: 10, whiteSpace: 'nowrap', flexShrink: 0 }}
+            onClick={submitCasinoId}
+            disabled={!casinoIdInput.trim() || savingId || idPending === 'pending'}
+          >
+            {idPending === 'pending' ? (lang === 'uk' ? 'Очікує...' : 'Ожидает...') : (savingId ? '⋯' : (lang === 'uk' ? 'Надіслати' : 'Отправить'))}
+          </button>
+        </div>
+        {idPending === 'pending' && <p style={{ fontSize: 12, color: '#e9c349', marginTop: 8, display: 'flex', alignItems: 'center', gap: 4 }}><span className="emoji-icon" style={{ fontSize: 12 }}>⌛</span> {lang === 'uk' ? 'Запит на зміну очікує підтвердження адміністратора' : 'Запрос на изменение ожидает подтверждения администратора'}</p>}
+        {idMsg && <p style={{ fontSize: 12, marginTop: 6, display: 'flex', alignItems: 'center', gap: 4, color: idMsgType === 'success' ? 'var(--tertiary)' : 'var(--error)' }}>{idMsgType === 'success' ? <span className="emoji-icon" style={{ fontSize: 12 }}>✅</span> : <span className="emoji-icon" style={{ fontSize: 12 }}>❌</span>} {idMsg}</p>}
       </div>
 
-      <div className="glass-panel stagger-item" style={{ margin: '16px 16px 0' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-          <div className="emoji-icon" style={{ fontSize: 24 }}>💰</div>
-          <div>
-            <div className="wallet-card-title" style={{ fontWeight: 700, fontSize: 16 }}>TRC20 USDT {lang === 'uk' ? 'Гаманець' : 'Кошелек'}</div>
+      <div className="glass-panel stagger-item" style={{ margin: '12px 16px 0', padding: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+          <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(195,198,211,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>
+            <span className="emoji-icon" style={{ filter: 'none' }}>💰</span>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--primary)' }}>TRC20 USDT {lang === 'uk' ? 'Гаманець' : 'Кошелек'}</div>
             {currentWallet ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, flexWrap: 'wrap' }}>
-                <span style={{ fontSize: 13, color: 'var(--on-surface-variant)' }}>{lang === 'uk' ? 'Поточний:' : 'Текущий:'}</span>
-                <span className="wallet-current-id wallet-address" style={{ fontSize: 15, fontWeight: 600, fontFamily: 'monospace' }}>{currentWallet}</span>
-                {walletPending === 'pending' && <span className="wallet-pending-badge">{lang === 'uk' ? 'Очікує' : 'Ожидает'}</span>}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: 12, color: 'var(--on-surface-variant)' }}>{lang === 'uk' ? 'Поточний:' : 'Текущий:'}</span>
+                <span style={{ fontSize: 13, fontWeight: 600, fontFamily: 'monospace', color: 'var(--tertiary)', wordBreak: 'break-all' }}>{currentWallet}</span>
+                {walletPending === 'pending' && <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 999, background: 'rgba(233,195,73,0.15)', color: '#e9c349' }}>{lang === 'uk' ? 'Очікує' : 'Ожидает'}</span>}
               </div>
             ) : (
-              <span style={{ fontSize: 13, color: 'var(--on-surface-variant)' }}>{lang === 'uk' ? 'Не вказано' : 'Не указан'}</span>
+              <span style={{ fontSize: 12, color: 'var(--on-surface-variant)' }}>{lang === 'uk' ? 'Не вказано' : 'Не указан'}</span>
             )}
           </div>
         </div>
-        <input
-          className="glass-input"
-          placeholder={lang === 'uk' ? 'Введіть TRC20 адресу' : 'Введите TRC20 адрес'}
-          value={walletInput}
-          onChange={e => setWalletInput(e.target.value)}
-          style={{ fontFamily: 'monospace' }}
-          disabled={walletPending === 'pending'}
-        />
-        <button
-          className="btn btn-primary btn-sm wallet-btn"
-          style={{ marginTop: 10 }}
-          onClick={submitWallet}
-          disabled={!walletInput.trim() || savingWallet || walletPending === 'pending'}
-        >
-          {walletPending === 'pending' ? (lang === 'uk' ? 'Очікує...' : 'Ожидает...') : (savingWallet ? '⋯' : (lang === 'uk' ? 'Надіслати' : 'Отправить'))}
-        </button>
-        {walletPending === 'pending' && <p className="wallet-card-msg" style={{ color: 'var(--warning)' }}><span className="emoji-icon">⌛</span> {lang === 'uk' ? 'Запит на зміну очікує підтвердження адміністратора' : 'Запрос на изменение ожидает подтверждения администратора'}</p>}
-        <p className="wallet-card-note" style={{ marginTop: 12, fontSize: 12, color: 'var(--on-surface-variant)', textAlign: 'center' }}>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <input
+            className="glass-input"
+            placeholder={lang === 'uk' ? 'TRC20 адреса' : 'TRC20 адрес'}
+            value={walletInput}
+            onChange={e => setWalletInput(e.target.value)}
+            style={{ flex: 1, padding: '10px 14px', fontSize: 14, borderRadius: 10, fontFamily: 'monospace' }}
+            disabled={walletPending === 'pending'}
+          />
+          <button
+            className="btn btn-primary"
+            style={{ width: 'auto', padding: '10px 18px', fontSize: 13, borderRadius: 10, whiteSpace: 'nowrap', flexShrink: 0 }}
+            onClick={submitWallet}
+            disabled={!walletInput.trim() || savingWallet || walletPending === 'pending'}
+          >
+            {walletPending === 'pending' ? (lang === 'uk' ? 'Очікує...' : 'Ожидает...') : (savingWallet ? '⋯' : (lang === 'uk' ? 'Надіслати' : 'Отправить'))}
+          </button>
+        </div>
+        {walletPending === 'pending' && <p style={{ fontSize: 12, color: '#e9c349', marginTop: 8, display: 'flex', alignItems: 'center', gap: 4 }}><span className="emoji-icon" style={{ fontSize: 12 }}>⌛</span> {lang === 'uk' ? 'Запит на зміну очікує підтвердження адміністратора' : 'Запрос на изменение ожидает подтверждения администратора'}</p>}
+        {walletMsg && <p style={{ fontSize: 12, marginTop: 6, display: 'flex', alignItems: 'center', gap: 4, color: walletMsgType === 'success' ? 'var(--tertiary)' : 'var(--error)' }}>{walletMsgType === 'success' ? <span className="emoji-icon" style={{ fontSize: 12 }}>✅</span> : <span className="emoji-icon" style={{ fontSize: 12 }}>❌</span>} {walletMsg}</p>}
+        <p style={{ fontSize: 11, color: 'var(--on-surface-variant)', textAlign: 'center', marginTop: 10, opacity: 0.7 }}>
           {lang === 'uk'
             ? 'Адміністратор підтвердить зміни перед застосуванням'
             : 'Администратор подтвердит изменения перед применением'}
         </p>
-        {walletMsg && <p className="wallet-card-msg">{walletMsgType === 'success' ? <span className="emoji-icon">✅</span> : <span className="emoji-icon">❌</span>} {walletMsg}</p>}
       </div>
 
       <button
