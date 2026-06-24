@@ -108,7 +108,7 @@ const AdminUserDetail = () => {
     <div className="page">
       <AdminNav />
       <button className="btn btn-secondary btn-sm mb-4" onClick={() => navigate('/admin/users')}>
-        <span className="icon icon-arrow"></span> {t('admin.users.title')}
+        <span className="emoji-icon">◀</span> {t('admin.users.title')}
       </button>
 
       <h1 className="page-title">{t('admin.user_detail.title')}</h1>

@@ -28,7 +28,7 @@ const NotificationDropdown = ({ onClose }) => {
   return (
     <div className="notification-dropdown" ref={ref}>
       <div className="notification-dropdown-header">
-        <span className="notification-dropdown-title"><span className="icon icon-bell"></span> Сповіщення</span>
+        <span className="notification-dropdown-title"><span className="emoji-icon">🔔</span> Сповіщення</span>
         {items.length > 0 && (
           <button className="notification-clear-btn" onClick={clearAll}>
             Очистити
@@ -44,7 +44,7 @@ const NotificationDropdown = ({ onClose }) => {
           {items.map(item => (
             <div key={`${item.type}-${item.id}`} className={`notification-item ${item.type}`}>
               <span className="notification-type-badge">
-                {item.type === 'stream' ? <><span className="icon icon-monitor"></span> Стрім</> : <><span className="icon icon-megaphone"></span> Оголошення</>}
+                {item.type === 'stream' ? <><span className="emoji-icon">🖥️</span> Стрім</> : <><span className="emoji-icon">📢</span> Оголошення</>}
               </span>
               <p className="notification-item-title">
                 {item.type === 'stream'

@@ -1,12 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 
 const PARTICLE_COUNT = 150;
-const PREFIXES = ['particle-shape-1', 'particle-shape-2', 'particle-shape-3',
-  'particle-shape-4', 'particle-shape-5', 'particle-shape-6',
-  'particle-shape-7', 'particle-shape-8', 'particle-shape-9',
-  'particle-shape-10', 'particle-shape-11', 'particle-shape-12',
-  'particle-shape-13', 'particle-shape-14', 'particle-shape-15',
-  'particle-shape-16'];
+const SYMBOLS = ['♠','♣','♥','♦','★','☆','✦','✧','◆','◇','▲','△','●','○','■','□','※','⁂','✿','❀','⚜','✤','✥'];
 
 const ParticleBackground = ({ lightweight }) => {
   const containerRef = useRef();
@@ -16,10 +11,10 @@ const ParticleBackground = ({ lightweight }) => {
     const container = containerRef.current;
     if (!container) return;
 
-    const particles = Array.from({ length: PARTICLE_COUNT }, (_, i) => {
-      const cls = PREFIXES[Math.floor(Math.random() * PREFIXES.length)];
+    const particles = Array.from({ length: PARTICLE_COUNT }, () => {
       const el = document.createElement('div');
-      el.className = `particle ${cls}`;
+      el.className = 'particle';
+      el.textContent = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
       el.style.cssText = `
         left: ${Math.random() * 100}%;
         font-size: ${18 + Math.random() * 24}px;

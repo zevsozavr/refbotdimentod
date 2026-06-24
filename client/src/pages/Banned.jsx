@@ -5,7 +5,7 @@ const Banned = () => {
   const { t } = useTranslation();
   return (
     <div className="status-screen">
-      <div className="status-icon"><span className="icon icon-prohibited"></span></div>
+      <div className="status-icon"><span className="emoji-icon">🚫</span></div>
       <h1 className="page-title">{t('banned.title')}</h1>
       <p className="text-secondary">{t('banned.description')}</p>
     </div>

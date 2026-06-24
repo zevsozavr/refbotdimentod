@@ -87,7 +87,7 @@ const AdminStreams = () => {
   return (
     <div className="page">
       <AdminNav />
-      <h1 className="page-title"><span className="icon icon-monitor"></span> Streams</h1>
+      <h1 className="page-title"><span className="emoji-icon">🖥️</span> Streams</h1>
       <button className="btn btn-primary btn-sm mb-4" onClick={openCreate}>Create Stream</button>
 
       {showForm && (
@@ -99,7 +99,7 @@ const AdminStreams = () => {
             {form.banner_image && (
               <div style={{ position: 'relative', display: 'inline-block', marginTop: 8 }}>
                 <img src={form.banner_image} alt="" style={{ maxWidth: '100%', maxHeight: 120, borderRadius: 'var(--radius-sm)' }} />
-                <button type="button" onClick={removeBanner} style={{ position: 'absolute', top: -6, right: -6, background: 'var(--error)', color: '#fff', border: 'none', borderRadius: '50%', width: 22, height: 22, cursor: 'pointer', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span className="icon icon-close" style={{ color: '#fff' }}></span></button>
+                <button type="button" onClick={removeBanner} style={{ position: 'absolute', top: -6, right: -6, background: 'var(--error)', color: '#fff', border: 'none', borderRadius: '50%', width: 22, height: 22, cursor: 'pointer', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span className="emoji-icon" style={{ color: '#fff' }}>✕</span></button>
               </div>
             )}
           </div>
@@ -134,10 +134,10 @@ const AdminStreams = () => {
             <a href={s.link} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)' }}>{s.link}</a>
           </div>
           <div className="text-secondary" style={{ fontSize: 12, marginBottom: 4 }}>{s.text_ru}{s.text_uk ? ` / ${s.text_uk}` : ''}</div>
-          <div className="text-secondary" style={{ fontSize: 12 }}><span className="icon icon-clock"></span> {new Date(s.start_time).toLocaleString([], { timeZone: 'Europe/Kyiv' })}</div>
+          <div className="text-secondary" style={{ fontSize: 12 }}><span className="emoji-icon">🕐</span> {new Date(s.start_time).toLocaleString([], { timeZone: 'Europe/Kyiv' })}</div>
           <div style={{ fontSize: 12, marginTop: 4, display: 'flex', gap: 6, alignItems: 'center' }}>
             <span className={`badge ${s.status === 'scheduled' ? 'badge-primary' : s.status === 'live' ? 'badge-success' : 'badge-secondary'}`}>
-              {s.status === 'scheduled' ? 'Scheduled' : s.status === 'live' ? <><span className="icon icon-live"></span> Live</> : 'Ended'}
+              {s.status === 'scheduled' ? 'Scheduled' : s.status === 'live' ? <><span className="emoji-icon">🔴</span> Live</> : 'Ended'}
             </span>
             {s.status === 'scheduled' && <button className="btn btn-success btn-xs" onClick={() => setStatus(s.id, 'live')}>Set Live</button>}
             {s.status === 'live' && <button className="btn btn-secondary btn-xs" onClick={() => setStatus(s.id, 'ended')}>End</button>}

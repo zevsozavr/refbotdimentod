@@ -97,9 +97,9 @@ const Announces = () => {
             <div className="announcement-body">
               {item.itemType === 'stream' ? (
                 <>
-                  <div className="announcement-type-badge stream"><span className="icon icon-monitor"></span> {lang === 'uk' ? 'Стрім' : 'Стрим'}</div>
+                  <div className="announcement-type-badge stream"><span className="emoji-icon">🖥️</span> {lang === 'uk' ? 'Стрім' : 'Стрим'}</div>
                   <div className="announcement-title">{lang === 'uk' ? item.text_uk : item.text_ru || 'Stream'}</div>
-                  {item.link && <div className="announcement-content"><span className="icon icon-link"></span> {item.link}</div>}
+                  {item.link && <div className="announcement-content"><span className="emoji-icon">🔗</span> {item.link}</div>}
                   <div className="stream-countdown">
                     {isLive(item.start_time) ? (
                       <>
@@ -107,14 +107,14 @@ const Announces = () => {
                         {lang === 'uk' ? 'Зараз в ефірі' : 'Сейчас в эфире'}
                       </>
                     ) : (
-                      <><span className="icon icon-stopwatch"></span> {getCountdown(item.start_time)}</>
+                      <><span className="emoji-icon">⏱️</span> {getCountdown(item.start_time)}</>
                     )}
                   </div>
-                  <div className="announcement-date"><span className="icon icon-clock"></span> {new Date(item.start_time).toLocaleString([], { timeZone: 'Europe/Kyiv' })}</div>
+                  <div className="announcement-date"><span className="emoji-icon">🕐</span> {new Date(item.start_time).toLocaleString([], { timeZone: 'Europe/Kyiv' })}</div>
                 </>
               ) : (
                 <>
-                  <div className="announcement-type-badge announcement"><span className="icon icon-megaphone"></span> {lang === 'uk' ? 'Оголошення' : 'Объявление'}</div>
+                  <div className="announcement-type-badge announcement"><span className="emoji-icon">📢</span> {lang === 'uk' ? 'Оголошення' : 'Объявление'}</div>
                   <div className="announcement-title">{lang === 'uk' ? item.title_uk : item.title_ru}</div>
                   {(lang === 'uk' ? item.text_uk : item.text_ru) && <div className="announcement-content">{lang === 'uk' ? item.text_uk : item.text_ru}</div>}
                   <div className="announcement-date">{new Date(item.created_at).toLocaleString([], { timeZone: 'Europe/Kyiv' })}</div>

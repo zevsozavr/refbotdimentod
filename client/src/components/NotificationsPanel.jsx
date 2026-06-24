@@ -92,7 +92,7 @@ const NotificationsPanel = () => {
   return (
     <>
       <button className="notif-bell" onClick={() => setOpen(!open)}>
-        <span className="icon icon-bell"></span>
+        <span className="emoji-icon">🔔</span>
         {total > 0 && <span className="notif-badge">{total}</span>}
       </button>
 
@@ -100,20 +100,20 @@ const NotificationsPanel = () => {
         <div className="notif-overlay" onClick={() => setOpen(false)}>
           <div className="notif-panel" ref={panelRef} onClick={(e) => e.stopPropagation()}>
             <div className="notif-panel-header">
-              <span><span className="icon icon-bell"></span> {lang === 'uk' ? 'Сповіщення' : 'Уведомления'}</span>
+              <span><span className="emoji-icon">🔔</span> {lang === 'uk' ? 'Сповіщення' : 'Уведомления'}</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 {total > 0 && (
                   <button className="notif-clear-all" onClick={clearAllNotifications}>
                     {lang === 'uk' ? 'Очистити все' : 'Очистить все'}
                   </button>
                 )}
-                <button className="notif-close" onClick={() => setOpen(false)}><span className="icon icon-close"></span></button>
+                <button className="notif-close" onClick={() => setOpen(false)}><span className="emoji-icon">✕</span></button>
               </div>
             </div>
 
             {activeAnnounces.length > 0 && (
               <div className="notif-section">
-                <div className="notif-section-title"><span className="icon icon-megaphone"></span> {lang === 'uk' ? 'Оголошення' : 'Объявления'}</div>
+                <div className="notif-section-title"><span className="emoji-icon">📢</span> {lang === 'uk' ? 'Оголошення' : 'Объявления'}</div>
                 {activeAnnounces.map(a => (
                   <div key={`a-${a.id}`} className="notif-item" onClick={() => { navigate('/announces'); setOpen(false); }}>
                     {a.banner_image && <img className="notif-item-img" src={a.banner_image} alt="" />}
@@ -123,7 +123,7 @@ const NotificationsPanel = () => {
                         <div className="notif-item-text">{(lang === 'uk' ? a.text_uk : a.text_ru || '').slice(0, 80)}</div>
                       )}
                     </div>
-                    <button className="notif-item-clear" onClick={(e) => clearNotification(e, 'announce', a.id)}><span className="icon icon-close"></span></button>
+                    <button className="notif-item-clear" onClick={(e) => clearNotification(e, 'announce', a.id)}><span className="emoji-icon">✕</span></button>
                   </div>
                 ))}
               </div>
@@ -131,7 +131,7 @@ const NotificationsPanel = () => {
 
             {activeStreams.length > 0 && (
               <div className="notif-section">
-                <div className="notif-section-title"><span className="icon icon-monitor"></span> {lang === 'uk' ? 'Стріми' : 'Стримы'}</div>
+                <div className="notif-section-title"><span className="emoji-icon">🖥️</span> {lang === 'uk' ? 'Стріми' : 'Стримы'}</div>
                 {activeStreams.map(s => {
                   const startTime = new Date(s.start_time);
                   const timeStr = startTime.toLocaleString(lang === 'uk' ? 'uk-UA' : 'ru-RU', { timeZone: 'Europe/Kyiv' });
@@ -142,9 +142,9 @@ const NotificationsPanel = () => {
                         <div className="notif-item-title">
                           {s.text_uk && lang === 'uk' ? s.text_uk : s.text_ru || (lang === 'uk' ? 'Стрім' : 'Стрим')}
                         </div>
-                        <div className="notif-item-text"><span className="icon icon-clock"></span> {timeStr}</div>
+                        <div className="notif-item-text"><span className="emoji-icon">🕐</span> {timeStr}</div>
                       </div>
-                      <button className="notif-item-clear" onClick={(e) => clearNotification(e, 'stream', s.id)}><span className="icon icon-close"></span></button>
+                      <button className="notif-item-clear" onClick={(e) => clearNotification(e, 'stream', s.id)}><span className="emoji-icon">✕</span></button>
                     </div>
                   );
                 })}
@@ -157,7 +157,7 @@ const NotificationsPanel = () => {
 
             {total > 0 && (
               <div className="notif-view-all" onClick={() => { navigate('/announces'); setOpen(false); }}>
-                {lang === 'uk' ? <><span className="icon icon-megaphone"></span> Всі сповіщення &rarr;</> : <><span className="icon icon-megaphone"></span> Все уведомления &rarr;</>}
+                {lang === 'uk' ? <><span className="emoji-icon">📢</span> Всі сповіщення &rarr;</> : <><span className="emoji-icon">📢</span> Все уведомления &rarr;</>}
               </div>
             )}
           </div>

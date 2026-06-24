@@ -41,7 +41,7 @@ const Home = () => {
         </h1>
         <div className="bell-wrapper" style={{ position: 'relative' }}>
           <button className="bell-btn" onClick={() => setShowNotifications(!showNotifications)}>
-            <span className="icon icon-bell"></span>
+            <span className="emoji-icon">🔔</span>
             {unreadCount > 0 && (
               <span className="bell-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>
             )}

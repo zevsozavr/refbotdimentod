@@ -115,7 +115,7 @@ const Casino = () => {
   return (
     <div className="page">
       <div className={`casino-hero ${casinoId}`}>
-        <button className="back-btn" onClick={() => navigate('/')}><span className="icon icon-arrow"></span></button>
+        <button className="back-btn" onClick={() => navigate('/')}><span className="emoji-icon">◀</span></button>
         <img className="casino-hero-img" src={`/photos/${casinoId}.jpg`} alt={casinoId} />
         <div className="casino-hero-overlay">
           <span className="casino-hero-title">{casinoId === 'topmatch' ? 'TopMatch' : 'TonPlay'}</span>
@@ -146,13 +146,13 @@ const Casino = () => {
             window.open(link, '_blank', 'noopener,noreferrer');
           }
         }}>
-          <span className="icon icon-slot"></span> {lang === 'uk' ? 'Відкрити казино' : 'Открыть казино'}
+          <span className="emoji-icon">🎰</span> {lang === 'uk' ? 'Відкрити казино' : 'Открыть казино'}
         </button>
       </div>
 
       <div className="wallet-card">
         <div className="wallet-card-header">
-          <div className="wallet-card-icon"><span className="icon icon-user"></span></div>
+          <div className="wallet-card-icon"><span className="emoji-icon">👤</span></div>
           <div>
             <div className="wallet-card-title">{lang === 'uk' ? 'ID в казино' : 'ID в казино'}</div>
             {casinoData.casino_account_id ? (
@@ -183,13 +183,13 @@ const Casino = () => {
         >
           {idPending === 'pending' ? (lang === 'uk' ? 'Очікує...' : 'Ожидает...') : (savingId ? '⋯' : (lang === 'uk' ? 'Надіслати' : 'Отправить'))}
         </button>
-        {idPending === 'pending' && <p className="wallet-card-msg" style={{ color: 'var(--warning)' }}><span className="icon icon-hourglass"></span> {lang === 'uk' ? 'Запит на зміну очікує підтвердження адміністратора' : 'Запрос на изменение ожидает подтверждения администратора'}</p>}
-        {idMsg && <p className="wallet-card-msg">{idMsgType === 'success' ? <span className="icon icon-check"></span> : <span className="icon icon-cross"></span>} {idMsg}</p>}
+        {idPending === 'pending' && <p className="wallet-card-msg" style={{ color: 'var(--warning)' }}><span className="emoji-icon">⌛</span> {lang === 'uk' ? 'Запит на зміну очікує підтвердження адміністратора' : 'Запрос на изменение ожидает подтверждения администратора'}</p>}
+        {idMsg && <p className="wallet-card-msg">{idMsgType === 'success' ? <span className="emoji-icon">✅</span> : <span className="emoji-icon">❌</span>} {idMsg}</p>}
       </div>
 
       <div className="wallet-card">
         <div className="wallet-card-header">
-          <div className="wallet-card-icon"><span className="icon icon-moneybag"></span></div>
+          <div className="wallet-card-icon"><span className="emoji-icon">💰</span></div>
           <div>
             <div className="wallet-card-title">TRC20 USDT {lang === 'uk' ? 'Гаманець' : 'Кошелек'}</div>
             {currentWallet ? (
@@ -220,23 +220,23 @@ const Casino = () => {
         >
           {walletPending === 'pending' ? (lang === 'uk' ? 'Очікує...' : 'Ожидает...') : (savingWallet ? '⋯' : (lang === 'uk' ? 'Надіслати' : 'Отправить'))}
         </button>
-        {walletPending === 'pending' && <p className="wallet-card-msg" style={{ color: 'var(--warning)' }}><span className="icon icon-hourglass"></span> {lang === 'uk' ? 'Запит на зміну очікує підтвердження адміністратора' : 'Запрос на изменение ожидает подтверждения администратора'}</p>}
+        {walletPending === 'pending' && <p className="wallet-card-msg" style={{ color: 'var(--warning)' }}><span className="emoji-icon">⌛</span> {lang === 'uk' ? 'Запит на зміну очікує підтвердження адміністратора' : 'Запрос на изменение ожидает подтверждения администратора'}</p>}
         <p className="wallet-card-note">
           {lang === 'uk'
             ? 'Адміністратор підтвердить зміни перед застосуванням'
             : 'Администратор подтвердит изменения перед применением'}
         </p>
-        {walletMsg && <p className="wallet-card-msg">{walletMsgType === 'success' ? <span className="icon icon-check"></span> : <span className="icon icon-cross"></span>} {walletMsg}</p>}
+        {walletMsg && <p className="wallet-card-msg">{walletMsgType === 'success' ? <span className="emoji-icon">✅</span> : <span className="emoji-icon">❌</span>} {walletMsg}</p>}
       </div>
 
       <button
         className={`btn btn-block btn-${casinoId}`}
         onClick={() => navigate(`/contests?casino=${casinoId}`)}
       >
-        <span className="icon icon-trophy"></span> {lang === 'uk' ? 'Конкурси' : 'Конкурсы'}
+        <span className="emoji-icon">🏆</span> {lang === 'uk' ? 'Конкурси' : 'Конкурсы'}
       </button>
       <p className="contest-note">
-        <span className="icon icon-moneybag"></span> {lang === 'uk'
+        <span className="emoji-icon">💰</span> {lang === 'uk'
           ? 'Для участі в конкурсах потрібен TRC20 USDT гаманець'
           : 'Для участия в конкурсах требуется TRC20 USDT кошелек'}
       </p>

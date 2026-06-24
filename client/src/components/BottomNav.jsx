@@ -4,9 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { useApp } from '../contexts/AppContext';
 
 const NAV_ICONS = {
-  '/': <span className="icon icon-house"></span>,
-  '/announces': <span className="icon icon-megaphone"></span>,
-  '/settings': <span className="icon icon-gear"></span>,
+  '/': <span className="emoji-icon">🏠</span>,
+  '/announces': <span className="emoji-icon">📢</span>,
+  '/settings': <span className="emoji-icon">⚙️</span>,
 };
 
 const BottomNav = () => {
@@ -40,7 +40,7 @@ const BottomNav = () => {
           className={`nav-item ${isOnAdmin ? 'active' : ''}`}
           onClick={() => navigate(isOnAdmin ? adminPath : '/admin/stats')}
         >
-          <span className="nav-icon"><span className="icon icon-shield"></span></span>
+          <span className="nav-icon"><span className="emoji-icon">🛡️</span></span>
           <span>{t('nav.admin')}</span>
         </button>
       )}

@@ -62,7 +62,7 @@ const AdminPendingChanges = () => {
             <div className="pending-change-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span className={`badge ${c.change_type === 'wallet' ? 'badge-success' : 'badge-primary'}`}>
-                  {c.change_type === 'wallet' ? <><span className="icon icon-moneybag"></span> Wallet</> : <><span className="icon icon-slot"></span> Casino ID</>}
+                  {c.change_type === 'wallet' ? <><span className="emoji-icon">💰</span> Wallet</> : <><span className="emoji-icon">🎰</span> Casino ID</>}
                 </span>
                 {c.casino && <span className="badge badge-secondary">{c.casino.toUpperCase()}</span>}
               </div>
@@ -77,7 +77,7 @@ const AdminPendingChanges = () => {
               {c.old_value ? (
                 <>
                   <span className="pending-change-old">{c.old_value}</span>
-                  <span className="pending-change-arrow"><span className="icon icon-arrow-right"></span></span>
+                  <span className="pending-change-arrow"><span className="emoji-icon">▶</span></span>
                 </>
               ) : null}
               <span className="pending-change-new">{c.new_value}</span>
@@ -87,10 +87,10 @@ const AdminPendingChanges = () => {
             </div>
             <div className="pending-change-actions">
               <button className="btn btn-success btn-sm" onClick={() => handleApprove(c.id)}>
-                <span className="icon icon-check"></span> {lang === 'uk' ? 'Підтвердити' : 'Подтвердить'}
+                <span className="emoji-icon">✅</span> {lang === 'uk' ? 'Підтвердити' : 'Подтвердить'}
               </button>
               <button className="btn btn-danger btn-sm" onClick={() => handleReject(c.id)}>
-                <span className="icon icon-cross"></span> {lang === 'uk' ? 'Відхилити' : 'Отклонить'}
+                <span className="emoji-icon">❌</span> {lang === 'uk' ? 'Відхилити' : 'Отклонить'}
               </button>
             </div>
           </div>
