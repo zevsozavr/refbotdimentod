@@ -115,8 +115,10 @@ const Casino = () => {
   return (
     <div className="page">
       <div className={`casino-hero ${casinoId}`} style={{ minHeight: 220, borderRadius: '0 0 24px 24px', overflow: 'hidden', position: 'relative' }}>
-        <button className="back-btn" onClick={() => navigate('/')} style={{ position: 'absolute', top: 12, left: 12, zIndex: 10, width: 36, height: 36, borderRadius: 10, background: 'rgba(5,15,28,0.5)', backdropFilter: 'blur(6px)', border: '1px solid rgba(195,198,211,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, cursor: 'pointer', color: '#fff' }}>
-          <span className="emoji-icon" style={{ fontSize: 16, lineHeight: 1, filter: 'none' }}>◀</span>
+        <button onClick={() => navigate('/')} style={{ position: 'absolute', top: 12, left: 12, zIndex: 10, width: 40, height: 40, borderRadius: 12, background: 'rgba(5,15,28,0.6)', backdropFilter: 'blur(12px)', border: '1px solid rgba(195,198,211,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#c3c6d3', fontSize: 18, transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(195,198,211,0.15)'; e.currentTarget.style.color = '#fff'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(5,15,28,0.6)'; e.currentTarget.style.color = '#c3c6d3'; }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><polyline points="12 19 5 12 12 5"/></svg>
         </button>
         <img className="casino-hero-img" src={`/photos/${casinoId}.${casinoId === 'topmatch' ? 'png' : 'jpg'}`} alt={casinoId} style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
         <div className="casino-hero-overlay" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, transparent 30%, rgba(9,20,33,0.9) 85%, var(--surface-dim) 100%)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '20px 20px' }}>
@@ -240,12 +242,12 @@ const Casino = () => {
 
       <button
         className="btn btn-block btn-secondary"
-        style={{ margin: '16px 16px 80px' }}
+        style={{ margin: '16px 16px 0' }}
         onClick={() => navigate(`/contests?casino=${casinoId}`)}
       >
         <span className="emoji-icon">🏆</span> {lang === 'uk' ? 'Конкурси' : 'Конкурсы'}
       </button>
-      <p className="contest-note" style={{ fontSize: 12, color: 'var(--on-surface-variant)', textAlign: 'center', margin: '-64px 16px 80px' }}>
+      <p style={{ fontSize: 12, color: 'var(--on-surface-variant)', textAlign: 'center', margin: '8px 16px 80px', opacity: 0.7 }}>
         <span className="emoji-icon">💰</span> {lang === 'uk'
           ? 'Для участі в конкурсах потрібен TRC20 USDT гаманець'
           : 'Для участия в конкурсах требуется TRC20 USDT кошелек'}
