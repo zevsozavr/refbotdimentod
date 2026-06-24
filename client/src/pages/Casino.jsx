@@ -114,29 +114,31 @@ const Casino = () => {
 
   return (
     <div className="page">
-      <div className={`casino-hero ${casinoId}`}>
-        <button className="back-btn" onClick={() => navigate('/')}><span className="emoji-icon">◀</span></button>
-        <img className="casino-hero-img" src={`/photos/${casinoId}.jpg`} alt={casinoId} />
-        <div className="casino-hero-overlay">
-          <span className="casino-hero-title">{casinoId === 'topmatch' ? 'TopMatch' : 'TonPlay'}</span>
+      <div className={`casino-hero ${casinoId}`} style={{ minHeight: 240, borderRadius: '0 0 24px 24px', overflow: 'hidden', position: 'relative' }}>
+        <button className="back-btn" onClick={() => navigate('/')} style={{ position: 'absolute', top: 12, left: 12, zIndex: 10, width: 36, height: 36, borderRadius: 10, background: 'rgba(5,15,28,0.5)', backdropFilter: 'blur(6px)', border: '1px solid rgba(195,198,211,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, cursor: 'pointer', color: '#fff' }}>
+          <span className="emoji-icon" style={{ fontSize: 16, lineHeight: 1, filter: 'none' }}>◀</span>
+        </button>
+        <img className="casino-hero-img" src={`/photos/${casinoId}.jpg`} alt={casinoId} style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
+        <div className="casino-hero-overlay" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, transparent 30%, rgba(9,20,33,0.9) 85%, var(--surface-dim) 100%)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '24px 20px' }}>
+          <span className="casino-hero-title metallic-text" style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 8, textShadow: '0 2px 12px rgba(0,0,0,0.6)' }}>{casinoId === 'topmatch' ? 'TopMatch' : 'TonPlay'}</span>
           {casinoData?.level ? (
-            <div className="level-badge-wrapper">
-              <div className={`level-pulse-ring ${casinoId}`} />
-              <span className={`level-badge ${casinoId}`}>
-                {`${lang === 'uk' ? 'Рівень' : 'Уровень'} ${casinoData.level}`}
-              </span>
-            </div>
+            <span className={`level-badge ${casinoId}`} style={{ alignSelf: 'flex-start', margin: 0 }}>
+              {`LEVEL ${casinoData.level}`}
+            </span>
           ) : (
-            <span className="level-badge none">
-              {lang === 'uk' ? 'Без рівня' : 'Без уровня'}
+            <span className="level-badge none" style={{ alignSelf: 'flex-start', margin: 0 }}>
+              NO LEVEL
             </span>
           )}
         </div>
       </div>
 
-      <div className="referral-card">
-        <p className="referral-label">{lang === 'uk' ? 'Реферальне посилання' : 'Реферальная ссылка'}</p>
-        <button className={`btn btn-${casinoId}`} onClick={() => {
+      <div className="glass-panel" style={{ margin: '16px 16px 0', padding: '16px', textAlign: 'center' }}>
+        <p style={{ marginBottom: 12, fontSize: 14, color: 'var(--on-surface-variant)' }}>
+          <span className="emoji-icon" style={{ marginRight: 6 }}>🔗</span>
+          {lang === 'uk' ? 'Реферальне посилання' : 'Реферальная ссылка'}
+        </p>
+        <button className={`btn btn-block btn-${casinoId}`} onClick={() => {
           let link = casinoData?.referral_link;
           if (!link) return;
           if (!link.startsWith('http://') && !link.startsWith('https://')) link = 'https://' + link;
@@ -150,26 +152,24 @@ const Casino = () => {
         </button>
       </div>
 
-      <div className="wallet-card">
-        <div className="wallet-card-header">
-          <div className="wallet-card-icon"><span className="emoji-icon">👤</span></div>
+      <div className="glass-panel stagger-item" style={{ margin: '16px 16px 0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+          <div className="emoji-icon" style={{ fontSize: 24 }}>👤</div>
           <div>
-            <div className="wallet-card-title">{lang === 'uk' ? 'ID в казино' : 'ID в казино'}</div>
+            <div className="wallet-card-title" style={{ fontWeight: 700, fontSize: 16 }}>{lang === 'uk' ? 'ID в казино' : 'ID в казино'}</div>
             {casinoData.casino_account_id ? (
-              <div className="wallet-card-value">
-                <span className="wallet-current-label">{lang === 'uk' ? 'Поточний:' : 'Текущий:'}</span>
-                <span className="wallet-current-id">{casinoData.casino_account_id}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: 13, color: 'var(--on-surface-variant)' }}>{lang === 'uk' ? 'Поточний:' : 'Текущий:'}</span>
+                <span className="wallet-current-id" style={{ fontSize: 15, fontWeight: 600, fontFamily: 'monospace' }}>{casinoData.casino_account_id}</span>
                 {idPending === 'pending' && <span className="wallet-pending-badge">{lang === 'uk' ? 'Очікує' : 'Ожидает'}</span>}
               </div>
             ) : (
-              <div className="wallet-card-value">
-                <span className="wallet-not-set">{lang === 'uk' ? 'Не вказано' : 'Не указан'}</span>
-              </div>
+              <span style={{ fontSize: 13, color: 'var(--on-surface-variant)' }}>{lang === 'uk' ? 'Не вказано' : 'Не указан'}</span>
             )}
           </div>
         </div>
         <input
-          className="input"
+          className="glass-input"
           placeholder={lang === 'uk' ? 'Введіть новий ID' : 'Введите новый ID'}
           value={casinoIdInput}
           onChange={e => setCasinoIdInput(e.target.value)}
@@ -178,6 +178,7 @@ const Casino = () => {
         />
         <button
           className="btn btn-primary btn-sm wallet-btn"
+          style={{ marginTop: 10 }}
           onClick={submitCasinoId}
           disabled={!casinoIdInput.trim() || savingId || idPending === 'pending'}
         >
@@ -187,26 +188,24 @@ const Casino = () => {
         {idMsg && <p className="wallet-card-msg">{idMsgType === 'success' ? <span className="emoji-icon">✅</span> : <span className="emoji-icon">❌</span>} {idMsg}</p>}
       </div>
 
-      <div className="wallet-card">
-        <div className="wallet-card-header">
-          <div className="wallet-card-icon"><span className="emoji-icon">💰</span></div>
+      <div className="glass-panel stagger-item" style={{ margin: '16px 16px 0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+          <div className="emoji-icon" style={{ fontSize: 24 }}>💰</div>
           <div>
-            <div className="wallet-card-title">TRC20 USDT {lang === 'uk' ? 'Гаманець' : 'Кошелек'}</div>
+            <div className="wallet-card-title" style={{ fontWeight: 700, fontSize: 16 }}>TRC20 USDT {lang === 'uk' ? 'Гаманець' : 'Кошелек'}</div>
             {currentWallet ? (
-              <div className="wallet-card-value">
-                <span className="wallet-current-label">{lang === 'uk' ? 'Поточний:' : 'Текущий:'}</span>
-                <span className="wallet-current-id wallet-address">{currentWallet}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: 13, color: 'var(--on-surface-variant)' }}>{lang === 'uk' ? 'Поточний:' : 'Текущий:'}</span>
+                <span className="wallet-current-id wallet-address" style={{ fontSize: 15, fontWeight: 600, fontFamily: 'monospace' }}>{currentWallet}</span>
                 {walletPending === 'pending' && <span className="wallet-pending-badge">{lang === 'uk' ? 'Очікує' : 'Ожидает'}</span>}
               </div>
             ) : (
-              <div className="wallet-card-value">
-                <span className="wallet-not-set">{lang === 'uk' ? 'Не вказано' : 'Не указан'}</span>
-              </div>
+              <span style={{ fontSize: 13, color: 'var(--on-surface-variant)' }}>{lang === 'uk' ? 'Не вказано' : 'Не указан'}</span>
             )}
           </div>
         </div>
         <input
-          className="input"
+          className="glass-input"
           placeholder={lang === 'uk' ? 'Введіть TRC20 адресу' : 'Введите TRC20 адрес'}
           value={walletInput}
           onChange={e => setWalletInput(e.target.value)}
@@ -215,13 +214,14 @@ const Casino = () => {
         />
         <button
           className="btn btn-primary btn-sm wallet-btn"
+          style={{ marginTop: 10 }}
           onClick={submitWallet}
           disabled={!walletInput.trim() || savingWallet || walletPending === 'pending'}
         >
           {walletPending === 'pending' ? (lang === 'uk' ? 'Очікує...' : 'Ожидает...') : (savingWallet ? '⋯' : (lang === 'uk' ? 'Надіслати' : 'Отправить'))}
         </button>
         {walletPending === 'pending' && <p className="wallet-card-msg" style={{ color: 'var(--warning)' }}><span className="emoji-icon">⌛</span> {lang === 'uk' ? 'Запит на зміну очікує підтвердження адміністратора' : 'Запрос на изменение ожидает подтверждения администратора'}</p>}
-        <p className="wallet-card-note">
+        <p className="wallet-card-note" style={{ marginTop: 12, fontSize: 12, color: 'var(--on-surface-variant)', textAlign: 'center' }}>
           {lang === 'uk'
             ? 'Адміністратор підтвердить зміни перед застосуванням'
             : 'Администратор подтвердит изменения перед применением'}
@@ -230,12 +230,13 @@ const Casino = () => {
       </div>
 
       <button
-        className={`btn btn-block btn-${casinoId}`}
+        className="btn btn-block btn-secondary"
+        style={{ margin: '16px 16px 80px' }}
         onClick={() => navigate(`/contests?casino=${casinoId}`)}
       >
         <span className="emoji-icon">🏆</span> {lang === 'uk' ? 'Конкурси' : 'Конкурсы'}
       </button>
-      <p className="contest-note">
+      <p className="contest-note" style={{ fontSize: 12, color: 'var(--on-surface-variant)', textAlign: 'center', margin: '-64px 16px 80px' }}>
         <span className="emoji-icon">💰</span> {lang === 'uk'
           ? 'Для участі в конкурсах потрібен TRC20 USDT гаманець'
           : 'Для участия в конкурсах требуется TRC20 USDT кошелек'}

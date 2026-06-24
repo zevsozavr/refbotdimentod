@@ -83,7 +83,7 @@ const Contests = () => {
   if (loading) {
     return (
       <div className="page">
-        <h1 className="page-title">{t('contests.title')}</h1>
+        <h1 className="page-title metallic-text">{t('contests.title')}</h1>
         <div className="loading-center"><div className="spinner" /></div>
       </div>
     );
@@ -92,7 +92,7 @@ const Contests = () => {
   if (!casinoId) {
     return (
       <div className="page">
-        <h1 className="page-title">{t('contests.title')}</h1>
+        <h1 className="page-title metallic-text">{t('contests.title')}</h1>
         <p className="text-secondary" style={{ textAlign: 'center', marginTop: 20 }}>{t('contests.no_casino') || 'Выберите казино на главной'}</p>
       </div>
     );
@@ -101,8 +101,8 @@ const Contests = () => {
   if (walletError) {
     return (
       <div className="page">
-        <h1 className="page-title">{t('contests.title')}</h1>
-        <div className="card" style={{ padding: 20, textAlign: 'center', marginTop: 20 }}>
+        <h1 className="page-title metallic-text">{t('contests.title')}</h1>
+        <div className="glass-panel" style={{ padding: 20, textAlign: 'center', marginTop: 20 }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}><span className="emoji-icon">💰</span></div>
           <p style={{ fontSize: 15, fontWeight: 600, marginBottom: 8 }}>{t('settings.wallet_title')}</p>
           <p className="text-secondary" style={{ fontSize: 13, marginBottom: 16 }}>{t('settings.wallet_note')}</p>
@@ -117,7 +117,7 @@ const Contests = () => {
   return (
     <div className="page">
       <button className="back-btn" onClick={goBack}><span className="emoji-icon">◀</span></button>
-      <h1 className="page-title" style={{ paddingLeft: 48 }}>{t('contests.title')}</h1>
+      <h1 className="page-title metallic-text" style={{ paddingLeft: 48 }}>{t('contests.title')}</h1>
 
       <div className="tabs">
         <button className={`tab ${tab === 'active' ? `active ${casinoId}` : ''}`} onClick={() => setTab('active')}>
@@ -135,7 +135,7 @@ const Contests = () => {
           active.map((c) => {
             const timeToStart = getTimeToStart(c.start_date);
             return (
-              <div key={c.id} className={`contest-card ${c.casino}`}>
+              <div key={c.id} className={`glass-panel contest-card ${c.casino}`} style={{ marginBottom: 12, padding: 16 }}>
                 {c.banner_image && (
                   <img className="contest-banner" src={c.banner_image} alt={c.title} />
                 )}
@@ -166,7 +166,7 @@ const Contests = () => {
           <p className="text-secondary">{t('contests.no_history')}</p>
         ) : (
           history.map((c) => (
-            <div key={c.id} className={`contest-card ${c.casino || ''}`}>
+            <div key={c.id} className={`glass-panel contest-card ${c.casino || ''}`} style={{ marginBottom: 12, padding: 16 }}>
               <div className="contest-title">{c.title}</div>
               <div className="contest-prize">{t('contests.prize')}: {c.prize}</div>
               {c.winners && c.winners.length > 0 && (

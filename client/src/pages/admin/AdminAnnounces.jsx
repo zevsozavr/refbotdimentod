@@ -73,30 +73,30 @@ const AdminAnnounces = () => {
   return (
     <div className="page">
       <AdminNav />
-      <h1 className="page-title">{t('nav.announces')}</h1>
+      <h1 className="page-title metallic-text">{t('nav.announces')}</h1>
       <button className="btn btn-primary btn-sm mb-4" onClick={openCreate}>Create Announce</button>
 
       {showForm && (
-        <div className="card" style={{ padding: 16, marginBottom: 16 }}>
+        <div className="glass-panel" style={{ padding: 16, marginBottom: 16 }}>
           <div className="form-group">
             <label className="form-label">{t('admin.contests.form.title_uk')}</label>
-            <input className="input" value={form.title_uk} onChange={(e) => setForm({ ...form, title_uk: e.target.value })} />
+            <input className="glass-input" value={form.title_uk} onChange={(e) => setForm({ ...form, title_uk: e.target.value })} />
           </div>
           <div className="form-group">
             <label className="form-label">{t('admin.contests.form.title_ru')}</label>
-            <input className="input" value={form.title_ru} onChange={(e) => setForm({ ...form, title_ru: e.target.value })} />
+            <input className="glass-input" value={form.title_ru} onChange={(e) => setForm({ ...form, title_ru: e.target.value })} />
           </div>
           <div className="form-group">
             <label className="form-label">{t('admin.contests.form.desc_uk')}</label>
-            <textarea className="input" rows={3} value={form.text_uk} onChange={(e) => setForm({ ...form, text_uk: e.target.value })} />
+            <textarea className="glass-input" rows={3} value={form.text_uk} onChange={(e) => setForm({ ...form, text_uk: e.target.value })} />
           </div>
           <div className="form-group">
             <label className="form-label">{t('admin.contests.form.desc_ru')}</label>
-            <textarea className="input" rows={3} value={form.text_ru} onChange={(e) => setForm({ ...form, text_ru: e.target.value })} />
+            <textarea className="glass-input" rows={3} value={form.text_ru} onChange={(e) => setForm({ ...form, text_ru: e.target.value })} />
           </div>
           <div className="form-group">
             <label className="form-label">Banner Image</label>
-            <input ref={fileRef} className="input" type="file" accept="image/*" onChange={handleBannerUpload} disabled={uploading} />
+            <input ref={fileRef} className="glass-input" type="file" accept="image/*" onChange={handleBannerUpload} disabled={uploading} />
             {uploading && <p className="text-secondary text-sm mt-1">Uploading...</p>}
             {form.banner_image && (
               <div style={{ position: 'relative', display: 'inline-block', marginTop: 8 }}>
@@ -114,7 +114,7 @@ const AdminAnnounces = () => {
       )}
 
       {items.map(item => (
-        <div key={item.id} className="card" style={{ padding: 16, marginBottom: 12 }}>
+        <div key={item.id} className="glass-panel" style={{ padding: 16, marginBottom: 12 }}>
           {item.banner_image && <img src={item.banner_image} alt="" style={{ width: '100%', borderRadius: 'var(--radius-sm)', maxHeight: 120, objectFit: 'cover', marginBottom: 8 }} />}
           <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>{i18n.language === 'uk' ? item.title_uk : item.title_ru}</div>
           {(i18n.language === 'uk' ? item.text_uk : item.text_ru) && <div className="text-secondary" style={{ fontSize: 13, marginBottom: 6 }}>{i18n.language === 'uk' ? item.text_uk : item.text_ru}</div>}

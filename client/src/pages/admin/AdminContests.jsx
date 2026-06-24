@@ -129,7 +129,7 @@ const AdminContests = () => {
     return (
       <div className="page">
         <AdminNav />
-        <h1 className="page-title">{t('admin.contests.title')}</h1>
+        <h1 className="page-title metallic-text">{t('admin.contests.title')}</h1>
         <div className="loading-center"><div className="spinner" /></div>
       </div>
     );
@@ -139,50 +139,50 @@ const AdminContests = () => {
     <div className="page">
       <AdminNav />
       <div className="flex items-center justify-between mb-4">
-        <h1 className="page-title" style={{ marginBottom: 0 }}>{t('admin.contests.title')}</h1>
+        <h1 className="page-title metallic-text" style={{ marginBottom: 0 }}>{t('admin.contests.title')}</h1>
         <button className="btn btn-primary btn-sm" onClick={openCreate}>{t('admin.contests.create')}</button>
       </div>
 
       {showForm && (
-        <div className="card mb-4">
+        <div className="glass-panel mb-4">
           <h3 className="mb-3" style={{ fontSize: 18, fontWeight: 600 }}>
             {editing ? t('admin.contests.edit') : t('admin.contests.create')}
           </h3>
 
           <div className="form-group">
             <label className="form-label">{t('admin.contests.form.title_uk')}</label>
-            <input className="input" value={form.title_uk} onChange={(e) => setForm({ ...form, title_uk: e.target.value })} maxLength={500} />
+            <input className="glass-input" value={form.title_uk} onChange={(e) => setForm({ ...form, title_uk: e.target.value })} maxLength={500} />
           </div>
           <div className="form-group">
             <label className="form-label">{t('admin.contests.form.title_ru')}</label>
-            <input className="input" value={form.title_ru} onChange={(e) => setForm({ ...form, title_ru: e.target.value })} maxLength={500} />
+            <input className="glass-input" value={form.title_ru} onChange={(e) => setForm({ ...form, title_ru: e.target.value })} maxLength={500} />
           </div>
           <div className="form-group">
             <label className="form-label">{t('admin.contests.form.desc_uk')}</label>
-            <textarea className="input" value={form.description_uk} onChange={(e) => setForm({ ...form, description_uk: e.target.value })} maxLength={500} />
+            <textarea className="glass-input" value={form.description_uk} onChange={(e) => setForm({ ...form, description_uk: e.target.value })} maxLength={500} />
           </div>
           <div className="form-group">
             <label className="form-label">{t('admin.contests.form.desc_ru')}</label>
-            <textarea className="input" value={form.description_ru} onChange={(e) => setForm({ ...form, description_ru: e.target.value })} maxLength={500} />
+            <textarea className="glass-input" value={form.description_ru} onChange={(e) => setForm({ ...form, description_ru: e.target.value })} maxLength={500} />
           </div>
           <div className="form-group">
             <label className="form-label">{t('admin.contests.form.prize_uk')}</label>
-            <input className="input" value={form.prize_uk} onChange={(e) => setForm({ ...form, prize_uk: e.target.value })} maxLength={500} />
+            <input className="glass-input" value={form.prize_uk} onChange={(e) => setForm({ ...form, prize_uk: e.target.value })} maxLength={500} />
           </div>
           <div className="form-group">
             <label className="form-label">{t('admin.contests.form.prize_ru')}</label>
-            <input className="input" value={form.prize_ru} onChange={(e) => setForm({ ...form, prize_ru: e.target.value })} maxLength={500} />
+            <input className="glass-input" value={form.prize_ru} onChange={(e) => setForm({ ...form, prize_ru: e.target.value })} maxLength={500} />
           </div>
           <div className="form-group">
             <label className="form-label">{t('admin.contests.form.casino')}</label>
-            <select className="select" value={form.casino} onChange={(e) => setForm({ ...form, casino: e.target.value })}>
+            <select className="glass-input" value={form.casino} onChange={(e) => setForm({ ...form, casino: e.target.value })}>
               <option value="topmatch">TopMatch</option>
               <option value="tonplay">TonPlay</option>
             </select>
           </div>
           <div className="form-group">
             <label className="form-label">{t('admin.contests.form.type')}</label>
-            <select className="select" value={form.referral_type} onChange={(e) => setForm({ ...form, referral_type: e.target.value })}>
+            <select className="glass-input" value={form.referral_type} onChange={(e) => setForm({ ...form, referral_type: e.target.value })}>
               <option value="1">{t('contests.level')} 1</option>
               <option value="2">{t('contests.level')} 2</option>
               <option value="3">{t('contests.level')} 3</option>
@@ -190,11 +190,11 @@ const AdminContests = () => {
           </div>
           <div className="form-group">
             <label className="form-label">Winner Count</label>
-            <input className="input" type="number" min="1" max="100" value={form.winner_count} onChange={(e) => setForm({ ...form, winner_count: e.target.value })} />
+            <input className="glass-input" type="number" min="1" max="100" value={form.winner_count} onChange={(e) => setForm({ ...form, winner_count: e.target.value })} />
           </div>
           <div className="form-group">
             <label className="form-label">Banner Image</label>
-            <input ref={fileRef} className="input" type="file" accept="image/*" onChange={handleBannerUpload} disabled={uploading} />
+            <input ref={fileRef} className="glass-input" type="file" accept="image/*" onChange={handleBannerUpload} disabled={uploading} />
             {uploading && <p className="text-secondary text-sm mt-1">Uploading...</p>}
             {form.banner_image && (
               <div style={{ position: 'relative', display: 'inline-block', marginTop: 8 }}>
@@ -205,11 +205,11 @@ const AdminContests = () => {
           </div>
           <div className="form-group">
             <label className="form-label">{t('admin.contests.form.start')}</label>
-            <input className="input" type="datetime-local" value={form.start_date} onChange={(e) => setForm({ ...form, start_date: e.target.value })} />
+            <input className="glass-input" type="datetime-local" value={form.start_date} onChange={(e) => setForm({ ...form, start_date: e.target.value })} />
           </div>
           <div className="form-group">
             <label className="form-label">{t('admin.contests.form.end')}</label>
-            <input className="input" type="datetime-local" value={form.end_date} onChange={(e) => setForm({ ...form, end_date: e.target.value })} />
+            <input className="glass-input" type="datetime-local" value={form.end_date} onChange={(e) => setForm({ ...form, end_date: e.target.value })} />
           </div>
 
           {error && <p className="text-sm" style={{ color: 'var(--error)' }}>{error}</p>}
@@ -222,7 +222,7 @@ const AdminContests = () => {
       )}
 
       {contests.map((c) => (
-        <div key={c.id} className="card mb-4">
+        <div key={c.id} className="glass-panel mb-4">
           <div className="flex items-center justify-between mb-2">
             <div className="contest-title">{c.title_uk}</div>
             <span className={`badge ${statusBadge(c.status)}`}>{statusLabel(c.status)}</span>

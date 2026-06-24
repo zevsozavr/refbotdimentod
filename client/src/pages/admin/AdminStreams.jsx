@@ -87,14 +87,14 @@ const AdminStreams = () => {
   return (
     <div className="page">
       <AdminNav />
-      <h1 className="page-title"><span className="emoji-icon">🖥️</span> Streams</h1>
+      <h1 className="page-title metallic-text"><span className="emoji-icon">🖥️</span> Streams</h1>
       <button className="btn btn-primary btn-sm mb-4" onClick={openCreate}>Create Stream</button>
 
       {showForm && (
-        <div className="card" style={{ padding: 16, marginBottom: 16 }}>
+        <div className="glass-panel" style={{ padding: 16, marginBottom: 16 }}>
           <div className="form-group">
             <label className="form-label">Banner Image</label>
-            <input ref={fileRef} className="input" type="file" accept="image/*" onChange={handleBannerUpload} disabled={uploading} />
+            <input ref={fileRef} className="glass-input" type="file" accept="image/*" onChange={handleBannerUpload} disabled={uploading} />
             {uploading && <p className="text-secondary text-sm mt-1">Uploading...</p>}
             {form.banner_image && (
               <div style={{ position: 'relative', display: 'inline-block', marginTop: 8 }}>
@@ -105,19 +105,19 @@ const AdminStreams = () => {
           </div>
           <div className="form-group">
             <label className="form-label">Stream Link *</label>
-            <input className="input" placeholder="https://..." value={form.link} onChange={(e) => setForm({ ...form, link: e.target.value })} maxLength={500} />
+            <input className="glass-input" placeholder="https://..." value={form.link} onChange={(e) => setForm({ ...form, link: e.target.value })} maxLength={500} />
           </div>
           <div className="form-group">
             <label className="form-label">Start Time *</label>
-            <input className="input" type="datetime-local" value={form.start_time} onChange={(e) => setForm({ ...form, start_time: e.target.value })} />
+            <input className="glass-input" type="datetime-local" value={form.start_time} onChange={(e) => setForm({ ...form, start_time: e.target.value })} />
           </div>
           <div className="form-group">
             <label className="form-label">Text (RU)</label>
-            <textarea className="input" rows={3} value={form.text_ru} onChange={(e) => setForm({ ...form, text_ru: e.target.value })} />
+            <textarea className="glass-input" rows={3} value={form.text_ru} onChange={(e) => setForm({ ...form, text_ru: e.target.value })} />
           </div>
           <div className="form-group">
             <label className="form-label">Text (UK)</label>
-            <textarea className="input" rows={3} value={form.text_uk} onChange={(e) => setForm({ ...form, text_uk: e.target.value })} />
+            <textarea className="glass-input" rows={3} value={form.text_uk} onChange={(e) => setForm({ ...form, text_uk: e.target.value })} />
           </div>
           {error && <p className="text-sm" style={{ color: 'var(--error)' }}>{error}</p>}
           <div className="flex gap-2 mt-4">
@@ -128,7 +128,7 @@ const AdminStreams = () => {
       )}
 
       {streams.map(s => (
-        <div key={s.id} className="card" style={{ padding: 16, marginBottom: 12 }}>
+        <div key={s.id} className="glass-panel" style={{ padding: 16, marginBottom: 12 }}>
           {s.banner_image && <img src={s.banner_image} alt="" style={{ width: '100%', borderRadius: 'var(--radius-sm)', maxHeight: 120, objectFit: 'cover', marginBottom: 8 }} />}
           <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>
             <a href={s.link} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)' }}>{s.link}</a>

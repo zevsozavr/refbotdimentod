@@ -21,9 +21,9 @@ const Settings = () => {
 
   return (
     <div className="page">
-      <h1 className="page-title">{t('settings.title')}</h1>
+      <h1 className="page-title metallic-text">{t('settings.title')}</h1>
 
-      <div className="settings-section">
+      <div className="glass-panel settings-section" style={{ padding: '16px', marginBottom: 16 }}>
         <div className="settings-row">
           <span className="settings-label">{t('settings.language')}</span>
           <div className="lang-toggle">
@@ -68,7 +68,7 @@ const Settings = () => {
         </div>
       </div>
 
-      <div className="settings-section">
+      <div className="glass-panel settings-section" style={{ padding: '16px' }}>
         <div className="settings-row">
           <span className="settings-value">{t('settings.username')}</span>
           <span className="settings-value">@{user?.telegram_username || t('settings.not_set')}</span>

@@ -111,9 +111,9 @@ const AdminUserDetail = () => {
         <span className="emoji-icon">◀</span> {t('admin.users.title')}
       </button>
 
-      <h1 className="page-title">{t('admin.user_detail.title')}</h1>
+      <h1 className="page-title metallic-text">{t('admin.user_detail.title')}</h1>
 
-      <div className="card mb-4">
+      <div className="glass-panel mb-4">
         <div className="form-group">
           <span className="form-label">{t('admin.user_detail.telegram_id')}</span>
           <span>{user.telegram_id}</span>
@@ -164,7 +164,7 @@ const AdminUserDetail = () => {
         </div>
       </div>
 
-      <div className="card mb-4">
+      <div className="glass-panel mb-4">
         <h3 className="mb-4" style={{ fontSize: 16, fontWeight: 600 }}>{t('admin.users.actions')}</h3>
         <div className="flex flex-col gap-2">
           {(user.status === 'pending' || user.status === 'rejected') && (
@@ -189,10 +189,10 @@ const AdminUserDetail = () => {
         </div>
       </div>
 
-      <div className="card mb-4">
+      <div className="glass-panel mb-4">
         <h3 className="mb-2" style={{ fontSize: 16, fontWeight: 600 }}>TopMatch {t('admin.user_detail.set_type')}</h3>
         <p className="text-sm text-secondary mb-2">{t('admin.user_detail.current')}: {user.level_topmatch || '—'}</p>
-        <select className="select" value={topMatchLevel} onChange={(e) => setTopMatchLevel(e.target.value)} style={{ width: '100%', marginBottom: 8 }}>
+        <select className="glass-input" value={topMatchLevel} onChange={(e) => setTopMatchLevel(e.target.value)} style={{ width: '100%' }}>
           <option value="">— {t('admin.users.no_level')} —</option>
           <option value="1">1</option>
           <option value="2">2</option>
@@ -203,10 +203,10 @@ const AdminUserDetail = () => {
         </button>
       </div>
 
-      <div className="card">
+      <div className="glass-panel">
         <h3 className="mb-2" style={{ fontSize: 16, fontWeight: 600 }}>TonPlay {t('admin.user_detail.set_type')}</h3>
         <p className="text-sm text-secondary mb-2">{t('admin.user_detail.current')}: {user.level_tonplay || '—'}</p>
-        <select className="select" value={tonPlayLevel} onChange={(e) => setTonPlayLevel(e.target.value)} style={{ width: '100%', marginBottom: 8 }}>
+        <select className="glass-input" value={tonPlayLevel} onChange={(e) => setTonPlayLevel(e.target.value)} style={{ width: '100%' }}>
           <option value="">— {t('admin.users.no_level')} —</option>
           <option value="1">1</option>
           <option value="2">2</option>

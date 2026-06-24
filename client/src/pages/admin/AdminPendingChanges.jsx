@@ -52,13 +52,13 @@ const AdminPendingChanges = () => {
   return (
     <div className="page">
       <AdminNav />
-      <h1 className="page-title">{lang === 'uk' ? 'Очікувані зміни' : 'Ожидающие изменения'}</h1>
+      <h1 className="page-title metallic-text">{lang === 'uk' ? 'Очікувані зміни' : 'Ожидающие изменения'}</h1>
 
       {changes.length === 0 ? (
         <p className="text-secondary">{lang === 'uk' ? 'Немає очікуваних змін' : 'Нет ожидающих изменений'}</p>
       ) : (
         changes.map((c) => (
-          <div key={c.id} className="pending-change-row">
+          <div key={c.id} className="glass-panel pending-change-row" style={{ padding: '16px', marginBottom: '12px' }}>
             <div className="pending-change-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span className={`badge ${c.change_type === 'wallet' ? 'badge-success' : 'badge-primary'}`}>

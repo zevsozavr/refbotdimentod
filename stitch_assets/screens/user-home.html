@@ -1,0 +1,263 @@
+<!DOCTYPE html><html class="dark" lang="uk" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+<title>Головна - PRO REFERRAL</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Geist:wght@500&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary": "#2c303a",
+                      "inverse-primary": "#5a5e69",
+                      "surface-dim": "#091421",
+                      "error": "#ffb4ab",
+                      "surface-tint": "#c3c6d3",
+                      "on-secondary-fixed-variant": "#574500",
+                      "background": "#091421",
+                      "surface-container-lowest": "#050f1c",
+                      "inverse-on-surface": "#27313f",
+                      "surface-container": "#16202e",
+                      "on-background": "#d9e3f6",
+                      "on-tertiary-container": "#008d61",
+                      "tertiary-fixed-dim": "#4edea3",
+                      "on-tertiary-fixed-variant": "#005236",
+                      "on-secondary": "#3c2f00",
+                      "primary-container": "#0a0e17",
+                      "tertiary-fixed": "#6ffbbe",
+                      "secondary-fixed": "#ffe088",
+                      "on-primary-container": "#777b87",
+                      "on-error": "#690005",
+                      "on-tertiary-fixed": "#002113",
+                      "on-secondary-fixed": "#241a00",
+                      "primary-fixed": "#dfe2ef",
+                      "secondary-container": "#af8d11",
+                      "on-surface-variant": "#c6c6cc",
+                      "on-secondary-container": "#342800",
+                      "error-container": "#93000a",
+                      "on-surface": "#d9e3f6",
+                      "surface-bright": "#303a48",
+                      "outline": "#909096",
+                      "tertiary": "#4edea3",
+                      "surface": "#091421",
+                      "tertiary-container": "#001209",
+                      "secondary-fixed-dim": "#e9c349",
+                      "primary": "#c3c6d3",
+                      "surface-container-highest": "#2b3544",
+                      "surface-container-high": "#212b39",
+                      "secondary": "#e9c349",
+                      "on-error-container": "#ffdad6",
+                      "surface-variant": "#2b3544",
+                      "on-primary-fixed": "#181b25",
+                      "surface-container-low": "#121c2a",
+                      "on-primary-fixed-variant": "#434751",
+                      "outline-variant": "#45464b",
+                      "on-tertiary": "#003824",
+                      "primary-fixed-dim": "#c3c6d3",
+                      "inverse-surface": "#d9e3f6"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-mobile": "16px",
+                      "gutter": "24px",
+                      "container-max": "1440px",
+                      "unit": "8px",
+                      "margin-desktop": "40px"
+              },
+              "fontFamily": {
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Inter"
+                      ],
+                      "display-lg-mobile": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "label-sm": [
+                              "Geist"
+                      ]
+              },
+              "fontSize": {
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "0.04em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "display-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "letterSpacing": "0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "1",
+                                      "letterSpacing": "0.08em",
+                                      "fontWeight": "500"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(14, 20, 33, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 20px 40px -10px rgba(5, 7, 10, 0.8);
+        }
+        .banner-float {
+            animation: float 6s ease-in-out infinite;
+        }
+        .banner-float-delayed {
+            animation: float 6s ease-in-out 3s infinite;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .gold-border {
+            border: 0.5px solid rgba(233, 195, 73, 0.4);
+        }
+        .text-glow {
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+        .bg-topmatch {
+            background: linear-gradient(135deg, rgba(88,15,34,0.8) 0%, rgba(26,4,10,0.95) 100%);
+        }
+        .bg-tonplay {
+            background: linear-gradient(135deg, rgba(16,78,185,0.8) 0%, rgba(6,17,48,0.95) 100%);
+        }
+        .pulse-badge {
+            animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 1; box-shadow: 0 0 15px rgba(255, 255, 255, 0.2); }
+            50% { opacity: .7; box-shadow: 0 0 5px rgba(255, 255, 255, 0.05); }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen overflow-x-hidden selection:bg-secondary selection:text-on-secondary">
+<!-- Background Shader -->
+<div class="fixed inset-0 z-0 pointer-events-none"><img alt="Luxury casino pattern background" class="absolute inset-0 w-full h-full object-cover opacity-20" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQV6JQNdIzd0sN8y06hE25Os8KuykoSeeCjewUk9phyhPaOcv9R3NPk9ltsrjmhspwtRITnshF2OWp8qm4cT4XhMYpnD4O3CUTFhUD9fdPo4iz82XZQ_X9dIHa-k6J3khAm45bDsWiE4TDwzaQGpo2Una-5t2Wxa8EkjgRvhufZ2ecWK5dgDv1ZdRp4usEPi0XizTNr8qmhpdR2IjdKfxlMGLU_fXw1y5lDxXrVAdXgsjU6aec2fDbleSHDAHGY-djnw8zwgIMPYSq"><div class="absolute inset-0 bg-background/40 backdrop-blur-[2px]"></div></div>
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface/80 backdrop-blur-xl border-b border-outline-variant/30 shadow-none flex justify-between items-center px-6 h-16 md:px-margin-desktop">
+<div class="flex items-center gap-4">
+<div class="w-8 h-8 rounded-full overflow-hidden gold-border">
+<img alt="User Avatar" class="w-full h-full object-cover" data-alt="A macro shot of a sleek, futuristic avatar icon rendered in polished obsidian and gold, illuminated by a soft, ambient indigo light, exuding an aura of elite exclusivity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUyJDpEkVeJN_jUr2oj2cJEFZow8IbR5UOqBeM6zkjgCua6ChiwiiIOBhBtL9WviyszefDcsk2D8p6ynUmTPeovW8IHx5SsE3oSfBVIJNc8p0sYRc7hBkY9Jc-oz8X51K4OnCjYcWIWtX8tHnFCoCFc4ZU54XNFRk2Uo9aCOYeWPximF4Vz4XwBM74ODjSVFIJECbFhiUN0xvf0mxMTvUMsJwBkqpRCsl5HFyo8dy8xHjRzxigA76TVGXbLrVCUu6hjsXmA9xGykEv">
+</div>
+<h1 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg tracking-tighter text-primary-fixed-dim">PRO REFERRAL</h1>
+</div>
+<button class="w-10 h-10 flex items-center justify-center text-primary dark:text-primary hover:opacity-80 active:scale-95 transition-transform rounded-full">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</header>
+<!-- Main Content -->
+<main class="relative z-10 pt-24 pb-32 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto min-h-screen flex flex-col">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-8 text-glow">Головна</h2>
+<div class="flex-1 flex flex-col gap-6 md:gap-8 justify-center max-w-2xl mx-auto w-full">
+<!-- TopMatch Banner -->
+<button class="w-full text-left relative overflow-hidden rounded-2xl glass-panel banner-float group hover:scale-[1.02] transition-transform duration-300 md:h-48 h-56" style="background-image: linear-gradient(rgba(88, 15, 34, 0.4) 0%, rgba(88, 15, 34, 0.8) 60%, rgb(9, 20, 33) 100%), url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuCZd43NqKFjCfTdT8KIGD7V1E8leIzVgLfg428Ovqyjl8ARwKOGlflIrsCN7KFxE-f1_B2hrJ24q7n_oS2fmcEFfRI_vpUcBxXvwg4ghqRjOfOzArHKdqFyvds36-OipMn7p786onkwMZwSJM7odAMrn8pFF4nqSraQl_36kzMtkv3ktqccsKGeIDbClH53y6sDm4g2texY43EqCnG9NBSJT5vs-I6AhexUdtz9M-Xeu3CJR_gg49yu0jlyVb4UG16Tv8_oB5xtNGMN&quot;); background-size: cover; background-position: center center;">
+<div class="relative z-10 flex flex-col justify-between h-full p-6 md:p-8">
+<div class="flex justify-between items-start">
+<div class="px-3 py-1 rounded-full bg-white/10 border border-white/30 pulse-badge">
+<span class="font-label-sm text-label-sm text-white uppercase tracking-widest">LEVEL 1</span>
+</div>
+</div>
+<div class="flex items-center gap-2 text-primary mt-auto bg-surface-container/60 px-4 py-2 rounded-xl backdrop-blur-md">
+<span class="font-body-md text-body-md">Відкрити платформу</span>
+<span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</div>
+</div>
+</button>
+<!-- TonPlay Banner -->
+<button class="w-full text-left relative overflow-hidden rounded-2xl glass-panel banner-float-delayed group hover:scale-[1.02] transition-transform duration-300 md:h-48 h-56" style="background-image: linear-gradient(rgba(16, 78, 185, 0.4) 0%, rgba(16, 78, 185, 0.8) 60%, rgb(9, 20, 33) 100%), url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuCyd_9DbfNbj_LBC9ARGLDxZTZLoMa7klLVxr8iVwI0KE_ZfEgy8MDpu8cGkSb5xtHzy8b_tj7Q04p6A-8-2FzbAsLqergXF3ydBk4ysy8P59W-IjqZi4BCSg-Hn58je-Od3SZfLLay7djOjN5t-XYWDV9TjxdQ3gYj6yDf5bje0LCClshsUYiMEqn9TFHd2psAx_Pxad64rrU8QH0oqUpDrcHJ9lZcyiuzlxotJ1llMFgz5giBq6fP-1V0i8jZWtuoCK4bI2HFC0Gi&quot;); background-size: cover; background-position: center center;">
+<div class="relative z-10 flex flex-col justify-between h-full p-6 md:p-8">
+<div class="flex justify-between items-start">
+<div class="px-3 py-1 rounded-full bg-surface-variant/50 border border-outline-variant/30">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">NO LEVEL</span>
+</div>
+</div>
+<div class="flex items-center gap-2 text-primary mt-auto bg-surface-container/60 px-4 py-2 rounded-xl backdrop-blur-md">
+<span class="font-body-md text-body-md">Відкрити платформу</span>
+<span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</div>
+</div>
+</button>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 rounded-t-xl bg-surface-container/60 dark:bg-surface-container/60 backdrop-blur-md border-t border-outline-variant/20 shadow-[0_-4px_20px_rgba(82,141,255,0.15)] flex justify-around items-center h-20 px-2 pb-safe-area-bottom">
+<a class="flex flex-col items-center justify-center text-primary-fixed-dim bg-primary-container/20 rounded-full px-4 py-1 shadow-[0_0_15px_rgba(175,198,255,0.3)] hover:text-primary transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined mb-1">home</span>
+<span class="font-label-caps text-label-caps text-[10px] uppercase tracking-wider">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors active:scale-90 duration-200 px-4 py-1" href="#">
+<span class="material-symbols-outlined mb-1">campaign</span>
+<span class="font-label-caps text-label-caps text-[10px] uppercase tracking-wider">News</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors active:scale-90 duration-200 px-4 py-1" href="#">
+<span class="material-symbols-outlined mb-1">person</span>
+<span class="font-label-caps text-label-caps text-[10px] uppercase tracking-wider">Profile</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors active:scale-90 duration-200 px-4 py-1" href="#">
+<span class="material-symbols-outlined mb-1">shield_person</span>
+<span class="font-label-caps text-label-caps text-[10px] uppercase tracking-wider">Admin</span>
+</a>
+</nav>
+</body></html>

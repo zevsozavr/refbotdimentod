@@ -63,7 +63,7 @@ const Announces = () => {
 
   return (
     <div className="page">
-      <h1 className="page-title">{t('nav.announces')}</h1>
+      <h1 className="page-title metallic-text">{t('nav.announces')}</h1>
 
       <div className="filter-tabs">
         {['all', 'announcement', 'stream'].map(f => (
@@ -90,7 +90,8 @@ const Announces = () => {
         filtered.map(item => (
           <div
             key={`${item.itemType}-${item.id}`}
-            className={`announcement-card ${item.itemType}`}
+            className={`glass-panel announcement-card ${item.itemType}`}
+            style={{ marginBottom: 12, padding: 16 }}
             onClick={() => item.itemType === 'stream' && item.link ? openLink(item.link) : null}
           >
             {item.banner_image && <img className="announcement-banner" src={item.banner_image} alt="" />}
