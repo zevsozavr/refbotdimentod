@@ -139,6 +139,8 @@ const migrate = async () => {
       CREATE TABLE IF NOT EXISTS pending_changes (
         id SERIAL PRIMARY KEY,
         user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        change_type VARCHAR(50) DEFAULT 'casino_id',
+        casino VARCHAR(20),
         field VARCHAR(50) NOT NULL,
         old_value VARCHAR(100),
         new_value VARCHAR(100) NOT NULL,
@@ -147,6 +149,18 @@ const migrate = async () => {
         reviewed_at TIMESTAMP,
         reviewed_by INTEGER REFERENCES users(id)
       )
+    `);
+
+    await client.query(`
+      ALTER TABLE pending_changes ADD COLUMN IF NOT EXISTS change_type VARCHAR(50) DEFAULT 'casino_id'
+    `);
+
+    await client.query(`
+      ALTER TABLE pending_changes ADD COLUMN IF NOT EXISTS casino VARCHAR(20)
+    `);
+
+    await client.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS notifications_cleared_at TIMESTAMP DEFAULT NULL
     `);
 
     await client.query('COMMIT');

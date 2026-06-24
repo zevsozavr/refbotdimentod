@@ -2,12 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../axios';
 import { useApp } from '../contexts/AppContext';
+import NotificationDropdown from '../components/NotificationDropdown';
 
 const Home = () => {
   const { user } = useApp();
   const navigate = useNavigate();
   const [casinos, setCasinos] = useState([]);
   const [levels, setLevels] = useState({});
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showNotifications, setShowNotifications] = useState(false);
   const lang = user?.language || 'uk';
 
   useEffect(() => {
@@ -21,12 +24,32 @@ const Home = () => {
     });
   }, []);
 
+  useEffect(() => {
+    api.get('/notifications').then(res => {
+      setUnreadCount(res.data.unread_count || 0);
+    });
+  }, []);
+
   return (
     <div className="page">
-      <div className="dashboard-header">
-        <h1 className="page-title" style={{ margin: 0 }}>
+      <div className="home-header">
+        <h1 className="page-title">
           {lang === 'uk' ? 'Головна' : 'Главная'}
         </h1>
+        <div className="bell-wrapper" style={{ position: 'relative' }}>
+          <button className="bell-btn" onClick={() => setShowNotifications(!showNotifications)}>
+            🔔
+            {unreadCount > 0 && (
+              <span className="bell-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>
+            )}
+          </button>
+          {showNotifications && (
+            <NotificationDropdown onClose={() => {
+              setShowNotifications(false);
+              setUnreadCount(0);
+            }} />
+          )}
+        </div>
       </div>
 
       <div className="casino-list">

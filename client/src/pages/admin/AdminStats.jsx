@@ -52,19 +52,19 @@ const AdminStats = () => {
       </div>
 
       <div className="admin-stat-grid">
-        <div className="admin-stat-card">
+        <div className="admin-stat-card total">
           <div className="admin-stat-number">{stats.totalUsers}</div>
           <div className="admin-stat-label">{t('admin.stats.total')}</div>
         </div>
-        <div className="admin-stat-card">
+        <div className="admin-stat-card pending">
           <div className="admin-stat-number">{stats.pending}</div>
           <div className="admin-stat-label">{t('admin.stats.pending')}</div>
         </div>
-        <div className="admin-stat-card">
+        <div className="admin-stat-card verified">
           <div className="admin-stat-number">{stats.verified}</div>
           <div className="admin-stat-label">{t('admin.stats.verified')}</div>
         </div>
-        <div className="admin-stat-card">
+        <div className="admin-stat-card banned">
           <div className="admin-stat-number">{stats.banned}</div>
           <div className="admin-stat-label">{t('admin.stats.banned')}</div>
         </div>
@@ -86,7 +86,7 @@ const AdminStats = () => {
       </div>
 
       <div className="admin-stat-grid">
-        <div className="admin-stat-card">
+        <div className="admin-stat-card contests">
           <div className="admin-stat-number">{stats.activeContests}</div>
           <div className="admin-stat-label">{t('admin.stats.active_contests')}</div>
         </div>
@@ -94,7 +94,7 @@ const AdminStats = () => {
           <div className="admin-stat-number">{stats.winnersPicked}</div>
           <div className="admin-stat-label">{t('admin.stats.winners_picked')}</div>
         </div>
-        <div className="admin-stat-card" style={{ gridColumn: '1 / -1' }}>
+        <div className="admin-stat-card broadcasts" style={{ gridColumn: '1 / -1' }}>
           <div className="admin-stat-number">{stats.broadcastsSent}</div>
           <div className="admin-stat-label">{t('admin.stats.broadcasts')}</div>
         </div>

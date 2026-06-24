@@ -232,6 +232,7 @@ router.get('/casino/:casinoId/me', verifyTelegramAuth, async (req, res) => {
       casino_id: casino.id,
       level,
       casino_account_id: user[casino.casino_id_column],
+      wallet: user[`wallet_${req.params.casinoId}`],
       referral_link: casino.referral_link,
     });
   } catch (err) {
@@ -282,6 +283,50 @@ router.post('/casino/:casinoId/submit-id', verifyTelegramAuth, [
     res.json({ status: 'pending', field: casino.casino_id_column, new_value: req.body.casino_account_id });
   } catch (err) {
     console.error('Submit casino ID error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.post('/casino/:casinoId/submit-wallet', verifyTelegramAuth, [
+  body('wallet_address')
+    .trim()
+    .isLength({ min: 10, max: 255 })
+    .withMessage('wallet_address must be between 10 and 255 characters'),
+], handleValidationErrors, async (req, res) => {
+  try {
+    const casinos = require('./casinos');
+    const casino = casinos[req.params.casinoId];
+    if (!casino) return res.status(404).json({ error: 'Casino not found' });
+
+    const userResult = await pool.query(
+      'SELECT * FROM users WHERE telegram_id = $1',
+      [req.telegramUser.id]
+    );
+    if (userResult.rows.length === 0) return res.status(404).json({ error: 'User not found' });
+    const user = userResult.rows[0];
+
+    const walletColumn = `wallet_${req.params.casinoId}`;
+
+    const existing = await pool.query(
+      "SELECT id FROM pending_changes WHERE user_id = $1 AND field = $2 AND status = 'pending'",
+      [user.id, walletColumn]
+    );
+    if (existing.rows.length > 0) {
+      return res.status(400).json({ error: 'You already have a pending change for this field' });
+    }
+
+    await pool.query(
+      `INSERT INTO pending_changes (user_id, change_type, casino, field, old_value, new_value)
+       VALUES ($1, 'wallet', $2, $3, $4, $5)`,
+      [user.id, req.params.casinoId, walletColumn, user[walletColumn], req.body.wallet_address]
+    );
+
+    const casinoName = casino.id === 'topmatch' ? 'TopMatch' : 'TonPlay';
+    await notifyAdminChange(user, walletColumn, req.body.wallet_address, casinoName);
+
+    res.json({ status: 'pending', field: walletColumn, new_value: req.body.wallet_address });
+  } catch (err) {
+    console.error('Submit wallet error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -1160,6 +1205,62 @@ router.delete('/admin/streams/:id', verifyTelegramAuth, verifyAdminAuth, adminLi
     res.json({ success: true });
   } catch (err) {
     console.error('Delete stream error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ─── NOTIFICATIONS ───
+
+router.get('/notifications', verifyTelegramAuth, async (req, res) => {
+  try {
+    const userResult = await pool.query(
+      'SELECT * FROM users WHERE telegram_id = $1',
+      [req.telegramUser.id]
+    );
+    if (userResult.rows.length === 0) return res.status(404).json({ error: 'User not found' });
+    const user = userResult.rows[0];
+    const clearedAt = user.notifications_cleared_at || new Date(0);
+
+    const announcementsResult = await pool.query(
+      `SELECT id, title_uk, title_ru, text_uk, text_ru, banner_image, created_at, 'announcement' as type
+       FROM announcements
+       WHERE created_at > $1
+       ORDER BY created_at DESC
+       LIMIT 20`,
+      [clearedAt]
+    );
+
+    const streamsResult = await pool.query(
+      `SELECT id, text_uk, text_ru, banner_image, link, start_time, created_at, 'stream' as type
+       FROM streams
+       WHERE created_at > $1
+       ORDER BY created_at DESC
+       LIMIT 20`,
+      [clearedAt]
+    );
+
+    const all = [...announcementsResult.rows, ...streamsResult.rows]
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+    res.json({
+      unread_count: all.length,
+      items: all,
+    });
+  } catch (err) {
+    console.error('Notifications error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.post('/notifications/clear', verifyTelegramAuth, async (req, res) => {
+  try {
+    await pool.query(
+      'UPDATE users SET notifications_cleared_at = NOW() WHERE telegram_id = $1',
+      [req.telegramUser.id]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Clear notifications error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

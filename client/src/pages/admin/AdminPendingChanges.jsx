@@ -3,15 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { adminApi } from '../../axios';
 import AdminNav from '../../components/AdminNav';
 
-const FIELD_LABELS = {
-  casino_id_topmatch: 'TopMatch ID',
-  casino_id_tonplay: 'TonPlay ID',
-  wallet_topmatch: 'TopMatch TRC20',
-  wallet_tonplay: 'TonPlay TRC20',
-};
-
 const AdminPendingChanges = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language === 'uk' ? 'uk' : 'ru';
   const [changes, setChanges] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -58,17 +52,27 @@ const AdminPendingChanges = () => {
   return (
     <div className="page">
       <AdminNav />
-      <h1 className="page-title">Pending Changes</h1>
+      <h1 className="page-title">{lang === 'uk' ? 'Очікувані зміни' : 'Ожидающие изменения'}</h1>
 
       {changes.length === 0 ? (
-        <p className="text-secondary">No pending changes</p>
+        <p className="text-secondary">{lang === 'uk' ? 'Немає очікуваних змін' : 'Нет ожидающих изменений'}</p>
       ) : (
         changes.map((c) => (
           <div key={c.id} className="pending-change-row">
             <div className="pending-change-header">
-              <span className="pending-change-user">@{c.telegram_username || `ID: ${c.telegram_id}`}</span>
-              <span className="pending-change-field">{FIELD_LABELS[c.field] || c.field}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span className={`badge ${c.change_type === 'wallet' ? 'badge-success' : 'badge-primary'}`}>
+                  {c.change_type === 'wallet' ? '💰 Wallet' : '🎰 Casino ID'}
+                </span>
+                {c.casino && <span className="badge badge-secondary">{c.casino.toUpperCase()}</span>}
+              </div>
+              <span className="pending-change-field">
+                {c.change_type === 'wallet'
+                  ? (c.casino === 'topmatch' ? 'TopMatch TRC20' : 'TonPlay TRC20')
+                  : (c.casino === 'topmatch' ? 'TopMatch ID' : 'TonPlay ID')}
+              </span>
             </div>
+            <div className="pending-change-user">@{c.telegram_username || `ID: ${c.telegram_id}`}</div>
             <div className="pending-change-values">
               {c.old_value ? (
                 <>
@@ -78,12 +82,15 @@ const AdminPendingChanges = () => {
               ) : null}
               <span className="pending-change-new">{c.new_value}</span>
             </div>
+            <div className="text-caption" style={{ fontSize: 11, marginBottom: 8 }}>
+              {new Date(c.created_at).toLocaleString('uk-UA')}
+            </div>
             <div className="pending-change-actions">
               <button className="btn btn-success btn-sm" onClick={() => handleApprove(c.id)}>
-                {t('admin.user_detail.approve')}
+                ✅ {lang === 'uk' ? 'Підтвердити' : 'Подтвердить'}
               </button>
               <button className="btn btn-danger btn-sm" onClick={() => handleReject(c.id)}>
-                {t('admin.user_detail.reject')}
+                ❌ {lang === 'uk' ? 'Відхилити' : 'Отклонить'}
               </button>
             </div>
           </div>

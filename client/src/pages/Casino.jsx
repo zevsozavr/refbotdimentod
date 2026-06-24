@@ -65,8 +65,7 @@ const Casino = () => {
     setSavingWallet(true);
     setWalletMsg('');
     try {
-      await api.post(`/wallet/${casinoId}/submit`, {
-        casino: casinoId,
+      await api.post(`/casino/${casinoId}/submit-wallet`, {
         wallet_address: walletInput,
       });
       setWalletInput('');
