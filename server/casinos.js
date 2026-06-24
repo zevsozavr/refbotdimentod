@@ -4,7 +4,7 @@ const casinos = {
     name_uk: 'TopMatch',
     name_ru: 'TopMatch',
     referral_link: process.env.REFERRAL_LINK_TOPMATCH,
-    photo: 'topmatch.jpg',
+    photo: 'topmatch.png',
     level_column: 'level_topmatch',
     casino_id_column: 'casino_id_topmatch',
   },
