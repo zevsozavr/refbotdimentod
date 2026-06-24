@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../axios';
 import { useApp } from '../contexts/AppContext';
+import useStaggeredEntrance from '../hooks/useStaggeredEntrance';
 
 const TRC20_REGEX = /^T[1-9A-HJ-NP-Za-km-z]{33}$/;
 
@@ -28,6 +29,18 @@ const Casino = () => {
   }, [casinoId]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+
+  useStaggeredEntrance('.wallet-card, .referral-card, .btn-block', 80);
+
+  useEffect(() => {
+    const hero = document.querySelector('.casino-hero-img');
+    if (!hero) return;
+    const handleScroll = () => {
+      hero.style.transform = `translateY(${window.scrollY * 0.3}px)`;
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const getPendingStatus = (field) => {
     const pc = pendingChanges.find(p => p.field === field);
@@ -97,9 +110,18 @@ const Casino = () => {
         <img className="casino-hero-img" src={`/photos/${casinoId}.jpg`} alt={casinoId} />
         <div className="casino-hero-overlay">
           <span className="casino-hero-title">{casinoId === 'topmatch' ? 'TopMatch' : 'TonPlay'}</span>
-          <span className={`level-badge ${casinoData?.level ? casinoId : 'none'}`}>
-            {casinoData?.level ? `${lang === 'uk' ? 'Рівень' : 'Уровень'} ${casinoData.level}` : (lang === 'uk' ? 'Без рівня' : 'Без уровня')}
-          </span>
+          {casinoData?.level ? (
+            <div className="level-badge-wrapper">
+              <div className={`level-pulse-ring ${casinoId}`} />
+              <span className={`level-badge ${casinoId}`}>
+                {`${lang === 'uk' ? 'Рівень' : 'Уровень'} ${casinoData.level}`}
+              </span>
+            </div>
+          ) : (
+            <span className="level-badge none">
+              {lang === 'uk' ? 'Без рівня' : 'Без уровня'}
+            </span>
+          )}
         </div>
       </div>
 

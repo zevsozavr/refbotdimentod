@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../axios';
 import { useApp } from '../contexts/AppContext';
 import NotificationDropdown from '../components/NotificationDropdown';
+import useStaggeredEntrance from '../hooks/useStaggeredEntrance';
 
 const Home = () => {
   const { user } = useApp();
@@ -12,6 +13,8 @@ const Home = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
   const lang = user?.language || 'uk';
+
+  useStaggeredEntrance('.casino-card', 120);
 
   useEffect(() => {
     api.get('/casinos').then(res => {
@@ -55,13 +58,24 @@ const Home = () => {
       <div className="casino-list">
         {casinos.map(casino => (
           <div key={casino.id} className={`casino-card ${casino.id}`} onClick={() => navigate(`/casino/${casino.id}`)}>
+            <div className="casino-card-coin">🪙</div>
+            <div className="casino-card-glow" />
             <img className="casino-card-bg" src={casino.photo} alt={casino.id} />
             <div className="casino-card-overlay">
               <span className="casino-card-name">{lang === 'uk' ? casino.name_uk : casino.name_ru}</span>
               <div className="casino-card-actions">
-                <span className={`level-badge ${levels[casino.id] ? casino.id : 'none'}`}>
-                  {levels[casino.id] ? `${lang === 'uk' ? 'Рівень' : 'Уровень'} ${levels[casino.id]}` : (lang === 'uk' ? 'Без рівня' : 'Без уровня')}
-                </span>
+                {levels[casino.id] ? (
+                  <div className="level-badge-wrapper">
+                    <div className={`level-pulse-ring ${casino.id}`} />
+                    <span className={`level-badge ${casino.id}`}>
+                      {`${lang === 'uk' ? 'Рівень' : 'Уровень'} ${levels[casino.id]}`}
+                    </span>
+                  </div>
+                ) : (
+                  <span className="level-badge none">
+                    {lang === 'uk' ? 'Без рівня' : 'Без уровня'}
+                  </span>
+                )}
               </div>
             </div>
           </div>

@@ -5,7 +5,8 @@ import api from '../axios';
 
 const Settings = () => {
   const { t, i18n } = useTranslation();
-  const { user, setUser, theme, toggleTheme } = useApp();
+  const { user, setUser, theme, toggleTheme, lightweightAnimations, toggleLightweightAnimations } = useApp();
+  const lang = user?.language || 'uk';
 
   const changeLanguage = async (lang) => {
     try {
@@ -46,6 +47,24 @@ const Settings = () => {
           <button className={`theme-toggle ${theme === 'light' ? 'active' : ''}`} onClick={toggleTheme}>
             <div className="theme-toggle-knob" />
           </button>
+        </div>
+        <div className="settings-row">
+          <div>
+            <span className="settings-label">
+              {lang === 'uk' ? 'Легкі анімації' : 'Лёгкие анимации'}
+            </span>
+            <p className="settings-caption">
+              {lang === 'uk'
+                ? 'Вимкнути частинки та складні ефекти'
+                : 'Отключить частицы и сложные эффекты'}
+            </p>
+          </div>
+          <div
+            className={`theme-toggle ${lightweightAnimations ? 'active' : ''}`}
+            onClick={toggleLightweightAnimations}
+          >
+            <div className="theme-toggle-knob" />
+          </div>
         </div>
       </div>
 

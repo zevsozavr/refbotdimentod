@@ -2,25 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { adminApi } from '../../axios';
 import AdminNav from '../../components/AdminNav';
+import useStaggeredEntrance from '../../hooks/useStaggeredEntrance';
+import useCountUp from '../../hooks/useCountUp';
 
 const AdminStats = () => {
   const { t } = useTranslation();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const fetch = async () => {
-    setLoading(true);
-    try {
-      const res = await adminApi.get('/admin/stats');
-      setStats(res.data);
-    } catch (e) {
-      console.error('Stats error:', e);
-    } finally {
-      setLoading(false);
-    }
-  };
+  useStaggeredEntrance('.admin-stat-card', 60);
 
-  useEffect(() => { fetch(); }, []);
+  const totalCount = useCountUp(stats?.totalUsers || 0);
+  const pendingCount = useCountUp(stats?.pending || 0);
+  const verifiedCount = useCountUp(stats?.verified || 0);
+  const bannedCount = useCountUp(stats?.banned || 0);
+  const activeContestsCount = useCountUp(stats?.activeContests || 0);
+  const broadcastsCount = useCountUp(stats?.broadcastsSent || 0);
 
   if (loading) {
     return (
@@ -53,19 +50,19 @@ const AdminStats = () => {
 
       <div className="admin-stat-grid">
         <div className="admin-stat-card total">
-          <div className="admin-stat-number">{stats.totalUsers}</div>
+          <div className="admin-stat-number">{totalCount}</div>
           <div className="admin-stat-label">{t('admin.stats.total')}</div>
         </div>
         <div className="admin-stat-card pending">
-          <div className="admin-stat-number">{stats.pending}</div>
+          <div className="admin-stat-number">{pendingCount}</div>
           <div className="admin-stat-label">{t('admin.stats.pending')}</div>
         </div>
         <div className="admin-stat-card verified">
-          <div className="admin-stat-number">{stats.verified}</div>
+          <div className="admin-stat-number">{verifiedCount}</div>
           <div className="admin-stat-label">{t('admin.stats.verified')}</div>
         </div>
         <div className="admin-stat-card banned">
-          <div className="admin-stat-number">{stats.banned}</div>
+          <div className="admin-stat-number">{bannedCount}</div>
           <div className="admin-stat-label">{t('admin.stats.banned')}</div>
         </div>
       </div>
@@ -87,7 +84,7 @@ const AdminStats = () => {
 
       <div className="admin-stat-grid">
         <div className="admin-stat-card contests">
-          <div className="admin-stat-number">{stats.activeContests}</div>
+          <div className="admin-stat-number">{activeContestsCount}</div>
           <div className="admin-stat-label">{t('admin.stats.active_contests')}</div>
         </div>
         <div className="admin-stat-card">
@@ -95,7 +92,7 @@ const AdminStats = () => {
           <div className="admin-stat-label">{t('admin.stats.winners_picked')}</div>
         </div>
         <div className="admin-stat-card broadcasts" style={{ gridColumn: '1 / -1' }}>
-          <div className="admin-stat-number">{stats.broadcastsSent}</div>
+          <div className="admin-stat-number">{broadcastsCount}</div>
           <div className="admin-stat-label">{t('admin.stats.broadcasts')}</div>
         </div>
         <div className="admin-stat-card" style={{ gridColumn: '1 / -1' }}>

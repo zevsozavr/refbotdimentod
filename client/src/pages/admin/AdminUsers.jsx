@@ -3,11 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { adminApi } from '../../axios';
 import AdminNav from '../../components/AdminNav';
+import useStaggeredEntrance from '../../hooks/useStaggeredEntrance';
 
 const AdminUsers = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
+
+  useStaggeredEntrance('.user-row', 40);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);

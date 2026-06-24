@@ -5,6 +5,7 @@ import { AppProvider, useApp } from './contexts/AppContext';
 import api from './axios';
 import i18n from './i18n';
 import BottomNav from './components/BottomNav';
+import ParticleBackground from './components/ParticleBackground';
 import Banned from './pages/Banned';
 import Pending from './pages/Pending';
 import Rejected from './pages/Rejected';
@@ -24,10 +25,26 @@ import AdminAnnounces from './pages/admin/AdminAnnounces';
 import './styles.css';
 
 const AppContent = () => {
-  const { user, setUser, loading, setLoading, isAdmin, initKey } = useApp();
+  const { user, setUser, loading, setLoading, isAdmin, initKey, lightweightAnimations } = useApp();
   const { i18n: i18nInstance } = useTranslation();
   const [initDone, setInitDone] = useState(false);
   const [initError, setInitError] = useState('');
+
+  useEffect(() => {
+    const handleRipple = (e) => {
+      const btn = e.target.closest('.btn');
+      if (!btn) return;
+      const ripple = document.createElement('span');
+      ripple.className = 'btn-ripple';
+      const rect = btn.getBoundingClientRect();
+      ripple.style.left = `${e.clientX - rect.left}px`;
+      ripple.style.top = `${e.clientY - rect.top}px`;
+      btn.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 600);
+    };
+    document.addEventListener('click', handleRipple);
+    return () => document.removeEventListener('click', handleRipple);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -124,7 +141,8 @@ const AppContent = () => {
 
   return (
     <HashRouter>
-      <div className="app-container">
+      <div className={`app-container ${lightweightAnimations ? 'lightweight' : ''}`}>
+        <ParticleBackground lightweight={lightweightAnimations} />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/casino/:casinoId" element={<Casino />} />

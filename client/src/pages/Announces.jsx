@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../axios';
+import useStaggeredEntrance from '../hooks/useStaggeredEntrance';
 
 const Announces = () => {
   const { t, i18n } = useTranslation();
   const [items, setItems] = useState([]);
+
+  useStaggeredEntrance('.announcement-card', 100);
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
