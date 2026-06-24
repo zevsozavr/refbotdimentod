@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 
-const PARTICLE_COUNT = 150;
+const PARTICLE_COUNT = 80;
 const SYMBOLS = ['$'];
 const IMAGES = ['/photos/bonanza1000-removebg-preview.png', '/photos/gates1000-removebg-preview.png'];
 
@@ -12,10 +12,16 @@ const ParticleBackground = ({ lightweight }) => {
     const container = containerRef.current;
     if (!container) return;
 
-    const particles = Array.from({ length: PARTICLE_COUNT }, () => {
+    const particles = Array.from({ length: PARTICLE_COUNT }, (_, i) => {
       const el = document.createElement('div');
       el.className = 'particle';
       const useImage = Math.random() < 0.7;
+
+      const slotWidth = 100 / PARTICLE_COUNT;
+      const slotLeft = i * slotWidth;
+      const jitter = (Math.random() - 0.5) * slotWidth * 0.5;
+      const left = Math.max(0, Math.min(100, slotLeft + slotWidth / 2 + jitter));
+
       if (useImage) {
         const img = document.createElement('img');
         img.src = IMAGES[Math.floor(Math.random() * IMAGES.length)];
@@ -23,7 +29,7 @@ const ParticleBackground = ({ lightweight }) => {
         img.alt = '';
         el.appendChild(img);
         el.style.cssText = `
-          left: ${Math.random() * 100}%;
+          left: ${left}%;
           width: ${24 + Math.random() * 26}px;
           height: ${24 + Math.random() * 26}px;
           animation-duration: 14s;
@@ -33,8 +39,8 @@ const ParticleBackground = ({ lightweight }) => {
       } else {
         el.textContent = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
         el.style.cssText = `
-          left: ${Math.random() * 100}%;
-          font-size: ${18 + Math.random() * 24}px;
+          left: ${left}%;
+          font-size: ${18 + Math.random() * 20}px;
           animation-duration: 14s;
           animation-delay: ${-Math.random() * 16}s;
           opacity: ${0.1 + Math.random() * 0.16};

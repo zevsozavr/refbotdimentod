@@ -48,39 +48,55 @@ const AppContent = () => {
 
   useEffect(() => {
     let cancelled = false;
+    const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+    const tryGetTelegramUser = () => {
+      // Try Telegram WebApp
+      const tg = window.Telegram?.WebApp;
+      if (tg?.initDataUnsafe?.user?.id) return tg.initDataUnsafe.user;
+      return null;
+    };
+
+    const parseUrlForUser = () => {
+      try {
+        const rawData =
+          new URLSearchParams(window.location.hash.replace(/^#/, '')).get('tgWebAppData') ||
+          new URLSearchParams(window.location.search).get('tgWebAppData');
+        if (rawData) {
+          const dataParams = new URLSearchParams(rawData);
+          const userStr = dataParams.get('user');
+          if (userStr) return JSON.parse(userStr);
+        }
+      } catch (e) { /* ignore */ }
+      return null;
+    };
+
     const run = async () => {
       try {
+        // Initialize Telegram WebApp
         const tg = window.Telegram?.WebApp;
         if (tg) { tg.expand(); tg.ready(); }
 
-        // Try multiple sources for Telegram user data
-        let telegramUser = tg?.initDataUnsafe?.user;
+        // Try Telegram WebApp immediately
+        let telegramUser = tryGetTelegramUser();
 
-        // Fallback: parse tgWebAppData from URL hash directly
-        if (!telegramUser?.id) {
-          try {
-            const hashStr = window.location.hash.replace(/^#/, '');
-            const hashParams = new URLSearchParams(hashStr);
-            const rawData = hashParams.get('tgWebAppData');
-            if (rawData) {
-              const dataParams = new URLSearchParams(rawData);
-              const userStr = dataParams.get('user');
-              if (userStr) telegramUser = JSON.parse(userStr);
-            }
-          } catch (e) { /* ignore */ }
+        // Poll for Telegram WebApp (up to 3s) — fixes refresh race condition
+        for (let i = 0; i < 15 && !telegramUser?.id; i++) {
+          await sleep(200);
+          telegramUser = tryGetTelegramUser();
         }
 
-        // Fallback: query param
+        // URL fallback
         if (!telegramUser?.id) {
-          try {
-            const urlParams = new URLSearchParams(window.location.search);
-            const rawData = urlParams.get('tgWebAppData');
-            if (rawData) {
-              const dataParams = new URLSearchParams(rawData);
-              const userStr = dataParams.get('user');
-              if (userStr) telegramUser = JSON.parse(userStr);
-            }
-          } catch (e) { /* ignore */ }
+          telegramUser = parseUrlForUser();
+        }
+
+        // Last resort: stored telegram_id from previous session
+        if (!telegramUser?.id) {
+          const storedId = localStorage.getItem('telegram_id');
+          if (storedId) {
+            telegramUser = { id: parseInt(storedId, 10) };
+          }
         }
 
         if (!telegramUser?.id) {
@@ -103,6 +119,7 @@ const AppContent = () => {
           if (res.data.token) {
             localStorage.setItem('session_token', res.data.token);
           }
+          localStorage.setItem('telegram_id', String(telegramId));
           const userLang = res.data.language || 'uk';
           localStorage.setItem('language', userLang);
           i18nInstance.changeLanguage(userLang);
