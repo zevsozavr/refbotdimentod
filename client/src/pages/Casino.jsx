@@ -118,7 +118,7 @@ const Casino = () => {
         <button className="back-btn" onClick={() => navigate('/')} style={{ position: 'absolute', top: 12, left: 12, zIndex: 10, width: 36, height: 36, borderRadius: 10, background: 'rgba(5,15,28,0.5)', backdropFilter: 'blur(6px)', border: '1px solid rgba(195,198,211,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, cursor: 'pointer', color: '#fff' }}>
           <span className="emoji-icon" style={{ fontSize: 16, lineHeight: 1, filter: 'none' }}>◀</span>
         </button>
-        <img className="casino-hero-img" src={`/photos/${casinoId}.jpg`} alt={casinoId} style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
+        <img className="casino-hero-img" src={`/photos/${casinoId}.${casinoId === 'topmatch' ? 'png' : 'jpg'}`} alt={casinoId} style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
         <div className="casino-hero-overlay" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, transparent 30%, rgba(9,20,33,0.9) 85%, var(--surface-dim) 100%)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '20px 20px' }}>
           <span className="casino-hero-title metallic-text" style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 8, textShadow: '0 2px 12px rgba(0,0,0,0.6)' }}>{casinoId === 'topmatch' ? 'TopMatch' : 'TonPlay'}</span>
           {casinoData?.level ? (
