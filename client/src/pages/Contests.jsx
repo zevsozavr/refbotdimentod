@@ -103,7 +103,7 @@ const Contests = () => {
       <div className="page">
         <h1 className="page-title">{t('contests.title')}</h1>
         <div className="card" style={{ padding: 20, textAlign: 'center', marginTop: 20 }}>
-          <div style={{ fontSize: 40, marginBottom: 12 }}>💰</div>
+          <div style={{ fontSize: 40, marginBottom: 12 }}><span className="icon icon-moneybag"></span></div>
           <p style={{ fontSize: 15, fontWeight: 600, marginBottom: 8 }}>{t('settings.wallet_title')}</p>
           <p className="text-secondary" style={{ fontSize: 13, marginBottom: 16 }}>{t('settings.wallet_note')}</p>
           <button className={`btn btn-${casinoId}`} onClick={() => navigate(`/casino/${casinoId}`)}>
@@ -117,7 +117,7 @@ const Contests = () => {
   return (
     <div className="page">
       <div className="page-header">
-        <button className="back-btn" onClick={goBack}>←</button>
+        <button className="back-btn" onClick={goBack}><span className="icon icon-arrow"></span></button>
         <h1 className="page-title" style={{ margin: 0 }}>{t('contests.title')}</h1>
       </div>
 
@@ -144,7 +144,7 @@ const Contests = () => {
                 <div className="contest-title">{c.title}</div>
                 <div className="contest-prize">{t('contests.prize')}: {c.prize}</div>
                 <div className="contest-meta-info">
-                  <span>👥 {c.participant_count} | 🏆 {c.winner_count}</span>
+                  <span><span className="icon icon-people"></span> {c.participant_count} | <span className="icon icon-trophy"></span> {c.winner_count}</span>
                 </div>
                 <div className="contest-timer">
                   {timeToStart ? `${t('contests.starts_in')}: ${timeToStart}` : `${t('contests.ends_in')}: ${getTimeRemaining(c.end_date)}`}

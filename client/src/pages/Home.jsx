@@ -41,7 +41,7 @@ const Home = () => {
         </h1>
         <div className="bell-wrapper" style={{ position: 'relative' }}>
           <button className="bell-btn" onClick={() => setShowNotifications(!showNotifications)}>
-            🔔
+            <span className="icon icon-bell"></span>
             {unreadCount > 0 && (
               <span className="bell-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>
             )}
@@ -58,7 +58,7 @@ const Home = () => {
       <div className="casino-list">
         {casinos.map(casino => (
           <div key={casino.id} className={`casino-card ${casino.id}`} onClick={() => navigate(`/casino/${casino.id}`)}>
-            <div className="casino-card-coin">🪙</div>
+            <div className="casino-card-coin"><span className="icon icon-coin"></span></div>
             <div className="casino-card-glow" />
             <img className="casino-card-bg" src={casino.photo} alt={casino.id} />
             <div className="casino-card-overlay">

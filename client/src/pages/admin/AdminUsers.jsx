@@ -94,11 +94,11 @@ const AdminUsers = () => {
           {totalPages > 1 && (
             <div className="pagination">
               <button className="btn btn-secondary" style={{ width: 'auto', padding: '8px 16px', fontSize: 13 }} disabled={page <= 1} onClick={() => setPage(page - 1)}>
-                ←
+                <span className="icon icon-arrow"></span>
               </button>
               <span className="text-sm">{page} / {totalPages}</span>
               <button className="btn btn-secondary" style={{ width: 'auto', padding: '8px 16px', fontSize: 13 }} disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
-                →
+                <span className="icon icon-arrow-right"></span>
               </button>
             </div>
           )}

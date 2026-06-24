@@ -74,7 +74,7 @@ const AdminAnnounces = () => {
   return (
     <div className="page">
       <div className="page-header">
-        <button className="back-btn" onClick={() => navigate(-1)}>←</button>
+        <button className="back-btn" onClick={() => navigate(-1)}><span className="icon icon-arrow"></span></button>
         <h1 className="page-title" style={{ margin: 0 }}>{t('nav.announces')}</h1>
       </div>
       <button className="btn btn-primary btn-sm mb-4" onClick={openCreate}>Create Announce</button>
@@ -104,7 +104,7 @@ const AdminAnnounces = () => {
             {form.banner_image && (
               <div style={{ position: 'relative', display: 'inline-block', marginTop: 8 }}>
                 <img src={form.banner_image} alt="" style={{ maxWidth: '100%', maxHeight: 120, borderRadius: 'var(--radius-sm)' }} />
-                <button type="button" onClick={removeBanner} style={{ position: 'absolute', top: -6, right: -6, background: 'var(--error)', color: '#fff', border: 'none', borderRadius: '50%', width: 22, height: 22, cursor: 'pointer', fontSize: 12 }}>×</button>
+                <button type="button" onClick={removeBanner} style={{ position: 'absolute', top: -6, right: -6, background: 'var(--error)', color: '#fff', border: 'none', borderRadius: '50%', width: 22, height: 22, cursor: 'pointer', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span className="icon icon-close" style={{ color: '#fff' }}></span></button>
               </div>
             )}
           </div>

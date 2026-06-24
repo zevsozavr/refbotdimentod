@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { adminApi } from '../../axios';
 import { toLocalDatetime, withTimezone } from '../../utils/timezone';
 
 const AdminStreams = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [streams, setStreams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -86,8 +88,8 @@ const AdminStreams = () => {
   return (
     <div className="page">
       <div className="page-header">
-        <button className="back-btn" onClick={() => navigate(-1)}>←</button>
-        <h1 className="page-title" style={{ margin: 0 }}>📺 Streams</h1>
+        <button className="back-btn" onClick={() => navigate(-1)}><span className="icon icon-arrow"></span></button>
+        <h1 className="page-title" style={{ margin: 0 }}><span className="icon icon-monitor"></span> Streams</h1>
       </div>
       <button className="btn btn-primary btn-sm mb-4" onClick={openCreate}>Create Stream</button>
 
@@ -100,7 +102,7 @@ const AdminStreams = () => {
             {form.banner_image && (
               <div style={{ position: 'relative', display: 'inline-block', marginTop: 8 }}>
                 <img src={form.banner_image} alt="" style={{ maxWidth: '100%', maxHeight: 120, borderRadius: 'var(--radius-sm)' }} />
-                <button type="button" onClick={removeBanner} style={{ position: 'absolute', top: -6, right: -6, background: 'var(--error)', color: '#fff', border: 'none', borderRadius: '50%', width: 22, height: 22, cursor: 'pointer', fontSize: 12 }}>×</button>
+                <button type="button" onClick={removeBanner} style={{ position: 'absolute', top: -6, right: -6, background: 'var(--error)', color: '#fff', border: 'none', borderRadius: '50%', width: 22, height: 22, cursor: 'pointer', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span className="icon icon-close" style={{ color: '#fff' }}></span></button>
               </div>
             )}
           </div>
@@ -135,10 +137,10 @@ const AdminStreams = () => {
             <a href={s.link} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)' }}>{s.link}</a>
           </div>
           <div className="text-secondary" style={{ fontSize: 12, marginBottom: 4 }}>{s.text_ru}{s.text_uk ? ` / ${s.text_uk}` : ''}</div>
-          <div className="text-secondary" style={{ fontSize: 12 }}>🕐 {new Date(s.start_time).toLocaleString([], { timeZone: 'Europe/Kyiv' })}</div>
+          <div className="text-secondary" style={{ fontSize: 12 }}><span className="icon icon-clock"></span> {new Date(s.start_time).toLocaleString([], { timeZone: 'Europe/Kyiv' })}</div>
           <div style={{ fontSize: 12, marginTop: 4, display: 'flex', gap: 6, alignItems: 'center' }}>
             <span className={`badge ${s.status === 'scheduled' ? 'badge-primary' : s.status === 'live' ? 'badge-success' : 'badge-secondary'}`}>
-              {s.status === 'scheduled' ? 'Scheduled' : s.status === 'live' ? '🔴 Live' : 'Ended'}
+              {s.status === 'scheduled' ? 'Scheduled' : s.status === 'live' ? <><span className="icon icon-live"></span> Live</> : 'Ended'}
             </span>
             {s.status === 'scheduled' && <button className="btn btn-success btn-xs" onClick={() => setStatus(s.id, 'live')}>Set Live</button>}
             {s.status === 'live' && <button className="btn btn-secondary btn-xs" onClick={() => setStatus(s.id, 'ended')}>End</button>}

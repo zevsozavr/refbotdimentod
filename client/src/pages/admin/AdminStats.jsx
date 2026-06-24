@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { adminApi } from '../../axios';
 import AdminNav from '../../components/AdminNav';
@@ -11,6 +11,19 @@ const AdminStats = () => {
   const [loading, setLoading] = useState(true);
 
   useStaggeredEntrance('.admin-stat-card', 60);
+
+  const fetch = useCallback(async () => {
+    try {
+      const res = await adminApi.get('/admin/stats');
+      setStats(res.data);
+    } catch (e) {
+      console.error('Stats fetch error:', e);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetch(); }, [fetch]);
 
   const totalCount = useCountUp(stats?.totalUsers || 0);
   const pendingCount = useCountUp(stats?.pending || 0);

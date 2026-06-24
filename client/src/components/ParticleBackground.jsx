@@ -1,7 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 
 const PARTICLE_COUNT = 25;
-const SYMBOLS = ['💰', '⭐', '🎰', '💎', '🪙', '♠️', '♣️', '♥️'];
+const PREFIXES = ['particle-shape-1', 'particle-shape-2', 'particle-shape-3',
+  'particle-shape-4', 'particle-shape-5', 'particle-shape-6',
+  'particle-shape-7', 'particle-shape-8'];
 
 const ParticleBackground = ({ lightweight }) => {
   const containerRef = useRef();
@@ -12,15 +14,16 @@ const ParticleBackground = ({ lightweight }) => {
     if (!container) return;
 
     const particles = Array.from({ length: PARTICLE_COUNT }, (_, i) => {
+      const cls = PREFIXES[Math.floor(Math.random() * PREFIXES.length)];
       const el = document.createElement('div');
-      el.className = 'particle';
-      el.textContent = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+      el.className = `particle ${cls}`;
       el.style.cssText = `
         left: ${Math.random() * 100}%;
-        font-size: ${10 + Math.random() * 16}px;
-        animation-duration: ${8 + Math.random() * 12}s;
+        font-size: ${8 + Math.random() * 14}px;
+        animation-duration: ${10 + Math.random() * 15}s;
         animation-delay: ${-Math.random() * 20}s;
-        opacity: ${0.05 + Math.random() * 0.1};
+        opacity: ${0.06 + Math.random() * 0.12};
+        color: rgba(200, 200, 255, 0.15);
       `;
       container.appendChild(el);
       return el;

@@ -39,7 +39,7 @@ const Rejected = () => {
 
   return (
     <div className="status-screen">
-      <div className="status-icon">❌</div>
+      <div className="status-icon"><span className="icon icon-cross"></span></div>
       <h1 className="page-title">{t('rejected.title')}</h1>
       <p className="text-secondary" style={{ marginBottom: 20 }}>{t('rejected.description')}</p>
       
