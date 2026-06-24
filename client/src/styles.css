@@ -1962,37 +1962,18 @@ textarea.input { resize: vertical; min-height: 80px; }
 }
 
 /* Megaphone */
-.icon-megaphone {
-  position: relative;
-}
 .icon-megaphone::before {
-  content: ''; position: absolute; top: 15%; left: 0%;
-  width: 60%; height: 70%;
+  content: ''; display: block; width: 100%; height: 100%;
   background: currentColor;
-  border-radius: 2px 0 0 2px;
-}
-.icon-megaphone::after {
-  content: ''; position: absolute; top: 10%; right: 35%;
-  width: 0; height: 0;
-  border-top: 0.4em solid transparent;
-  border-bottom: 0.4em solid transparent;
-  border-left: 0.5em solid currentColor;
+  clip-path: polygon(0% 25%, 45% 25%, 55% 0%, 100% 15%, 100% 85%, 55% 100%, 45% 75%, 0% 75%);
 }
 
 /* Gear */
-.icon-gear {
-  position: relative;
-  border-radius: 50%;
-  border: 0.18em solid currentColor;
-  box-sizing: border-box;
-}
 .icon-gear::before {
-  content: ''; position: absolute; top: 50%; left: 50%;
-  width: 140%; height: 140%;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  border: 0.12em solid currentColor;
-  box-sizing: border-box;
+  content: ''; display: block; width: 100%; height: 100%;
+  background: currentColor;
+  clip-path: polygon(50% 0%, 56% 22%, 78% 12%, 74% 34%, 96% 44%, 78% 56%, 88% 78%, 66% 66%, 50% 88%, 34% 66%, 12% 78%, 22% 56%, 4% 44%, 26% 34%, 22% 12%, 44% 22%);
+  border-radius: 0;
 }
 
 /* Shield */
@@ -2005,18 +1986,15 @@ textarea.input { resize: vertical; min-height: 80px; }
 /* Bell */
 .icon-bell {
   position: relative;
-}
-.icon-bell::before {
-  content: ''; position: absolute; top: 5%; left: 15%;
-  width: 70%; height: 65%;
   background: currentColor;
-  border-radius: 50% 50% 0 0;
+  clip-path: polygon(35% 0%, 65% 0%, 80% 15%, 85% 50%, 95% 75%, 90% 85%, 10% 85%, 5% 75%, 15% 50%, 20% 15%);
 }
 .icon-bell::after {
-  content: ''; position: absolute; bottom: 10%; left: 35%;
-  width: 30%; height: 20%;
+  content: ''; position: absolute; bottom: 5%; left: 50%;
+  width: 16%; height: 16%;
   background: currentColor;
-  border-radius: 0 0 50% 50%;
+  border-radius: 50%;
+  transform: translateX(-50%);
 }
 
 /* Coin */
@@ -2081,20 +2059,10 @@ textarea.input { resize: vertical; min-height: 80px; }
 }
 
 /* Trophy */
-.icon-trophy {
-  position: relative;
-}
 .icon-trophy::before {
-  content: ''; position: absolute; top: 15%; left: 15%;
-  width: 70%; height: 55%;
+  content: ''; display: block; width: 100%; height: 100%;
   background: currentColor;
-  border-radius: 0 0 30% 30%;
-}
-.icon-trophy::after {
-  content: ''; position: absolute; top: 0%; left: 15%;
-  width: 70%; height: 20%;
-  background: currentColor;
-  border-radius: 50%;
+  clip-path: polygon(25% 5%, 75% 5%, 85% 25%, 90% 55%, 70% 75%, 60% 90%, 40% 90%, 30% 75%, 10% 55%, 15% 25%);
 }
 
 /* Star */
@@ -2148,18 +2116,11 @@ textarea.input { resize: vertical; min-height: 80px; }
 }
 
 /* Heart */
-.icon-heart {
-  position: relative;
-}
-.icon-heart::before,
-.icon-heart::after {
-  content: ''; position: absolute; top: 10%;
-  width: 50%; height: 50%;
+.icon-heart::before {
+  content: ''; display: block; width: 100%; height: 100%;
   background: currentColor;
-  border-radius: 50% 50% 0 50%;
+  clip-path: polygon(50% 30%, 35% 10%, 10% 10%, 10% 40%, 50% 85%, 90% 40%, 90% 10%, 65% 10%);
 }
-.icon-heart::before { left: 2%; transform: rotate(-45deg); }
-.icon-heart::after { right: 2%; transform: rotate(45deg); }
 
 /* Prohibited */
 .icon-prohibited::before {
@@ -2193,33 +2154,23 @@ textarea.input { resize: vertical; min-height: 80px; }
 }
 
 /* Cross/X mark */
-.icon-cross::before {
-  content: ''; display: block; width: 100%; height: 100%;
+.icon-cross {
   position: relative;
-}
-.icon-cross::after {
-  content: ''; position: absolute; top: 50%; left: 10%;
-  width: 80%; height: 0.15em;
-  background: currentColor;
-  transform: rotate(-45deg);
-  box-shadow: 0 0 0 0 currentColor;
-}
-.icon-cross::before {
-  transform: rotate(45deg);
 }
 .icon-cross::before,
 .icon-cross::after {
-  width: 80%; height: 0.15em;
+  content: ''; position: absolute; top: 50%; left: 15%;
+  width: 70%; height: 0.15em;
   background: currentColor;
-  position: absolute; top: 50%; left: 10%;
 }
+.icon-cross::before { transform: rotate(45deg); }
+.icon-cross::after { transform: rotate(-45deg); }
 
 /* Check mark */
 .icon-check::before {
-  content: ''; display: block; width: 60%; height: 30%;
-  border-left: 0.15em solid currentColor;
-  border-bottom: 0.15em solid currentColor;
-  transform: rotate(-45deg) translate(10%, 30%);
+  content: ''; display: block; width: 100%; height: 100%;
+  background: currentColor;
+  clip-path: polygon(20% 55%, 45% 80%, 90% 15%, 75% 5%, 40% 55%);
 }
 
 /* Monitor / TV */
@@ -2243,17 +2194,17 @@ textarea.input { resize: vertical; min-height: 80px; }
   position: relative;
 }
 .icon-link::before {
-  content: ''; position: absolute; top: 20%; left: 10%;
-  width: 50%; height: 60%;
-  border: 0.15em solid currentColor;
-  border-radius: 40%;
+  content: ''; position: absolute; top: 15%; left: 5%;
+  width: 55%; height: 65%;
+  border: 0.12em solid currentColor;
+  border-radius: 35%;
   box-sizing: border-box;
 }
 .icon-link::after {
-  content: ''; position: absolute; top: 20%; right: 10%;
-  width: 50%; height: 60%;
-  border: 0.15em solid currentColor;
-  border-radius: 40%;
+  content: ''; position: absolute; top: 15%; right: 5%;
+  width: 55%; height: 65%;
+  border: 0.12em solid currentColor;
+  border-radius: 35%;
   box-sizing: border-box;
 }
 
@@ -2301,20 +2252,17 @@ textarea.input { resize: vertical; min-height: 80px; }
 }
 .icon-people::before {
   content: ''; position: absolute; top: 0%; left: 5%;
-  width: 40%; height: 45%;
+  width: 40%; height: 42%;
   background: currentColor;
   border-radius: 50%;
-  box-shadow: 50% 55% 0 -0.05em currentColor;
-}
-.icon-people::before {
-  box-shadow: 0.4em 0.55em 0 -0.05em currentColor;
+  box-shadow: 0.6em 0 0 0 currentColor;
 }
 .icon-people::after {
-  content: ''; position: absolute; bottom: 0%; left: 0%;
-  width: 50%; height: 40%;
+  content: ''; position: absolute; bottom: 0%; left: 5%;
+  width: 40%; height: 50%;
   background: currentColor;
   border-radius: 50% 50% 0 0;
-  box-shadow: 0.45em 0 0 0 currentColor;
+  box-shadow: 0.6em 0 0 0 currentColor;
 }
 
 /* Arrow Left */
@@ -2363,7 +2311,8 @@ textarea.input { resize: vertical; min-height: 80px; }
 /* ── Particle shape variants ── */
 .particle-shape-1, .particle-shape-2, .particle-shape-3,
 .particle-shape-4, .particle-shape-5, .particle-shape-6,
-.particle-shape-7, .particle-shape-8 {
+.particle-shape-7, .particle-shape-8, .particle-shape-9,
+.particle-shape-10 {
   display: inline-block;
   position: absolute;
   pointer-events: none;
@@ -2377,3 +2326,5 @@ textarea.input { resize: vertical; min-height: 80px; }
 .particle-shape-6::before { content: ''; display: block; width: 100%; height: 100%; background: currentColor; clip-path: polygon(50% 0%, 80% 20%, 100% 50%, 80% 80%, 50% 100%, 20% 80%, 0% 50%, 20% 20%); }
 .particle-shape-7::before { content: ''; display: block; width: 100%; height: 100%; background: currentColor; clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%); }
 .particle-shape-8::before { content: ''; display: block; width: 100%; height: 100%; background: currentColor; border-radius: 50%; border: 0.15em solid; box-sizing: border-box; background: radial-gradient(circle, transparent 55%, currentColor 55%, currentColor 65%, transparent 65%); }
+.particle-shape-9::before { content: ''; display: block; width: 100%; height: 100%; background: currentColor; clip-path: polygon(50% 0%, 38% 38%, 0% 38%, 30% 62%, 19% 100%, 50% 76%, 81% 100%, 70% 62%, 100% 38%, 62% 38%); }
+.particle-shape-10::before { content: ''; display: block; width: 100%; height: 100%; background: currentColor; clip-path: polygon(0% 0%, 100% 0%, 100% 20%, 70% 30%, 70% 100%, 30% 100%, 30% 30%, 0% 20%); }
