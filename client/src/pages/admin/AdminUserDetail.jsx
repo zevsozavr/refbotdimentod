@@ -12,6 +12,7 @@ const AdminUserDetail = () => {
   const [loading, setLoading] = useState(true);
   const [topMatchLevel, setTopMatchLevel] = useState('');
   const [tonPlayLevel, setTonPlayLevel] = useState('');
+  const [levelError, setLevelError] = useState('');
 
   useEffect(() => {
     const fetch = async () => {
@@ -56,6 +57,7 @@ const AdminUserDetail = () => {
 
   const setLevel = async (casino, level) => {
     if (!level) return;
+    setLevelError('');
     try {
       await adminApi.post(`/admin/users/${id}/set-level`, { casino, level: parseInt(level) });
       const res = await adminApi.get(`/admin/users/${id}`);
@@ -63,6 +65,8 @@ const AdminUserDetail = () => {
       setTopMatchLevel(res.data.level_topmatch ? String(res.data.level_topmatch) : '');
       setTonPlayLevel(res.data.level_tonplay ? String(res.data.level_tonplay) : '');
     } catch (e) {
+      const msg = e.response?.data?.errors?.[0]?.message || e.response?.data?.error || 'Failed to set level';
+      setLevelError(msg);
       console.error('Set level error:', e);
     }
   };
@@ -188,33 +192,30 @@ const AdminUserDetail = () => {
       <div className="card mb-4">
         <h3 className="mb-2" style={{ fontSize: 16, fontWeight: 600 }}>TopMatch {t('admin.user_detail.set_type')}</h3>
         <p className="text-sm text-secondary mb-2">{t('admin.user_detail.current')}: {user.level_topmatch || '—'}</p>
-        <div className="flex gap-2">
-          <select className="select" value={topMatchLevel} onChange={(e) => setTopMatchLevel(e.target.value)} style={{ flex: 1 }}>
-            <option value="">— {t('admin.users.no_level')} —</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-          </select>
-          <button className="btn btn-primary btn-sm" onClick={() => setLevel('topmatch', topMatchLevel)} disabled={!topMatchLevel}>
-            {t('admin.user_detail.set_type')}
-          </button>
-        </div>
+        <select className="select" value={topMatchLevel} onChange={(e) => setTopMatchLevel(e.target.value)} style={{ width: '100%', marginBottom: 8 }}>
+          <option value="">— {t('admin.users.no_level')} —</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+        </select>
+        <button className="btn btn-primary btn-sm" onClick={() => setLevel('topmatch', topMatchLevel)} disabled={!topMatchLevel}>
+          {t('admin.user_detail.set_type')}
+        </button>
       </div>
 
       <div className="card">
         <h3 className="mb-2" style={{ fontSize: 16, fontWeight: 600 }}>TonPlay {t('admin.user_detail.set_type')}</h3>
         <p className="text-sm text-secondary mb-2">{t('admin.user_detail.current')}: {user.level_tonplay || '—'}</p>
-        <div className="flex gap-2">
-          <select className="select" value={tonPlayLevel} onChange={(e) => setTonPlayLevel(e.target.value)} style={{ flex: 1 }}>
-            <option value="">— {t('admin.users.no_level')} —</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-          </select>
-          <button className="btn btn-primary btn-sm" onClick={() => setLevel('tonplay', tonPlayLevel)} disabled={!tonPlayLevel}>
-            {t('admin.user_detail.set_type')}
-          </button>
-        </div>
+        <select className="select" value={tonPlayLevel} onChange={(e) => setTonPlayLevel(e.target.value)} style={{ width: '100%', marginBottom: 8 }}>
+          <option value="">— {t('admin.users.no_level')} —</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+        </select>
+        <button className="btn btn-primary btn-sm" onClick={() => setLevel('tonplay', tonPlayLevel)} disabled={!tonPlayLevel}>
+          {t('admin.user_detail.set_type')}
+        </button>
+        {levelError && <p className="text-sm" style={{ color: 'var(--error)', marginTop: 8 }}>{levelError}</p>}
       </div>
     </div>
   );

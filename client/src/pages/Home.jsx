@@ -58,7 +58,6 @@ const Home = () => {
       <div className="casino-list">
         {casinos.map(casino => (
           <div key={casino.id} className={`casino-card ${casino.id}`} onClick={() => navigate(`/casino/${casino.id}`)}>
-            <div className="casino-card-coin"><span className="icon icon-coin"></span></div>
             <div className="casino-card-glow" />
             <img className="casino-card-bg" src={casino.photo} alt={casino.id} />
             <div className="casino-card-overlay">

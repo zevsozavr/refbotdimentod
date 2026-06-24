@@ -1,10 +1,12 @@
 import React, { useEffect, useRef } from 'react';
 
-const PARTICLE_COUNT = 50;
+const PARTICLE_COUNT = 100;
 const PREFIXES = ['particle-shape-1', 'particle-shape-2', 'particle-shape-3',
   'particle-shape-4', 'particle-shape-5', 'particle-shape-6',
   'particle-shape-7', 'particle-shape-8', 'particle-shape-9',
-  'particle-shape-10'];
+  'particle-shape-10', 'particle-shape-11', 'particle-shape-12',
+  'particle-shape-13', 'particle-shape-14', 'particle-shape-15',
+  'particle-shape-16'];
 
 const ParticleBackground = ({ lightweight }) => {
   const containerRef = useRef();
@@ -20,7 +22,7 @@ const ParticleBackground = ({ lightweight }) => {
       el.className = `particle ${cls}`;
       el.style.cssText = `
         left: ${Math.random() * 100}%;
-        font-size: ${16 + Math.random() * 20}px;
+        font-size: ${18 + Math.random() * 24}px;
         animation-duration: ${14 + Math.random() * 20}s;
         animation-delay: ${-Math.random() * 25}s;
         opacity: ${0.08 + Math.random() * 0.14};

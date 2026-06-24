@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import { adminApi } from '../../axios';
+import AdminNav from '../../components/AdminNav';
 
 const AdminAnnounces = () => {
   const { t, i18n } = useTranslation();
-  const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -73,10 +72,8 @@ const AdminAnnounces = () => {
 
   return (
     <div className="page">
-      <div className="page-header">
-        <button className="back-btn" onClick={() => navigate(-1)}><span className="icon icon-arrow"></span></button>
-        <h1 className="page-title" style={{ margin: 0 }}>{t('nav.announces')}</h1>
-      </div>
+      <AdminNav />
+      <h1 className="page-title">{t('nav.announces')}</h1>
       <button className="btn btn-primary btn-sm mb-4" onClick={openCreate}>Create Announce</button>
 
       {showForm && (

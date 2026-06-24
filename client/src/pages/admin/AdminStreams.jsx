@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { adminApi } from '../../axios';
+import AdminNav from '../../components/AdminNav';
 import { toLocalDatetime, withTimezone } from '../../utils/timezone';
 
 const AdminStreams = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const [streams, setStreams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -87,10 +86,8 @@ const AdminStreams = () => {
 
   return (
     <div className="page">
-      <div className="page-header">
-        <button className="back-btn" onClick={() => navigate(-1)}><span className="icon icon-arrow"></span></button>
-        <h1 className="page-title" style={{ margin: 0 }}><span className="icon icon-monitor"></span> Streams</h1>
-      </div>
+      <AdminNav />
+      <h1 className="page-title"><span className="icon icon-monitor"></span> Streams</h1>
       <button className="btn btn-primary btn-sm mb-4" onClick={openCreate}>Create Stream</button>
 
       {showForm && (
