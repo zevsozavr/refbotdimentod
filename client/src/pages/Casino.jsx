@@ -114,33 +114,32 @@ const Casino = () => {
 
   return (
     <div className="page">
-      <div className={`casino-hero ${casinoId} hover-lift`} style={{ minHeight: 240, borderRadius: '0 0 24px 24px', overflow: 'hidden', position: 'relative' }}>
-        <button onClick={() => navigate('/')} className="hero-back-btn" aria-label="Go back">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5"/>
-            <polyline points="12 19 5 12 12 5"/>
-          </svg>
+      <div className={`casino-hero ${casinoId}`} style={{ minHeight: 220, borderRadius: '0 0 24px 24px', overflow: 'hidden', position: 'relative' }}>
+        <button onClick={() => navigate('/')} style={{ position: 'absolute', top: 12, left: 12, zIndex: 10, width: 40, height: 40, borderRadius: 12, background: 'rgba(5,15,28,0.6)', backdropFilter: 'blur(12px)', border: '1px solid rgba(195,198,211,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#c3c6d3', fontSize: 18, transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(195,198,211,0.15)'; e.currentTarget.style.color = '#fff'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(5,15,28,0.6)'; e.currentTarget.style.color = '#c3c6d3'; }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><polyline points="12 19 5 12 12 5"/></svg>
         </button>
         <div className={`casino-hero-bg casino-bg-${casinoId}`} style={{ position: 'absolute', inset: 0 }} />
-        <div className="casino-hero-overlay">
+        <div className="casino-hero-overlay" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '20px 20px' }}>
           {casinoData?.level ? (
-            <span className={`level-badge ${casinoId} badge-pulse`}>
+            <span className={`level-badge ${casinoId}`}>
               {`LEVEL ${casinoData.level}`}
             </span>
           ) : (
             <span className="level-badge none">
-              {lang === 'uk' ? 'Немає рівня' : 'Нет уровня'}
+              NO LEVEL
             </span>
           )}
         </div>
       </div>
 
-      <div className="glass-panel" style={{ margin: '20px 20px 0', padding: '20px', textAlign: 'center' }}>
-        <p style={{ marginBottom: 16, fontSize: 15, color: 'var(--on-surface-variant)' }}>
-          <span className="emoji-icon" style={{ marginRight: 8 }}>🔗</span>
+      <div className="glass-panel" style={{ margin: '16px 16px 0', padding: '16px', textAlign: 'center' }}>
+        <p style={{ marginBottom: 12, fontSize: 14, color: 'var(--on-surface-variant)' }}>
+          <span className="emoji-icon" style={{ marginRight: 6 }}>🔗</span>
           {lang === 'uk' ? 'Реферальне посилання' : 'Реферальная ссылка'}
         </p>
-        <button className={`btn btn-block btn-${casinoId} btn-hover-lift`} onClick={() => {
+        <button className={`btn btn-block btn-${casinoId}`} onClick={() => {
           let link = casinoData?.referral_link;
           if (!link) return;
           if (!link.startsWith('http://') && !link.startsWith('https://')) link = 'https://' + link;
@@ -154,112 +153,104 @@ const Casino = () => {
         </button>
       </div>
 
-      <div className="glass-panel stagger-item" style={{ margin: '16px 20px 0', padding: '20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 18 }}>
-          <div className="info-icon">
-            <span className="emoji-icon" style={{ fontSize: 24 }}>👤</span>
+      <div className="glass-panel stagger-item" style={{ margin: '12px 16px 0', padding: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+          <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(195,198,211,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>
+            <span className="emoji-icon" style={{ filter: 'none' }}>👤</span>
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--primary)' }}>{lang === 'uk' ? 'ID в казино' : 'ID в казино'}</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--primary)' }}>{lang === 'uk' ? 'ID в казино' : 'ID в казино'}</div>
             {casinoData.casino_account_id ? (
-              <div className="info-content" style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 4, flexWrap: 'wrap' }}>
-                <span className="info-label">{lang === 'uk' ? 'Поточний:' : 'Текущий:'}</span>
-                <span className="info-value wallet-address">{casinoData.casino_account_id}</span>
-                {idPending === 'pending' && <span className="status-badge status-pending">{lang === 'uk' ? 'Очікує' : 'Ожидает'}</span>}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: 12, color: 'var(--on-surface-variant)' }}>{lang === 'uk' ? 'Поточний:' : 'Текущий:'}</span>
+                <span style={{ fontSize: 14, fontWeight: 600, fontFamily: 'monospace', color: 'var(--tertiary)' }}>{casinoData.casino_account_id}</span>
+                {idPending === 'pending' && <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 999, background: 'rgba(233,195,73,0.15)', color: '#e9c349' }}>{lang === 'uk' ? 'Очікує' : 'Ожидает'}</span>}
               </div>
             ) : (
-              <span className="info-placeholder">{lang === 'uk' ? 'Не вказано' : 'Не указан'}</span>
+              <span style={{ fontSize: 12, color: 'var(--on-surface-variant)' }}>{lang === 'uk' ? 'Не вказано' : 'Не указан'}</span>
             )}
           </div>
         </div>
-        
-        <div className="input-group" style={{ marginTop: 16 }}>
+        <div style={{ display: 'flex', gap: 8 }}>
           <input
-            className="glass-input input-enhanced"
+            className="glass-input"
             placeholder={lang === 'uk' ? 'Новий ID' : 'Новый ID'}
             value={casinoIdInput}
             onChange={e => setCasinoIdInput(e.target.value)}
             maxLength={32}
             disabled={idPending === 'pending'}
+            style={{ flex: 1, padding: '10px 14px', fontSize: 14, borderRadius: 10 }}
           />
-          <div className="button-group">
-            <button
-              className="btn btn-primary btn-enhanced btn-hover-lift"
-              onClick={submitCasinoId}
-              disabled={!casinoIdInput.trim() || savingId || idPending === 'pending'}
-            >
-              {idPending === 'pending' ? (lang === 'uk' ? 'Очікує...' : 'Ожидает...') : (savingId ? '⋯' : (lang === 'uk' ? 'Надіслати' : 'Отправить'))}
-            </button>
-          </div>
+          <button
+            className="btn btn-primary"
+            style={{ width: 'auto', padding: '10px 18px', fontSize: 13, borderRadius: 10, whiteSpace: 'nowrap', flexShrink: 0 }}
+            onClick={submitCasinoId}
+            disabled={!casinoIdInput.trim() || savingId || idPending === 'pending'}
+          >
+            {idPending === 'pending' ? (lang === 'uk' ? 'Очікує...' : 'Ожидает...') : (savingId ? '⋯' : (lang === 'uk' ? 'Надіслати' : 'Отправить'))}
+          </button>
         </div>
-        
-        {idPending === 'pending' && <p className="status-message status-pending">{lang === 'uk' ? 'Запит на зміну очікує підтвердження адміністратора' : 'Запрос на изменение ожидает подтверждения администратора'}</p>}
-        
-        {idMsg && <p className={`status-message status-${idMsgType}`}>{idMsgType === 'success' ? <span className="emoji-icon" style={{ fontSize: 14, marginRight: 6 }}>✅</span> : <span className="emoji-icon" style={{ fontSize: 14, marginRight: 6 }}>❌</span>}{idMsg}</p>}
+        {idPending === 'pending' && <p style={{ fontSize: 12, color: '#e9c349', marginTop: 8, display: 'flex', alignItems: 'center', gap: 4 }}><span className="emoji-icon" style={{ fontSize: 12 }}>⌛</span> {lang === 'uk' ? 'Запит на зміну очікує підтвердження адміністратора' : 'Запрос на изменение ожидает подтверждения администратора'}</p>}
+        {idMsg && <p style={{ fontSize: 12, marginTop: 6, display: 'flex', alignItems: 'center', gap: 4, color: idMsgType === 'success' ? 'var(--tertiary)' : 'var(--error)' }}>{idMsgType === 'success' ? <span className="emoji-icon" style={{ fontSize: 12 }}>✅</span> : <span className="emoji-icon" style={{ fontSize: 12 }}>❌</span>} {idMsg}</p>}
       </div>
 
-      <div className="glass-panel stagger-item" style={{ margin: '16px 20px 0', padding: '20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 18 }}>
-          <div className="info-icon">
-            <span className="emoji-icon" style={{ fontSize: 24 }}>💰</span>
+      <div className="glass-panel stagger-item" style={{ margin: '12px 16px 0', padding: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+          <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(195,198,211,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>
+            <span className="emoji-icon" style={{ filter: 'none' }}>💰</span>
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--primary)' }}>TRC20 USDT {lang === 'uk' ? 'Гаманець' : 'Кошелек'}</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--primary)' }}>TRC20 USDT {lang === 'uk' ? 'Гаманець' : 'Кошелек'}</div>
             {currentWallet ? (
-              <div className="info-content" style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 2, flexWrap: 'wrap' }}>
-                <span className="info-label">{lang === 'uk' ? 'Поточний:' : 'Текущий:'}</span>
-                <span className="info-value wallet-address">{currentWallet}</span>
-                {walletPending === 'pending' && <span className="status-badge status-pending">{lang === 'uk' ? 'Очікує' : 'Ожидает'}</span>}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: 12, color: 'var(--on-surface-variant)' }}>{lang === 'uk' ? 'Поточний:' : 'Текущий:'}</span>
+                <span style={{ fontSize: 13, fontWeight: 600, fontFamily: 'monospace', color: 'var(--tertiary)', wordBreak: 'break-all' }}>{currentWallet}</span>
+                {walletPending === 'pending' && <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 999, background: 'rgba(233,195,73,0.15)', color: '#e9c349' }}>{lang === 'uk' ? 'Очікує' : 'Ожидает'}</span>}
               </div>
             ) : (
-              <span className="info-placeholder">{lang === 'uk' ? 'Не вказано' : 'Не указан'}</span>
+              <span style={{ fontSize: 12, color: 'var(--on-surface-variant)' }}>{lang === 'uk' ? 'Не вказано' : 'Не указан'}</span>
             )}
           </div>
         </div>
-        
-        <div className="input-group" style={{ marginTop: 16 }}>
+        <div style={{ display: 'flex', gap: 8 }}>
           <input
-            className="glass-input input-enhanced"
+            className="glass-input"
             placeholder={lang === 'uk' ? 'TRC20 адреса' : 'TRC20 адрес'}
             value={walletInput}
             onChange={e => setWalletInput(e.target.value)}
             style={{ flex: 1, padding: '10px 14px', fontSize: 14, borderRadius: 10, fontFamily: 'monospace' }}
             disabled={walletPending === 'pending'}
           />
-          <div className="button-group">
-            <button
-              className="btn btn-primary btn-enhanced btn-hover-lift"
-              onClick={submitWallet}
-              disabled={!walletInput.trim() || savingWallet || walletPending === 'pending'}
-            >
-              {walletPending === 'pending' ? (lang === 'uk' ? 'Очікує...' : 'Ожидает...') : (savingWallet ? '⋯' : (lang === 'uk' ? 'Надіслати' : 'Отправить'))}
-            </button>
-          </div>
+          <button
+            className="btn btn-primary"
+            style={{ width: 'auto', padding: '10px 18px', fontSize: 13, borderRadius: 10, whiteSpace: 'nowrap', flexShrink: 0 }}
+            onClick={submitWallet}
+            disabled={!walletInput.trim() || savingWallet || walletPending === 'pending'}
+          >
+            {walletPending === 'pending' ? (lang === 'uk' ? 'Очікує...' : 'Ожидает...') : (savingWallet ? '⋯' : (lang === 'uk' ? 'Надіслати' : 'Отправить'))}
+          </button>
         </div>
-        
-        {walletPending === 'pending' && <p className="status-message status-pending">{lang === 'uk' ? 'Запит на зміну очікує підтвердження адміністратора' : 'Запрос на изменение ожидает подтверждения администратора'}</p>}
-        
-        {walletMsg && <p className={`status-message status-${walletMsgType}`}>{walletMsgType === 'success' ? <span className="emoji-icon" style={{ fontSize: 14, marginRight: 6 }}>✅</span> : <span className="emoji-icon" style={{ fontSize: 14, marginRight: 6 }}>❌</span>}{walletMsg}</p>}
-        
-        <p className="help-text">{lang === 'uk'
-          ? 'Адміністратор підтвердить зміни перед застосуванням'
-          : 'Администратор подтвердит изменения перед применением'}
+        {walletPending === 'pending' && <p style={{ fontSize: 12, color: '#e9c349', marginTop: 8, display: 'flex', alignItems: 'center', gap: 4 }}><span className="emoji-icon" style={{ fontSize: 12 }}>⌛</span> {lang === 'uk' ? 'Запит на зміну очікує підтвердження адміністратора' : 'Запрос на изменение ожидает подтверждения администратора'}</p>}
+        {walletMsg && <p style={{ fontSize: 12, marginTop: 6, display: 'flex', alignItems: 'center', gap: 4, color: walletMsgType === 'success' ? 'var(--tertiary)' : 'var(--error)' }}>{walletMsgType === 'success' ? <span className="emoji-icon" style={{ fontSize: 12 }}>✅</span> : <span className="emoji-icon" style={{ fontSize: 12 }}>❌</span>} {walletMsg}</p>}
+        <p style={{ fontSize: 11, color: 'var(--on-surface-variant)', textAlign: 'center', marginTop: 10, opacity: 0.7 }}>
+          {lang === 'uk'
+            ? 'Адміністратор підтвердить зміни перед застосуванням'
+            : 'Администратор подтвердит изменения перед применением'}
         </p>
       </div>
 
-      <div className="action-section">
-        <button
-          className="btn btn-block btn-secondary btn-hover-lift"
-          onClick={() => navigate(`/contests?casino=${casinoId}`)}
-        >
-          <span className="emoji-icon">🏆</span> {lang === 'uk' ? 'Конкурси' : 'Конкурсы'}
-        </button>
-        <p className="help-text">
-          <span className="emoji-icon">💰</span> {lang === 'uk'
-            ? 'Для участі в конкурсах потрібен TRC20 USDT гаманець'
-            : 'Для участия в конкурсах требуется TRC20 USDT кошелек'}
-        </p>
-      </div>
+      <button
+        className="btn btn-block btn-secondary"
+        style={{ margin: '12px 16px 0' }}
+        onClick={() => navigate(`/contests?casino=${casinoId}`)}
+      >
+        <span className="emoji-icon">🏆</span> {lang === 'uk' ? 'Конкурси' : 'Конкурсы'}
+      </button>
+      <p style={{ fontSize: 12, color: 'var(--on-surface-variant)', textAlign: 'center', margin: '8px 16px 80px', opacity: 0.7 }}>
+        <span className="emoji-icon">💰</span> {lang === 'uk'
+          ? 'Для участі в конкурсах потрібен TRC20 USDT гаманець'
+          : 'Для участия в конкурсах требуется TRC20 USDT кошелек'}
+      </p>
     </div>
   );
 };
