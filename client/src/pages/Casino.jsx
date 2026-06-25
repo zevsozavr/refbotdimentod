@@ -241,7 +241,7 @@ const Casino = () => {
 
       <button
         className="btn btn-block btn-secondary"
-        style={{ margin: '16px 16px 0' }}
+        style={{ margin: '12px 16px 0' }}
         onClick={() => navigate(`/contests?casino=${casinoId}`)}
       >
         <span className="emoji-icon">🏆</span> {lang === 'uk' ? 'Конкурси' : 'Конкурсы'}

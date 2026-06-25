@@ -105,7 +105,7 @@ const Contests = () => {
         <div className="glass-panel" style={{ padding: 20, textAlign: 'center', marginTop: 20 }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}><span className="emoji-icon">💰</span></div>
           <p style={{ fontSize: 15, fontWeight: 600, marginBottom: 8 }}>{t('settings.wallet_title')}</p>
-          <p className="text-secondary" style={{ fontSize: 13, marginBottom: 16 }}>{t('settings.wallet_note')}</p>
+          <p className="text-secondary" style={{ fontSize: 13, marginBottom: 16, color: '#fff' }}>{t('settings.wallet_note')}</p>
           <button className={`btn btn-${casinoId}`} onClick={() => navigate(`/casino/${casinoId}`)}>
             {lang === 'uk' ? 'Зрозумів' : 'Понял'}
           </button>
@@ -170,7 +170,7 @@ const Contests = () => {
               <div className="contest-title">{c.title}</div>
               <div className="contest-prize">{t('contests.prize')}: {c.prize}</div>
               {c.winners && c.winners.length > 0 && (
-                <div className="contest-timer" style={{ color: 'var(--warning)' }}>
+                <div className="contest-timer" style={{ color: '#fff' }}>
                   {t('contests.winner')}: {c.winners.map(w => `@${w.telegram_username}`).join(', ')}
                 </div>
               )}
