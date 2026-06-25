@@ -291,11 +291,11 @@ body::after {
   justify-content: center;
 }
 .casino-bg-topmatch::before {
-  content: 'TM';
-  font-size: 72px;
+  content: 'TOP MATCH';
+  font-size: 48px;
   font-weight: 900;
-  color: rgba(255,255,255,0.06);
-  letter-spacing: -0.04em;
+  color: rgba(255,255,255,0.18);
+  letter-spacing: 0.08em;
   font-family: var(--font-display);
   pointer-events: none;
   user-select: none;
@@ -308,11 +308,11 @@ body::after {
   justify-content: center;
 }
 .casino-bg-tonplay::before {
-  content: 'TP';
-  font-size: 72px;
+  content: 'TON PLAY';
+  font-size: 48px;
   font-weight: 900;
-  color: rgba(255,255,255,0.06);
-  letter-spacing: -0.04em;
+  color: rgba(255,255,255,0.18);
+  letter-spacing: 0.08em;
   font-family: var(--font-display);
   pointer-events: none;
   user-select: none;
