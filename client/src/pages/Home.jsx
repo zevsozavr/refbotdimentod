@@ -62,11 +62,11 @@ const Home = () => {
               <div className={`casino-card-bg casino-bg-${casino.id}`} />
               <div className="casino-card-overlay">
                 {levels[casino.id] != null ? (
-                  <span className={`level-badge ${casino.id}`} style={{ position: 'absolute', top: 12, right: 12, fontSize: 11, padding: '3px 12px' }}>
+                  <span className={`level-badge ${casino.id}`} style={{ position: 'absolute', top: 12, right: 12 }}>
                     {lang === 'uk' ? 'Рівень' : 'Уровень'} {levels[casino.id]}
                   </span>
                 ) : (
-                  <span className="level-badge none" style={{ position: 'absolute', top: 12, right: 12, fontSize: 11, padding: '3px 12px', background: 'rgba(195,198,211,0.12)', color: 'var(--on-surface-variant)' }}>
+                  <span className="level-badge none" style={{ position: 'absolute', top: 12, right: 12 }}>
                     {lang === 'uk' ? 'Немає рівня' : 'Нет уровня'}
                   </span>
                 )}

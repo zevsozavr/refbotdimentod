@@ -121,13 +121,13 @@ const Casino = () => {
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><polyline points="12 19 5 12 12 5"/></svg>
         </button>
         <div className={`casino-hero-bg casino-bg-${casinoId}`} style={{ position: 'absolute', inset: 0 }} />
-        <div className="casino-hero-overlay" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, transparent 30%, rgba(9,20,33,0.9) 85%, var(--surface-dim) 100%)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '20px 20px' }}>
+        <div className="casino-hero-overlay" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '20px 20px' }}>
           {casinoData?.level ? (
-            <span className={`level-badge ${casinoId}`} style={{ alignSelf: 'flex-start', margin: 0 }}>
+            <span className={`level-badge ${casinoId}`}>
               {`LEVEL ${casinoData.level}`}
             </span>
           ) : (
-            <span className="level-badge none" style={{ alignSelf: 'flex-start', margin: 0 }}>
+            <span className="level-badge none">
               NO LEVEL
             </span>
           )}
