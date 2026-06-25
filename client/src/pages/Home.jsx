@@ -35,15 +35,15 @@ const Home = () => {
 
   return (
     <div className="page">
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-        <h1 className="page-title" style={{ fontSize: 24, marginBottom: 0 }}>
+      <div className="header-section">
+        <h1 className="page-title metallic-text">
           {lang === 'uk' ? 'Головна' : 'Главная'}
         </h1>
         <div className="bell-wrapper" style={{ position: 'relative' }}>
-          <button className="bell-btn" onClick={() => setShowNotifications(!showNotifications)}>
+          <button className="bell-btn btn-icon" onClick={() => setShowNotifications(!showNotifications)}>
             <span className="emoji-icon">🔔</span>
             {unreadCount > 0 && (
-              <span className="bell-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>
+              <span className="bell-badge pulse-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>
             )}
           </button>
           {showNotifications && (
@@ -57,21 +57,25 @@ const Home = () => {
 
       <div className="casino-list">
         {casinos.map(casino => (
-            <div key={casino.id} className={`casino-card ${casino.id} ${casino.id === 'topmatch' ? 'banner-float' : 'banner-float-delayed'}`} onClick={() => navigate(`/casino/${casino.id}`)}>
-              <div className="casino-card-glow" />
-              <div className={`casino-card-bg casino-bg-${casino.id}`} />
-              <div className="casino-card-overlay">
-                {levels[casino.id] != null ? (
-                  <span className={`level-badge ${casino.id}`} style={{ position: 'absolute', top: 12, right: 12 }}>
-                    {lang === 'uk' ? 'Рівень' : 'Уровень'} {levels[casino.id]}
-                  </span>
-                ) : (
-                  <span className="level-badge none" style={{ position: 'absolute', top: 12, right: 12 }}>
-                    {lang === 'uk' ? 'Немає рівня' : 'Нет уровня'}
-                  </span>
-                )}
-              </div>
+          <div 
+            key={casino.id} 
+            className={`casino-card ${casino.id} ${casino.id === 'topmatch' ? 'banner-float' : 'banner-float-delayed'} hover-lift`}
+            onClick={() => navigate(`/casino/${casino.id}`)}
+          >
+            <div className="casino-card-glow" />
+            <div className={`casino-card-bg casino-bg-${casino.id}`} />
+            <div className="casino-card-overlay">
+              {levels[casino.id] != null ? (
+                <span className={`level-badge ${casino.id}`} style={{ position: 'absolute', top: 12, right: 12 }}>
+                  {lang === 'uk' ? 'Рівень' : 'Уровень'} {levels[casino.id]}
+                </span>
+              ) : (
+                <span className="level-badge none" style={{ position: 'absolute', top: 12, right: 12 }}>
+                  {lang === 'uk' ? 'Немає рівня' : 'Нет уровня'}
+                </span>
+              )}
             </div>
+          </div>
         ))}
       </div>
     </div>

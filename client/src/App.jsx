@@ -80,16 +80,19 @@ const AppContent = () => {
         let telegramUser = tryGetTelegramUser();
         for (let i = 0; i < 5 && !telegramUser?.id; i++) {
           await sleep(200);
+          if (cancelled) return;
           telegramUser = tryGetTelegramUser();
         }
 
         // URL fallback
         if (!telegramUser?.id) {
+          if (cancelled) return;
           telegramUser = parseUrlForUser();
         }
 
         // Last resort: stored telegram_id from previous session
         if (!telegramUser?.id) {
+          if (cancelled) return;
           const storedId = localStorage.getItem('telegram_id');
           if (storedId) {
             telegramUser = { id: parseInt(storedId, 10) };
@@ -97,6 +100,7 @@ const AppContent = () => {
         }
 
         if (!telegramUser?.id) {
+          if (cancelled) return;
           setInitError('This app must be opened from Telegram');
           setLoading(false);
           setInitDone(true);
@@ -122,29 +126,68 @@ const AppContent = () => {
           i18nInstance.changeLanguage(userLang);
         }
       } catch (err) {
-        console.error('Init error:', err);
-        if (!cancelled) setInitError(err.response?.data?.error || 'Connection failed');
+        if (!cancelled) {
+          console.error('Init error:', err);
+          setInitError(err.response?.data?.error || 'Connection failed');
+        }
       } finally {
-        if (!cancelled) { setLoading(false); setInitDone(true); }
+        if (!cancelled) {
+          setLoading(false);
+          setInitDone(true);
+        }
       }
     };
+
     run();
     return () => { cancelled = true; };
   }, [initKey]);
 
   if (loading || !initDone) {
     return (
-      <div className="loading-center" style={{ minHeight: '100vh' }}>
-        <div className="spinner" />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[var(--surface-dim)] to-[var(--surface)]">
+        <div className="space-y-6 text-center">
+          <div className="flex items-center justify-center space-x-4">
+            <div className="w-12 h-12 rounded-lg bg-[var(--primary)]/20 flex items-center justify-center">
+              <span className="emoji-icon text-2xl">🎰</span>
+            </div>
+            <div className="space-y-1">
+              <h2 className="text-xl font-bold text-[var(--on-surface)]">Casino Referral Bot</h2>
+              <p className="text-[var(--on-surface-variant)]">Initializing...</p>
+            </div>
+          </div>
+          
+          <div className="w-full max-w-md">
+            <div className="space-y-3">
+              <div className="h-4 bg-[var(--surface)]/30 rounded w-full animate-pulse"></div>
+              <div className="h-4 bg-[var(--surface)]/30 rounded w-[70%] animate-pulse"></div>
+              <div className="flex space-x-3">
+                <div className="h-4 bg-[var(--surface)]/30 rounded w-[40%] animate-pulse"></div>
+                <div className="h-4 bg-[var(--surface)]/30 rounded w-[60%] animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="status-screen">
-        <div className="spinner" />
-        {initError && <p className="text-secondary mt-4">{initError}</p>}
+      <div className="min-h-screen flex items-center justify-center bg-[var(--surface)]">
+        <div className="space-y-6 text-center">
+          <div className="flex items-center justify-center space-x-4">
+            <div className="w-14 h-14 rounded-lg bg-[var(--primary)]/20 flex items-center justify-center">
+              <span className="emoji-icon text-3xl">🎰</span>
+            </div>
+            <div className="space-y-1">
+              <h2 className="text-2xl font-bold text-[var(--on-surface)]">Initializing...</h2>
+              {initError && (
+                <p className="text-[var(--error)] mb-2">{initError}</p>
+              )}
+              <p className="text-[var(--on-surface-variant)]">Please ensure you're accessing this app through Telegram</p>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -155,7 +198,7 @@ const AppContent = () => {
 
   return (
     <HashRouter>
-      <div className={`app-container ${lightweightAnimations ? 'lightweight' : ''}`}>
+      <div className={`app-container ${lightweightAnimations ? 'lightweight' : ''} min-h-screen bg-[var(--surface)]`}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/casino/:casinoId" element={<Casino />} />
