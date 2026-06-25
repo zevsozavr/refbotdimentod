@@ -35,7 +35,7 @@ const Casino = () => {
   useStaggeredEntrance('.wallet-card, .referral-card, .btn-block', 80);
 
   useEffect(() => {
-    const hero = document.querySelector('.casino-hero-img');
+    const hero = document.querySelector('.casino-hero-bg');
     if (!hero) return;
     const handleScroll = () => {
       hero.style.transform = `translateY(${window.scrollY * 0.3}px)`;
@@ -120,9 +120,8 @@ const Casino = () => {
           onMouseLeave={e => { e.currentTarget.style.background = 'rgba(5,15,28,0.6)'; e.currentTarget.style.color = '#c3c6d3'; }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><polyline points="12 19 5 12 12 5"/></svg>
         </button>
-        <img className="casino-hero-img" src={`/photos/${casinoId}.${casinoId === 'topmatch' ? 'png' : 'jpg'}`} alt={casinoId} style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
+        <div className={`casino-hero-bg casino-bg-${casinoId}`} style={{ position: 'absolute', inset: 0 }} />
         <div className="casino-hero-overlay" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, transparent 30%, rgba(9,20,33,0.9) 85%, var(--surface-dim) 100%)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '20px 20px' }}>
-          <span className="casino-hero-title metallic-text" style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 8, textShadow: '0 2px 12px rgba(0,0,0,0.6)' }}>{casinoId === 'topmatch' ? 'TopMatch' : 'TonPlay'}</span>
           {casinoData?.level ? (
             <span className={`level-badge ${casinoId}`} style={{ alignSelf: 'flex-start', margin: 0 }}>
               {`LEVEL ${casinoData.level}`}

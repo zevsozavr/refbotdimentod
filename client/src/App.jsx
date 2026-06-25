@@ -76,11 +76,9 @@ const AppContent = () => {
         const tg = window.Telegram?.WebApp;
         if (tg) { tg.expand(); tg.ready(); }
 
-        // Try Telegram WebApp immediately
+        // Try Telegram WebApp immediately, then poll briefly (up to 1s)
         let telegramUser = tryGetTelegramUser();
-
-        // Poll for Telegram WebApp (up to 3s) — fixes refresh race condition
-        for (let i = 0; i < 15 && !telegramUser?.id; i++) {
+        for (let i = 0; i < 5 && !telegramUser?.id; i++) {
           await sleep(200);
           telegramUser = tryGetTelegramUser();
         }
