@@ -59,8 +59,8 @@ const Home = () => {
         {casinos.map(casino => (
             <div key={casino.id} className={`casino-card ${casino.id} ${casino.id === 'topmatch' ? 'banner-float' : 'banner-float-delayed'}`} onClick={() => navigate(`/casino/${casino.id}`)}>
               <div className="casino-card-glow" />
-              <img className="casino-card-bg" src={casino.photo} alt={casino.id} />
-              <div className="casino-card-overlay" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(9,20,33,0.2) 0%, rgba(9,20,33,0.1) 50%, rgba(9,20,33,0.3) 100%)' }}>
+              <div className={`casino-card-bg casino-bg-${casino.id}`} />
+              <div className="casino-card-overlay">
                 {levels[casino.id] != null ? (
                   <span className={`level-badge ${casino.id}`} style={{ position: 'absolute', top: 12, right: 12, fontSize: 11, padding: '3px 12px' }}>
                     {lang === 'uk' ? 'Рівень' : 'Уровень'} {levels[casino.id]}

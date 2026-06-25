@@ -1,7 +1,7 @@
 {
   "buildCommand": "cd client && npm run build",
   "outputDirectory": "client/dist",
-  "installCommand": "npm install --prefix client && npm install",
+  "installCommand": "npm install --prefix client --include=dev && npm install",
   "functions": {
     "api/index.js": {
       "memory": 256,
