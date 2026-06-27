@@ -33,6 +33,21 @@
   --betline-glow: rgba(43,108,176,0.25);
   --betline-gradient: linear-gradient(135deg, rgba(16,78,185,0.8) 0%, rgba(6,17,48,0.95) 100%);
 
+  /* Premium gold accent system */
+  --gold: #e9c349;
+  --gold-bright: #f6d976;
+  --gold-deep: #b8860b;
+  --gold-glow: rgba(233,195,73,0.28);
+  --gold-gradient: linear-gradient(135deg, #f6d976 0%, #e9c349 45%, #b8860b 100%);
+  --gold-sheen: linear-gradient(135deg, rgba(246,217,118,0.95) 0%, rgba(233,195,73,0.85) 50%, rgba(184,134,11,0.9) 100%);
+  --accent: #5b8def;
+  --accent-gradient: linear-gradient(135deg, #3a6fd8 0%, #5b8def 100%);
+  /* Layered glass surfaces */
+  --glass-border: rgba(195,198,211,0.16);
+  --glass-sheen: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 60%);
+  --shadow-soft: 0 10px 30px rgba(0,0,0,0.45);
+  --shadow-deep: 0 18px 50px rgba(0,0,0,0.6);
+
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
@@ -2226,6 +2241,245 @@ textarea.input { resize: vertical; min-height: 80px; }
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ════════════════════════════════════════════════════════════
+   PREMIUM VISUAL REFRESH — luxury gold-on-noir restyle.
+   Pure presentation (colors / depth / gloss). DOM & behavior
+   unchanged. Overrides earlier rules via source order.
+   ════════════════════════════════════════════════════════════ */
+
+/* Richer, layered ambient backdrop with gold + accent glows */
+body {
+  background:
+    radial-gradient(1200px 600px at 15% -5%, rgba(233,195,73,0.10) 0%, transparent 55%),
+    radial-gradient(1000px 700px at 100% 0%, rgba(91,141,239,0.12) 0%, transparent 55%),
+    radial-gradient(900px 900px at 50% 120%, rgba(43,108,176,0.10) 0%, transparent 60%),
+    linear-gradient(180deg, #0a1626 0%, #070f1c 50%, #050b15 100%);
+  background-attachment: fixed;
+}
+body::after {
+  background: radial-gradient(circle at 50% 0%, rgba(9,20,33,0.0) 0%, rgba(5,11,21,0.55) 100%);
+}
+
+/* Page titles: gold metallic with an underline accent */
+.page-title.metallic-text,
+.page-title {
+  background: linear-gradient(120deg, #fdf3d0 0%, #f6d976 30%, #e9c349 55%, #b8860b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+  text-shadow: 0 1px 18px rgba(233,195,73,0.12);
+}
+.page-title::after {
+  content: '';
+  display: block;
+  width: 44px;
+  height: 3px;
+  margin-top: 10px;
+  border-radius: 3px;
+  background: var(--gold-gradient);
+  box-shadow: 0 0 14px var(--gold-glow);
+}
+.page-title[style*="paddingLeft"]::after { margin-left: 48px; }
+.status-screen .page-title::after { margin-left: auto; margin-right: auto; }
+
+/* Glass panels & cards: gradient surface, sheen highlight, deeper lift */
+.glass-panel,
+.card,
+.contest-card,
+.settings-section,
+.admin-stat-card,
+.pending-change-card,
+.wallet-card,
+.referral-card {
+  background:
+    var(--glass-sheen),
+    linear-gradient(180deg, rgba(22,33,50,0.72) 0%, rgba(8,16,28,0.78) 100%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255,255,255,0.06);
+  position: relative;
+}
+.glass-panel { border-radius: var(--radius-lg); }
+
+/* Hairline gold top-accent on key panels for a premium ledger feel */
+.glass-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 16px; right: 16px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(233,195,73,0.45), transparent);
+  pointer-events: none;
+}
+
+/* ── Buttons: glossy, glowing, premium ── */
+.btn {
+  border-radius: var(--radius-md);
+  letter-spacing: 0.02em;
+  box-shadow: var(--shadow-soft);
+}
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 45%);
+  pointer-events: none;
+}
+.btn-primary {
+  background: var(--gold-gradient);
+  color: #2a2200;
+  border: 1px solid rgba(255,255,255,0.25);
+  box-shadow: 0 6px 22px var(--gold-glow), inset 0 1px 0 rgba(255,255,255,0.4);
+  text-shadow: 0 1px 0 rgba(255,255,255,0.25);
+}
+.btn-topmatch {
+  background: linear-gradient(135deg, #b3251f 0%, #d94833 55%, #f06a3e 100%);
+  border: 1px solid rgba(255,255,255,0.18);
+  box-shadow: 0 6px 22px var(--topmatch-glow), inset 0 1px 0 rgba(255,255,255,0.25);
+  color: #fff;
+}
+.btn-tonplay {
+  background: linear-gradient(135deg, #15457a 0%, #2b6cb0 55%, #4f93dd 100%);
+  border: 1px solid rgba(255,255,255,0.18);
+  box-shadow: 0 6px 22px var(--betline-glow), inset 0 1px 0 rgba(255,255,255,0.25);
+  color: #fff;
+}
+.btn-secondary {
+  background: linear-gradient(180deg, rgba(33,43,57,0.85) 0%, rgba(18,28,42,0.85) 100%);
+  border: 1px solid rgba(195,198,211,0.22);
+  color: var(--on-surface);
+}
+.btn-success {
+  background: linear-gradient(135deg, rgba(35,120,90,0.55) 0%, rgba(78,222,163,0.35) 100%);
+  border: 1px solid rgba(78,222,163,0.4);
+  color: #d6ffee;
+}
+.btn-danger {
+  background: linear-gradient(135deg, #7a1410 0%, #b3251f 100%);
+  color: #fff;
+  border: 1px solid rgba(255,120,110,0.3);
+}
+/* Sweeping shine on press for primary/brand buttons */
+@media (hover: hover) and (pointer: fine) {
+  .btn-primary:hover { filter: brightness(1.05) saturate(1.05); box-shadow: 0 10px 30px var(--gold-glow), inset 0 1px 0 rgba(255,255,255,0.5); }
+}
+
+/* ── Casino cards: deeper gloss, vignette, refined chrome ── */
+.casino-card {
+  height: 188px;
+  box-shadow: var(--shadow-deep);
+}
+.casino-card.topmatch { border: 1px solid rgba(217,72,51,0.45); }
+.casino-card.tonplay { border: 1px solid rgba(43,108,176,0.45); }
+.casino-bg-topmatch {
+  background:
+    radial-gradient(120% 100% at 80% 0%, rgba(255,180,120,0.35) 0%, transparent 55%),
+    linear-gradient(135deg, #4a0d1c 0%, #b3251f 38%, #e8793e 72%, #f5a623 100%);
+}
+.casino-bg-tonplay {
+  background:
+    radial-gradient(120% 100% at 80% 0%, rgba(160,210,255,0.35) 0%, transparent 55%),
+    linear-gradient(135deg, #07203f 0%, #1a5276 38%, #2e86c1 72%, #5dade2 100%);
+}
+.casino-bg-topmatch::before,
+.casino-bg-tonplay::before {
+  font-size: 52px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.30), rgba(255,255,255,0.06));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+/* Glossy top sheen across every card */
+.casino-card-overlay::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 45%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.14) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+/* ── Level badges: glassy pill with inner glow ── */
+.level-badge {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.25);
+}
+.level-badge.topmatch { background: rgba(217,72,51,0.45); color: #ffd9d2; }
+.level-badge.tonplay { background: rgba(43,108,176,0.5); color: #d6e9ff; }
+
+/* ── Tabs: pill segmented with gold active ── */
+.tab.active {
+  background: var(--gold-gradient);
+  color: #2a2200;
+  border-color: rgba(246,217,118,0.8);
+  box-shadow: 0 4px 16px var(--gold-glow);
+}
+
+/* ── Inputs: focus ring in gold ── */
+.glass-input,
+.input,
+.select {
+  border-radius: var(--radius-md);
+  background: rgba(5,12,22,0.7);
+  border: 1px solid rgba(195,198,211,0.18);
+}
+.glass-input:focus,
+.input:focus,
+.select:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(233,195,73,0.18), 0 6px 18px rgba(0,0,0,0.3);
+}
+
+/* ── Bottom nav: floating gold-accented glass dock ── */
+.bottom-nav {
+  background: linear-gradient(180deg, rgba(13,23,38,0.92) 0%, rgba(5,11,21,0.92) 100%);
+  border: 1px solid rgba(233,195,73,0.18);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+.nav-item.active {
+  color: #fff;
+  background: linear-gradient(180deg, rgba(233,195,73,0.18) 0%, rgba(233,195,73,0.06) 100%);
+  box-shadow: inset 0 0 0 1px rgba(233,195,73,0.25), 0 0 18px rgba(233,195,73,0.12);
+}
+.nav-item.active::after {
+  background: var(--gold);
+  box-shadow: 0 0 8px var(--gold);
+}
+
+/* ── Status / type badges: cleaner chips ── */
+.status-badge, .badge {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* ── Notification bell & sheets: gold ping ── */
+.notif-badge, .bell-badge {
+  background: linear-gradient(135deg, #ff6b5e 0%, #d94833 100%);
+  box-shadow: 0 2px 10px rgba(217,72,51,0.5);
+}
+.notif-panel, .notification-dropdown {
+  background: linear-gradient(180deg, rgba(14,24,40,0.97) 0%, rgba(6,12,22,0.98) 100%);
+  border: 1px solid rgba(233,195,73,0.14);
+}
+
+/* Light theme: warm parchment surfaces keep the gold luxe feel */
+[data-theme="light"] body {
+  background:
+    radial-gradient(1000px 600px at 10% -5%, rgba(233,195,73,0.18) 0%, transparent 55%),
+    linear-gradient(180deg, #f4f1e8 0%, #eceaf2 100%);
+}
+[data-theme="light"] .glass-panel,
+[data-theme="light"] .card,
+[data-theme="light"] .contest-card,
+[data-theme="light"] .settings-section {
+  background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(248,247,252,0.95) 100%);
+  border-color: rgba(184,134,11,0.18);
+  box-shadow: 0 8px 24px rgba(80,70,30,0.12);
 }
 
 /* ── Lightweight mode ── */
