@@ -78,7 +78,7 @@ const AdminUsers = () => {
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--primary)' }}>@{u.telegram_username || `ID: ${u.telegram_id}`}</div>
                   <div style={{ fontSize: 12, color: 'var(--on-surface-variant)', marginTop: 4 }}>
-                    TM: {u.casino_id_topmatch || '—'} | TP: {u.casino_id_tonplay || '—'}
+                    TM: {u.casino_id_topmatch || '—'} | BL: {u.casino_id_tonplay || '—'}
                   </div>
                   <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                     <span className={`status-badge ${getStatusBadge(u.status)}`}>{statusLabel[u.status]}</span>

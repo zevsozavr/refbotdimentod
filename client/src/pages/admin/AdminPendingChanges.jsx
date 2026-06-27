@@ -64,12 +64,12 @@ const AdminPendingChanges = () => {
                 <span className={`badge ${c.change_type === 'wallet' ? 'badge-success' : 'badge-primary'}`}>
                   {c.change_type === 'wallet' ? <><span className="emoji-icon">💰</span> Wallet</> : <><span className="emoji-icon">🎰</span> Casino ID</>}
                 </span>
-                {c.casino && <span className="badge badge-secondary">{c.casino.toUpperCase()}</span>}
+                {c.casino && <span className="badge badge-secondary">{c.casino === 'tonplay' ? 'BETLINE' : c.casino.toUpperCase()}</span>}
               </div>
               <span className="pending-change-field">
                 {c.change_type === 'wallet'
-                  ? (c.casino === 'topmatch' ? 'TopMatch TRC20' : 'TonPlay TRC20')
-                  : (c.casino === 'topmatch' ? 'TopMatch ID' : 'TonPlay ID')}
+                  ? (c.casino === 'topmatch' ? 'TopMatch TRC20' : 'Betline TRC20')
+                  : (c.casino === 'topmatch' ? 'TopMatch ID' : 'Betline ID')}
               </span>
             </div>
             <div className="pending-change-user">@{c.telegram_username || `ID: ${c.telegram_id}`}</div>

@@ -29,9 +29,9 @@
   --topmatch: #d94833;
   --topmatch-glow: rgba(217,72,51,0.25);
   --topmatch-gradient: linear-gradient(135deg, rgba(88,15,34,0.8) 0%, rgba(26,4,10,0.95) 100%);
-  --tonplay: #2b6cb0;
-  --tonplay-glow: rgba(43,108,176,0.25);
-  --tonplay-gradient: linear-gradient(135deg, rgba(16,78,185,0.8) 0%, rgba(6,17,48,0.95) 100%);
+  --betline: #2b6cb0;
+  --betline-glow: rgba(43,108,176,0.25);
+  --betline-gradient: linear-gradient(135deg, rgba(16,78,185,0.8) 0%, rgba(6,17,48,0.95) 100%);
 
   --radius-sm: 8px;
   --radius-md: 12px;
@@ -39,6 +39,16 @@
   --radius-xl: 24px;
   --transition: 200ms ease;
   --nav-height: 88px;
+
+  /* Motion tokens — GPU-friendly (transform/opacity), mobile-WebView tuned */
+  --dur-fast: 140ms;
+  --dur-base: 220ms;
+  --dur-slow: 360ms;
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --elev-press: 0 2px 8px rgba(0,0,0,0.35);
+  --elev-hover: 0 10px 28px rgba(0,0,0,0.45);
 
   --font-body: 'Inter', sans-serif;
   --font-label: 'Geist', sans-serif;
@@ -63,7 +73,7 @@
   --outline: #c0c4cc;
   --outline-variant: #d0d4dc;
   --topmatch-glow: rgba(217,72,51,0.12);
-  --tonplay-glow: rgba(43,108,176,0.12);
+  --betline-glow: rgba(43,108,176,0.12);
 }
 
 /* ── Base ── */
@@ -273,7 +283,7 @@ body::after {
 }
 
 .casino-card.tonplay {
-  box-shadow: 0 8px 32px var(--tonplay-glow);
+  box-shadow: 0 8px 32px var(--betline-glow);
   border: 1px solid rgba(43,108,176,0.3);
 }
 
@@ -312,7 +322,7 @@ body::after {
   inset: 0;
 }
 .casino-bg-tonplay::before {
-  content: 'TON PLAY';
+  content: 'BETLINE';
   font-size: 48px;
   font-weight: 900;
   color: rgba(255,255,255,0.18);
@@ -368,8 +378,8 @@ body::after {
   50% { box-shadow: 0 8px 48px var(--topmatch-glow), 0 0 80px var(--topmatch-glow); }
 }
 @keyframes neonPulseTon {
-  0%, 100% { box-shadow: 0 8px 32px var(--tonplay-glow); }
-  50% { box-shadow: 0 8px 48px var(--tonplay-glow), 0 0 80px var(--tonplay-glow); }
+  0%, 100% { box-shadow: 0 8px 32px var(--betline-glow); }
+  50% { box-shadow: 0 8px 48px var(--betline-glow), 0 0 80px var(--betline-glow); }
 }
 .casino-card.topmatch { animation: neonPulse 4s ease-in-out infinite; }
 .casino-card.tonplay { animation: neonPulseTon 4s ease-in-out infinite; }
@@ -448,8 +458,8 @@ body::after {
 }
 
 .level-pulse-ring.tonplay {
-  border: 2px solid var(--tonplay);
-  box-shadow: 0 0 0 0 var(--tonplay-glow);
+  border: 2px solid var(--betline);
+  box-shadow: 0 0 0 0 var(--betline-glow);
 }
 
 @keyframes pulseRing {
@@ -582,7 +592,7 @@ body::after {
 .btn-tonplay {
   background: linear-gradient(135deg, #1a4a7a 0%, #2b6cb0 100%);
   color: #fff;
-  box-shadow: 0 4px 16px var(--tonplay-glow);
+  box-shadow: 0 4px 16px var(--betline-glow);
   border: 1px solid rgba(43,108,176,0.3);
 }
 
@@ -801,7 +811,7 @@ body::after {
 }
 
 .contest-card.topmatch::before { background: var(--topmatch-gradient); }
-.contest-card.tonplay::before { background: var(--tonplay-gradient); }
+.contest-card.tonplay::before { background: var(--betline-gradient); }
 
 .contest-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; color: #fff; }
 .contest-prize {
@@ -1062,7 +1072,7 @@ body::after {
 .badge-active { background: rgba(78,222,163,0.15); color: var(--tertiary); }
 .badge-ended { background: rgba(255,255,255,0.05); color: var(--on-surface-variant); }
 .badge-winner { background: rgba(233,195,73,0.15); color: var(--secondary); }
-.badge-type { background: rgba(43,108,176,0.15); color: var(--tonplay); }
+.badge-type { background: rgba(43,108,176,0.15); color: var(--betline); }
 
 .badge-primary { background: rgba(195,198,211,0.15); color: var(--primary); }
 .badge-success { background: rgba(78,222,163,0.15); color: var(--tertiary); }
@@ -1231,7 +1241,7 @@ textarea.input { resize: vertical; min-height: 80px; }
 }
 
 .tab.active.topmatch { background: var(--topmatch-gradient); border-color: var(--topmatch); }
-.tab.active.tonplay { background: var(--tonplay-gradient); border-color: var(--tonplay); }
+.tab.active.tonplay { background: var(--betline-gradient); border-color: var(--betline); }
 
 /* ── Pagination ── */
 .pagination {
@@ -1821,7 +1831,7 @@ textarea.input { resize: vertical; min-height: 80px; }
 
 .notification-item:active { background: rgba(255,255,255,0.04); }
 
-.notification-item.stream { border-left: 3px solid var(--tonplay); }
+.notification-item.stream { border-left: 3px solid var(--betline); }
 .notification-item.announcement { border-left: 3px solid var(--tertiary); }
 
 .notification-type-badge {
@@ -2104,6 +2114,119 @@ textarea.input { resize: vertical; min-height: 80px; }
 .flex-1 { flex: 1; }
 .text-sm { font-size: 13px; }
 .w-full { width: 100%; }
+
+/* ════════════════════════════════════════════════════════════
+   Interaction & Motion Polish (additive, transform/opacity only)
+   — entrance, state feedback, focus, modal/route transitions.
+   Behavior unchanged; respects .lightweight & reduced-motion.
+   ════════════════════════════════════════════════════════════ */
+
+/* Keyboard focus rings — touch interactions are unaffected */
+.btn:focus-visible,
+.glass-input:focus-visible,
+.input:focus-visible,
+.select:focus-visible,
+.tab:focus-visible,
+.lang-btn:focus-visible,
+.theme-toggle:focus-visible,
+.nav-item:focus-visible,
+.notif-bell:focus-visible,
+.bell-btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Primary buttons: spring press + pointer hover lift */
+.btn {
+  transition: transform var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur-base) var(--ease-out),
+              filter var(--dur-base) var(--ease-out);
+  will-change: transform;
+}
+.btn:active { transform: scale(0.96); }
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover { transform: translateY(-2px); filter: brightness(1.06); box-shadow: var(--elev-hover); }
+  .btn:active { transform: scale(0.96); filter: brightness(0.98); }
+  .casino-card:hover { transform: translateY(-4px) scale(1.01); }
+  .tab:hover,
+  .lang-btn:hover { transform: translateY(-1px); }
+  .nav-item:hover { color: rgba(255,255,255,0.7); }
+  .user-row:hover,
+  .glass-panel.user-row:hover { transform: translateY(-2px); }
+  .notif-item:hover { background: rgba(255,255,255,0.04); }
+}
+
+/* Pressable feedback on smaller interactive chips/cards (touch + pointer) */
+.tab,
+.lang-btn {
+  transition: transform var(--dur-fast) var(--ease-spring),
+              background var(--dur-base) var(--ease-standard),
+              color var(--dur-base) var(--ease-standard),
+              border-color var(--dur-base) var(--ease-standard);
+}
+.tab:active,
+.lang-btn:active { transform: scale(0.94); }
+.user-row { transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out); }
+.user-row:active { transform: scale(0.99); }
+
+/* Input micro-interaction: subtle lift + accent glow on focus */
+.glass-input,
+.input,
+.select {
+  transition: transform var(--dur-base) var(--ease-out),
+              border-color var(--dur-base) var(--ease-standard),
+              box-shadow var(--dur-base) var(--ease-standard),
+              background var(--dur-base) var(--ease-standard);
+}
+.glass-input:focus,
+.input:focus,
+.select:focus { transform: translateY(-1px); }
+
+/* Toggle knob: springy travel */
+.theme-toggle-knob { transition: transform var(--dur-base) var(--ease-spring); }
+.theme-toggle:active .theme-toggle-knob { width: 22px; }
+
+/* Modal / sheet open transitions (open = mount; transform/opacity driven) */
+.notif-overlay { animation: overlayFade var(--dur-base) var(--ease-standard) both; }
+.notif-panel { animation: sheetUp var(--dur-slow) var(--ease-out) both; }
+.notification-dropdown,
+.notification-dropdown-panel { animation: popIn var(--dur-base) var(--ease-out) both; transform-origin: top right; }
+
+@keyframes overlayFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sheetUp {
+  from { transform: translateY(100%); opacity: 0.6; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes popIn {
+  from { transform: translateY(-6px) scale(0.96); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* Route / screen entrance — smoother curve on the page wrapper */
+.page { animation: pageEnter var(--dur-slow) var(--ease-out) both; }
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* List / card staggered entrance helper (CSS fallback for static lists) */
+.stagger-item { animation: cardEnter var(--dur-slow) var(--ease-out) both; }
+@keyframes cardEnter {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Honor OS-level reduced-motion: keep state feedback, drop large motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
 
 /* ── Lightweight mode ── */
 .lightweight .particle-container { display: none; }

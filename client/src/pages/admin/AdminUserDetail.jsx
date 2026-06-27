@@ -11,7 +11,7 @@ const AdminUserDetail = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [topMatchLevel, setTopMatchLevel] = useState('');
-  const [tonPlayLevel, setTonPlayLevel] = useState('');
+  const [betlineLevel, setBetlineLevel] = useState('');
   const [levelError, setLevelError] = useState('');
 
   useEffect(() => {
@@ -20,7 +20,7 @@ const AdminUserDetail = () => {
         const res = await adminApi.get(`/admin/users/${id}`);
         setUser(res.data);
         setTopMatchLevel(res.data.level_topmatch ? String(res.data.level_topmatch) : '');
-        setTonPlayLevel(res.data.level_tonplay ? String(res.data.level_tonplay) : '');
+        setBetlineLevel(res.data.level_tonplay ? String(res.data.level_tonplay) : '');
       } catch (e) {
         console.error('User detail error:', e);
       } finally {
@@ -63,7 +63,7 @@ const AdminUserDetail = () => {
       const res = await adminApi.get(`/admin/users/${id}`);
       setUser(res.data);
       setTopMatchLevel(res.data.level_topmatch ? String(res.data.level_topmatch) : '');
-      setTonPlayLevel(res.data.level_tonplay ? String(res.data.level_tonplay) : '');
+      setBetlineLevel(res.data.level_tonplay ? String(res.data.level_tonplay) : '');
     } catch (e) {
       const msg = e.response?.data?.errors?.[0]?.message || e.response?.data?.error || 'Failed to set level';
       setLevelError(msg);
@@ -127,7 +127,7 @@ const AdminUserDetail = () => {
           <span>{user.casino_id_topmatch || t('settings.not_set')}</span>
         </div>
         <div className="form-group">
-          <span className="form-label">TonPlay ID</span>
+          <span className="form-label">Betline ID</span>
           <span>{user.casino_id_tonplay || t('settings.not_set')}</span>
         </div>
         <div className="form-group">
@@ -139,7 +139,7 @@ const AdminUserDetail = () => {
           <span>{user.level_topmatch || '—'}</span>
         </div>
         <div className="form-group">
-          <span className="form-label">TonPlay {t('admin.user_detail.referral_type')}</span>
+          <span className="form-label">Betline {t('admin.user_detail.referral_type')}</span>
           <span>{user.level_tonplay || '—'}</span>
         </div>
         <div className="form-group">
@@ -204,15 +204,15 @@ const AdminUserDetail = () => {
       </div>
 
       <div className="glass-panel">
-        <h3 className="mb-2" style={{ fontSize: 16, fontWeight: 600 }}>TonPlay {t('admin.user_detail.set_type')}</h3>
+        <h3 className="mb-2" style={{ fontSize: 16, fontWeight: 600 }}>Betline {t('admin.user_detail.set_type')}</h3>
         <p className="text-sm text-secondary mb-2">{t('admin.user_detail.current')}: {user.level_tonplay || '—'}</p>
-        <select className="glass-input" value={tonPlayLevel} onChange={(e) => setTonPlayLevel(e.target.value)} style={{ width: '100%' }}>
+        <select className="glass-input" value={betlineLevel} onChange={(e) => setBetlineLevel(e.target.value)} style={{ width: '100%' }}>
           <option value="">— {t('admin.users.no_level')} —</option>
           <option value="1">1</option>
           <option value="2">2</option>
           <option value="3">3</option>
         </select>
-        <button className="btn btn-primary btn-sm" onClick={() => setLevel('tonplay', tonPlayLevel)} disabled={!tonPlayLevel}>
+        <button className="btn btn-primary btn-sm" onClick={() => setLevel('tonplay', betlineLevel)} disabled={!betlineLevel}>
           {t('admin.user_detail.set_type')}
         </button>
         {levelError && <p className="text-sm" style={{ color: 'var(--error)', marginTop: 8 }}>{levelError}</p>}

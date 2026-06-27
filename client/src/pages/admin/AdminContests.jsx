@@ -177,7 +177,7 @@ const AdminContests = () => {
             <label className="form-label">{t('admin.contests.form.casino')}</label>
             <select className="glass-input" value={form.casino} onChange={(e) => setForm({ ...form, casino: e.target.value })}>
               <option value="topmatch">TopMatch</option>
-              <option value="tonplay">TonPlay</option>
+              <option value="tonplay">Betline</option>
             </select>
           </div>
           <div className="form-group">
@@ -229,7 +229,7 @@ const AdminContests = () => {
           </div>
           <div className="contest-desc">{c.description_uk}</div>
           <div className="contest-meta mt-2">
-            <span className="badge badge-type">{c.casino === 'topmatch' ? 'TopMatch' : 'TonPlay'} — {t('contests.level')} {c.eligible_level}</span>
+            <span className="badge badge-type">{c.casino === 'topmatch' ? 'TopMatch' : 'Betline'} — {t('contests.level')} {c.eligible_level}</span>
             <span className="text-sm text-secondary">
               {new Date(c.start_date).toLocaleDateString()} — {new Date(c.end_date).toLocaleDateString()}
             </span>
