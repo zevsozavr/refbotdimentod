@@ -324,14 +324,40 @@ body::after {
 
 .casino-bg-topmatch {
   background: url('/photos/redbg.png') center/cover no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   position: absolute;
   inset: 0;
+}
+.casino-bg-topmatch::before {
+  content: 'TOP MATCH';
+  font-size: 48px;
+  font-weight: 900;
+  color: rgba(255,255,255,0.18);
+  letter-spacing: 0.08em;
+  font-family: var(--font-display);
+  pointer-events: none;
+  user-select: none;
 }
 
 .casino-bg-tonplay {
   background: url('/photos/bluebg.png') center/cover no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   position: absolute;
   inset: 0;
+}
+.casino-bg-tonplay::before {
+  content: 'BETLINE';
+  font-size: 48px;
+  font-weight: 900;
+  color: rgba(255,255,255,0.18);
+  letter-spacing: 0.08em;
+  font-family: var(--font-display);
+  pointer-events: none;
+  user-select: none;
 }
 
 .casino-card-overlay {
@@ -2539,6 +2565,15 @@ body::after {
 }
 .casino-bg-tonplay {
   background: url('/photos/bluebg.png') center/cover no-repeat;
+}
+.casino-bg-topmatch::before,
+.casino-bg-tonplay::before {
+  font-size: 52px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.30), rgba(255,255,255,0.06));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
 }
 /* Glossy top sheen across every card */
 .casino-card-overlay::before {
