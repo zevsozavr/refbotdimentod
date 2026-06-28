@@ -49,7 +49,7 @@ const validateLanguage = body('language').isIn(['uk', 'ru']).withMessage('Langua
 const validateTelegramId = body('telegram_id').isInt({ min: 1 }).withMessage('telegram_id must be a positive integer');
 const validateReferralType = body('referral_type').isIn([1, 2, 3]).withMessage('referral_type must be 1, 2, or 3');
 const validateAction = body('action').isIn(['approve', 'reject']).withMessage('action must be approve or reject');
-const validateCasino = body('casino').isIn(['topmatch', 'tonplay']).withMessage('casino must be topmatch or tonplay');
+const validateCasino = body('casino').isIn(['topmatch', 'betline']).withMessage('casino must be topmatch or betline');
 const validateLevel = body('level').isIn([1, 2, 3]).withMessage('level must be 1, 2, or 3');
 
 // TRC20 (TRON) address validation: starts with T, 34 chars, base58
@@ -110,7 +110,7 @@ router.post('/auth/init', authInitLimiter, [
     let user;
     if (result.rows.length === 0) {
       result = await pool.query(
-        'INSERT INTO users (telegram_id, telegram_username, language, status, level_topmatch, level_tonplay) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+        'INSERT INTO users (telegram_id, telegram_username, language, status, level_topmatch, level_betline) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
         [telegram_id, telegram_username || null, language, 'verified', isAdmin ? 1 : null, isAdmin ? 1 : null]
       );
       user = result.rows[0];
@@ -131,11 +131,11 @@ router.post('/auth/init', authInitLimiter, [
       language: user.language,
       status: user.status,
       level_topmatch: user.level_topmatch,
-      level_tonplay: user.level_tonplay,
+      level_betline: user.level_betline,
       casino_id_topmatch: user.casino_id_topmatch,
-      casino_id_tonplay: user.casino_id_tonplay,
+      casino_id_betline: user.casino_id_betline,
       wallet_topmatch: user.wallet_topmatch,
-      wallet_tonplay: user.wallet_tonplay,
+      wallet_betline: user.wallet_betline,
       created_at: user.created_at,
       is_admin: isAdminId(telegram_id),
       token: generateSessionToken(telegram_id),
@@ -165,11 +165,11 @@ router.post('/auth/language', verifyTelegramAuth, [
       language: result.rows[0].language,
       status: result.rows[0].status,
       level_topmatch: result.rows[0].level_topmatch,
-      level_tonplay: result.rows[0].level_tonplay,
+      level_betline: result.rows[0].level_betline,
       casino_id_topmatch: result.rows[0].casino_id_topmatch,
-      casino_id_tonplay: result.rows[0].casino_id_tonplay,
+      casino_id_betline: result.rows[0].casino_id_betline,
       wallet_topmatch: result.rows[0].wallet_topmatch,
-      wallet_tonplay: result.rows[0].wallet_tonplay,
+      wallet_betline: result.rows[0].wallet_betline,
       created_at: result.rows[0].created_at,
     });
   } catch (err) {
@@ -195,11 +195,11 @@ router.get('/user/me', verifyTelegramAuth, async (req, res) => {
       language: user.language,
       status: user.status,
       level_topmatch: user.level_topmatch,
-      level_tonplay: user.level_tonplay,
+      level_betline: user.level_betline,
       casino_id_topmatch: user.casino_id_topmatch,
-      casino_id_tonplay: user.casino_id_tonplay,
+      casino_id_betline: user.casino_id_betline,
       wallet_topmatch: user.wallet_topmatch,
-      wallet_tonplay: user.wallet_tonplay,
+      wallet_betline: user.wallet_betline,
       created_at: user.created_at,
       is_admin: isAdminId(req.telegramUser.id),
     });
@@ -219,6 +219,71 @@ router.get('/casinos', verifyTelegramAuth, (req, res) => {
   })));
 });
 
+// ─── AFFILIATE POSTBACK (server-to-server referral confirmation) ───
+// Called by the casino's affiliate network when a player signs up under our link.
+// PUBLIC endpoint (no Telegram auth) — protected by a shared secret in POSTBACK_SECRET.
+// Example: GET /api/postback?casino=topmatch&player_id=12345&sub_id=822479618&key=SECRET
+const handlePostback = async (req, res) => {
+  try {
+    const data = { ...req.query, ...req.body };
+    const secret = process.env.POSTBACK_SECRET;
+
+    if (!secret) {
+      console.error('Postback received but POSTBACK_SECRET is not configured');
+      return res.status(500).send('not configured');
+    }
+    if (data.key !== secret) {
+      console.warn('Postback rejected: bad key');
+      return res.status(403).send('forbidden');
+    }
+
+    const casino = String(data.casino || '').toLowerCase();
+    if (!['topmatch', 'betline'].includes(casino)) {
+      return res.status(400).send('bad casino');
+    }
+
+    // Accept the common macro names different networks use for the player id.
+    const accountId = String(
+      data.player_id || data.customer_id || data.account_id || data.cid || ''
+    ).trim();
+    if (!accountId) return res.status(400).send('missing player id');
+
+    const subId = data.sub_id || data.s1 || data.aff_sub || data.clickid || null;
+    const level = data.level ? parseInt(data.level, 10) : null;
+
+    // Record the confirmed referral (authoritative source of "is eligible").
+    await pool.query(
+      `INSERT INTO confirmed_referrals (casino, casino_account_id, sub_id, level, raw_query)
+       VALUES ($1, $2, $3, $4, $5)
+       ON CONFLICT (casino, casino_account_id)
+       DO UPDATE SET sub_id = COALESCE(EXCLUDED.sub_id, confirmed_referrals.sub_id),
+                     level  = COALESCE(EXCLUDED.level, confirmed_referrals.level)`,
+      [casino, accountId, subId ? String(subId) : null, Number.isNaN(level) ? null : level, JSON.stringify(data)]
+    );
+
+    // If sub_id is the Telegram id we injected into the link, auto-link & verify the user.
+    if (subId && /^\d+$/.test(String(subId))) {
+      const idCol = `casino_id_${casino}`;
+      const lvlCol = `level_${casino}`;
+      await pool.query(
+        `UPDATE users
+           SET ${idCol} = $1,
+               ${lvlCol} = COALESCE(${lvlCol}, $2),
+               status = 'verified'
+         WHERE telegram_id = $3`,
+        [accountId, Number.isNaN(level) ? 1 : (level || 1), String(subId)]
+      );
+    }
+
+    return res.status(200).send('OK');
+  } catch (err) {
+    console.error('Postback error:', err);
+    return res.status(500).send('error');
+  }
+};
+router.get('/postback', handlePostback);
+router.post('/postback', handlePostback);
+
 router.get('/casino/:casinoId/me', verifyTelegramAuth, async (req, res) => {
   try {
     const casinos = require('./casinos');
@@ -228,12 +293,21 @@ router.get('/casino/:casinoId/me', verifyTelegramAuth, async (req, res) => {
     if (result.rows.length === 0) return res.status(404).json({ error: 'User not found' });
     const user = result.rows[0];
     const level = user[casino.level_column];
+
+    // Tag the referral link with this user's Telegram id (sub_id) so the
+    // affiliate postback can map a signup back to this exact user.
+    let referralLink = casino.referral_link;
+    if (referralLink) {
+      const sep = referralLink.includes('?') ? '&' : '?';
+      referralLink = `${referralLink}${sep}sub_id=${req.telegramUser.id}`;
+    }
+
     res.json({
       casino_id: casino.id,
       level,
       casino_account_id: user[casino.casino_id_column],
       wallet: user[`wallet_${req.params.casinoId}`],
-      referral_link: casino.referral_link,
+      referral_link: referralLink,
     });
   } catch (err) {
     console.error('Casino me error:', err);
@@ -277,7 +351,7 @@ router.post('/casino/:casinoId/submit-id', verifyTelegramAuth, [
       await pool.query("UPDATE users SET status = 'pending' WHERE id = $1", [user.id]);
     }
 
-    const casinoName = casino.id === 'topmatch' ? 'TopMatch' : 'TonPlay';
+    const casinoName = casino.id === 'topmatch' ? 'TopMatch' : 'Betline';
     await notifyAdminChange(user, casino.casino_id_column, req.body.casino_account_id, casinoName);
 
     res.json({ status: 'pending', field: casino.casino_id_column, new_value: req.body.casino_account_id });
@@ -321,7 +395,7 @@ router.post('/casino/:casinoId/submit-wallet', verifyTelegramAuth, [
       [user.id, req.params.casinoId, walletColumn, user[walletColumn], req.body.wallet_address]
     );
 
-    const casinoName = casino.id === 'topmatch' ? 'TopMatch' : 'TonPlay';
+    const casinoName = casino.id === 'topmatch' ? 'TopMatch' : 'Betline';
     await notifyAdminChange(user, walletColumn, req.body.wallet_address, casinoName);
 
     res.json({ status: 'pending', field: walletColumn, new_value: req.body.wallet_address });
@@ -342,7 +416,7 @@ router.post('/wallet/:casinoId/submit', verifyTelegramAuth, [
     const casino = casinos[req.params.casinoId];
     if (!casino) return res.status(404).json({ error: 'Casino not found' });
 
-    const walletColumn = casino.id === 'topmatch' ? 'wallet_topmatch' : 'wallet_tonplay';
+    const walletColumn = casino.id === 'topmatch' ? 'wallet_topmatch' : 'wallet_betline';
 
     const userResult = await pool.query('SELECT id, telegram_username, ' + walletColumn + ' FROM users WHERE telegram_id = $1', [req.telegramUser.id]);
     if (userResult.rows.length === 0) return res.status(404).json({ error: 'User not found' });
@@ -363,7 +437,7 @@ router.post('/wallet/:casinoId/submit', verifyTelegramAuth, [
       [user.id, walletColumn, oldValue, req.body.wallet_address]
     );
 
-    const casinoName = casino.id === 'topmatch' ? 'TopMatch' : 'TonPlay';
+    const casinoName = casino.id === 'topmatch' ? 'TopMatch' : 'Betline';
     await notifyAdminChange(user, walletColumn, req.body.wallet_address, casinoName);
 
     res.json({ status: 'pending', field: walletColumn, new_value: req.body.wallet_address });
@@ -406,7 +480,7 @@ router.get('/contests', verifyTelegramAuth, async (req, res) => {
     const userLevel = user[casinoConfig.level_column];
     if (!userLevel) return res.json([]);
 
-    const walletColumn = casino === 'topmatch' ? 'wallet_topmatch' : 'wallet_tonplay';
+    const walletColumn = casino === 'topmatch' ? 'wallet_topmatch' : 'wallet_betline';
     if (!user[walletColumn]) {
       return res.status(403).json({ error: 'You must set a TRC20 USDT wallet for this casino before participating in contests' });
     }
@@ -455,11 +529,11 @@ router.get('/contests/history', verifyTelegramAuth, async (req, res) => {
     }
     const user = userResult.rows[0];
     const { casino } = req.query;
-    if (!casino || !['topmatch', 'tonplay'].includes(casino)) {
-      return res.status(400).json({ error: 'casino query parameter required (topmatch or tonplay)' });
+    if (!casino || !['topmatch', 'betline'].includes(casino)) {
+      return res.status(400).json({ error: 'casino query parameter required (topmatch or betline)' });
     }
 
-    const levelColumn = casino === 'topmatch' ? 'level_topmatch' : 'level_tonplay';
+    const levelColumn = casino === 'topmatch' ? 'level_topmatch' : 'level_betline';
     const userLevel = user[levelColumn];
     if (!userLevel) return res.json([]);
 
@@ -551,7 +625,7 @@ router.post('/contests/:id/leave', verifyTelegramAuth, async (req, res) => {
 
 router.get('/admin/users', verifyTelegramAuth, verifyAdminAuth, adminLimiter, async (req, res) => {
   try {
-    const { status, level_topmatch, level_tonplay, search, page = 1, limit = 20 } = req.query;
+    const { status, level_topmatch, level_betline, search, page = 1, limit = 20 } = req.query;
     const conditions = [];
     const params = [];
     let paramIndex = 1;
@@ -562,7 +636,7 @@ router.get('/admin/users', verifyTelegramAuth, verifyAdminAuth, adminLimiter, as
     }
     if (search && String(search).trim()) {
       const term = String(search).trim().replace(/^@/, '');
-      conditions.push(`(telegram_username ILIKE $${paramIndex} OR CAST(telegram_id AS TEXT) ILIKE $${paramIndex} OR casino_id_topmatch ILIKE $${paramIndex} OR casino_id_tonplay ILIKE $${paramIndex})`);
+      conditions.push(`(telegram_username ILIKE $${paramIndex} OR CAST(telegram_id AS TEXT) ILIKE $${paramIndex} OR casino_id_topmatch ILIKE $${paramIndex} OR casino_id_betline ILIKE $${paramIndex})`);
       params.push(`%${term}%`);
       paramIndex++;
     }
@@ -570,9 +644,9 @@ router.get('/admin/users', verifyTelegramAuth, verifyAdminAuth, adminLimiter, as
       conditions.push(`level_topmatch = $${paramIndex++}`);
       params.push(parseInt(level_topmatch));
     }
-    if (level_tonplay && ['1', '2', '3'].includes(level_tonplay)) {
-      conditions.push(`level_tonplay = $${paramIndex++}`);
-      params.push(parseInt(level_tonplay));
+    if (level_betline && ['1', '2', '3'].includes(level_betline)) {
+      conditions.push(`level_betline = $${paramIndex++}`);
+      params.push(parseInt(level_betline));
     }
 
     const whereClause = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';
@@ -582,7 +656,7 @@ router.get('/admin/users', verifyTelegramAuth, verifyAdminAuth, adminLimiter, as
     const total = parseInt(countResult.rows[0].count);
 
     const result = await pool.query(
-      `SELECT id, telegram_id, telegram_username, language, status, level_topmatch, level_tonplay, casino_id_topmatch, casino_id_tonplay, wallet_topmatch, wallet_tonplay, created_at
+      `SELECT id, telegram_id, telegram_username, language, status, level_topmatch, level_betline, casino_id_topmatch, casino_id_betline, wallet_topmatch, wallet_betline, created_at
        FROM users ${whereClause}
        ORDER BY status = 'pending' DESC, created_at DESC
        LIMIT $${paramIndex++} OFFSET $${paramIndex++}`,
@@ -655,11 +729,11 @@ router.post('/admin/users/:id/verify', verifyTelegramAuth, verifyAdminAuth, admi
       language: result.rows[0].language,
       status: result.rows[0].status,
       level_topmatch: result.rows[0].level_topmatch,
-      level_tonplay: result.rows[0].level_tonplay,
+      level_betline: result.rows[0].level_betline,
       casino_id_topmatch: result.rows[0].casino_id_topmatch,
-      casino_id_tonplay: result.rows[0].casino_id_tonplay,
+      casino_id_betline: result.rows[0].casino_id_betline,
       wallet_topmatch: result.rows[0].wallet_topmatch,
-      wallet_tonplay: result.rows[0].wallet_tonplay,
+      wallet_betline: result.rows[0].wallet_betline,
       created_at: result.rows[0].created_at,
     });
   } catch (err) {
@@ -689,11 +763,11 @@ router.post('/admin/users/:id/set-level', verifyTelegramAuth, verifyAdminAuth, a
       language: u.language,
       status: u.status,
       level_topmatch: u.level_topmatch,
-      level_tonplay: u.level_tonplay,
+      level_betline: u.level_betline,
       casino_id_topmatch: u.casino_id_topmatch,
-      casino_id_tonplay: u.casino_id_tonplay,
+      casino_id_betline: u.casino_id_betline,
       wallet_topmatch: u.wallet_topmatch,
-      wallet_tonplay: u.wallet_tonplay,
+      wallet_betline: u.wallet_betline,
       created_at: u.created_at,
     });
   } catch (err) {
@@ -729,11 +803,11 @@ router.post('/admin/users/:id/ban', verifyTelegramAuth, verifyAdminAuth, adminLi
       language: result.rows[0].language,
       status: result.rows[0].status,
       level_topmatch: result.rows[0].level_topmatch,
-      level_tonplay: result.rows[0].level_tonplay,
+      level_betline: result.rows[0].level_betline,
       casino_id_topmatch: result.rows[0].casino_id_topmatch,
-      casino_id_tonplay: result.rows[0].casino_id_tonplay,
+      casino_id_betline: result.rows[0].casino_id_betline,
       wallet_topmatch: result.rows[0].wallet_topmatch,
-      wallet_tonplay: result.rows[0].wallet_tonplay,
+      wallet_betline: result.rows[0].wallet_betline,
       created_at: result.rows[0].created_at,
     });
   } catch (err) {
@@ -771,11 +845,11 @@ router.post('/admin/users/:id/unban', verifyTelegramAuth, verifyAdminAuth, admin
       language: result.rows[0].language,
       status: result.rows[0].status,
       level_topmatch: result.rows[0].level_topmatch,
-      level_tonplay: result.rows[0].level_tonplay,
+      level_betline: result.rows[0].level_betline,
       casino_id_topmatch: result.rows[0].casino_id_topmatch,
-      casino_id_tonplay: result.rows[0].casino_id_tonplay,
+      casino_id_betline: result.rows[0].casino_id_betline,
       wallet_topmatch: result.rows[0].wallet_topmatch,
-      wallet_tonplay: result.rows[0].wallet_tonplay,
+      wallet_betline: result.rows[0].wallet_betline,
       created_at: result.rows[0].created_at,
     });
   } catch (err) {
@@ -892,8 +966,8 @@ router.post('/admin/contests/:id/pick-winner', verifyTelegramAuth, verifyAdminAu
       return res.status(403).json({ error: 'Contest has not ended yet' });
     }
 
-    const levelColumn = contest.casino === 'topmatch' ? 'level_topmatch' : 'level_tonplay';
-    const walletColumn = contest.casino === 'topmatch' ? 'wallet_topmatch' : 'wallet_tonplay';
+    const levelColumn = contest.casino === 'topmatch' ? 'level_topmatch' : 'level_betline';
+    const walletColumn = contest.casino === 'topmatch' ? 'wallet_topmatch' : 'wallet_betline';
     const winnerCount = contest.winner_count || 1;
 
     const usersResult = await pool.query(
@@ -957,7 +1031,7 @@ router.post('/admin/broadcast', verifyTelegramAuth, verifyAdminAuth, adminLimite
     const params = [];
 
     if (target_referral_type !== null && target_referral_type !== undefined && target_referral_type !== '') {
-      query += ' AND (level_topmatch = $1 OR level_tonplay = $1)';
+      query += ' AND (level_topmatch = $1 OR level_betline = $1)';
       params.push(parseInt(target_referral_type));
     }
 
@@ -990,7 +1064,7 @@ router.get('/admin/contests', verifyTelegramAuth, verifyAdminAuth, adminLimiter,
     const { casino } = req.query;
     let query = 'SELECT * FROM contests';
     const params = [];
-    if (casino && ['topmatch', 'tonplay'].includes(casino)) {
+    if (casino && ['topmatch', 'betline'].includes(casino)) {
       query += ' WHERE casino = $1';
       params.push(casino);
     }
@@ -1037,7 +1111,7 @@ router.post('/admin/pending-changes/:id/approve', verifyTelegramAuth, verifyAdmi
 
     // If it's a casino_id, also set the level if not set
     if (change.field.startsWith('casino_id_')) {
-      const levelColumn = change.field === 'casino_id_topmatch' ? 'level_topmatch' : 'level_tonplay';
+      const levelColumn = change.field === 'casino_id_topmatch' ? 'level_topmatch' : 'level_betline';
       await pool.query(
         `UPDATE users SET ${levelColumn} = COALESCE(${levelColumn}, 1) WHERE id = $1 AND ${levelColumn} IS NULL`,
         [change.user_id]
@@ -1049,7 +1123,7 @@ router.post('/admin/pending-changes/:id/approve', verifyTelegramAuth, verifyAdmi
       [changeId]
     );
 
-    const casinoName = change.field.startsWith('casino_id_topmatch') || change.field.startsWith('wallet_topmatch') ? 'TopMatch' : 'TonPlay';
+    const casinoName = change.field.startsWith('casino_id_topmatch') || change.field.startsWith('wallet_topmatch') ? 'TopMatch' : 'Betline';
     const fieldLabel = change.field.startsWith('casino_id') ? `${casinoName} ID` : `${casinoName} TRC20`;
     const msg = change.language === 'uk'
       ? `✅ Ваш запит на зміну ${fieldLabel} було підтверджено адміністратором. Нове значення: ${change.new_value}`
@@ -1077,7 +1151,7 @@ router.post('/admin/pending-changes/:id/reject', verifyTelegramAuth, verifyAdmin
       [changeId]
     );
 
-    const casinoName = change.field.startsWith('casino_id_topmatch') || change.field.startsWith('wallet_topmatch') ? 'TopMatch' : 'TonPlay';
+    const casinoName = change.field.startsWith('casino_id_topmatch') || change.field.startsWith('wallet_topmatch') ? 'TopMatch' : 'Betline';
     const fieldLabel = change.field.startsWith('casino_id') ? `${casinoName} ID` : `${casinoName} TRC20`;
     const msg = change.language === 'uk'
       ? `❌ Ваш запит на зміну ${fieldLabel} було відхилено адміністратором.`
@@ -1103,9 +1177,9 @@ router.get('/admin/stats', verifyTelegramAuth, verifyAdminAuth, adminLimiter, as
     const type1TopResult = await pool.query('SELECT COUNT(*) FROM users WHERE level_topmatch = 1');
     const type2TopResult = await pool.query('SELECT COUNT(*) FROM users WHERE level_topmatch = 2');
     const type3TopResult = await pool.query('SELECT COUNT(*) FROM users WHERE level_topmatch = 3');
-    const type1TonResult = await pool.query('SELECT COUNT(*) FROM users WHERE level_tonplay = 1');
-    const type2TonResult = await pool.query('SELECT COUNT(*) FROM users WHERE level_tonplay = 2');
-    const type3TonResult = await pool.query('SELECT COUNT(*) FROM users WHERE level_tonplay = 3');
+    const type1TonResult = await pool.query('SELECT COUNT(*) FROM users WHERE level_betline = 1');
+    const type2TonResult = await pool.query('SELECT COUNT(*) FROM users WHERE level_betline = 2');
+    const type3TonResult = await pool.query('SELECT COUNT(*) FROM users WHERE level_betline = 3');
     const activeContestsResult = await pool.query("SELECT COUNT(*) FROM contests WHERE status = 'active'");
     const winnersPickedResult = await pool.query("SELECT COUNT(*) FROM contests WHERE status = 'winner_picked'");
     const broadcastsResult = await pool.query('SELECT COUNT(*) FROM broadcasts');
@@ -1122,7 +1196,7 @@ router.get('/admin/stats', verifyTelegramAuth, verifyAdminAuth, adminLimiter, as
           level2: parseInt(type2TopResult.rows[0].count),
           level3: parseInt(type3TopResult.rows[0].count),
         },
-        tonplay: {
+        betline: {
           level1: parseInt(type1TonResult.rows[0].count),
           level2: parseInt(type2TonResult.rows[0].count),
           level3: parseInt(type3TonResult.rows[0].count),

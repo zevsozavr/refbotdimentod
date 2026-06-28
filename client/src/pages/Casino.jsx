@@ -22,8 +22,8 @@ const Casino = () => {
   const [savingId, setSavingId] = useState(false);
   const [savingWallet, setSavingWallet] = useState(false);
 
-  const walletColumn = casinoId === 'topmatch' ? 'wallet_topmatch' : 'wallet_tonplay';
-  const idColumn = casinoId === 'topmatch' ? 'casino_id_topmatch' : 'casino_id_tonplay';
+  const walletColumn = casinoId === 'topmatch' ? 'wallet_topmatch' : 'wallet_betline';
+  const idColumn = casinoId === 'topmatch' ? 'casino_id_topmatch' : 'casino_id_betline';
 
   const fetchData = useCallback(() => {
     api.get(`/casino/${casinoId}/me`).then(res => setCasinoData(res.data));

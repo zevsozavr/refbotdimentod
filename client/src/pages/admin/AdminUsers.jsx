@@ -115,12 +115,12 @@ const AdminUsers = () => {
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--primary)' }}>@{u.telegram_username || `ID: ${u.telegram_id}`}</div>
                   <div style={{ fontSize: 12, color: 'var(--on-surface-variant)', marginTop: 4 }}>
-                    TM: {u.casino_id_topmatch || '—'} | BL: {u.casino_id_tonplay || '—'}
+                    TM: {u.casino_id_topmatch || '—'} | BL: {u.casino_id_betline || '—'}
                   </div>
                   <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                     <span className={`status-badge ${getStatusBadge(u.status)}`}>{statusLabel[u.status]}</span>
                     <span className="level-badge" style={{ background: 'rgba(195,198,211,0.1)', color: 'var(--primary)', padding: '2px 10px', borderRadius: 8, fontSize: 12 }}>
-                      Рівень {Math.max(u.level_topmatch || 0, u.level_tonplay || 0)}
+                      Рівень {Math.max(u.level_topmatch || 0, u.level_betline || 0)}
                     </span>
                   </div>
                 </div>

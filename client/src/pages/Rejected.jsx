@@ -53,7 +53,7 @@ const Rejected = () => {
             disabled={loading}
           >
             <option value="topmatch">TopMatch</option>
-            <option value="tonplay">Betline</option>
+            <option value="betline">Betline</option>
           </select>
         </div>
 

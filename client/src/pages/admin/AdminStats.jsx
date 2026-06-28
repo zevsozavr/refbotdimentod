@@ -91,9 +91,9 @@ const AdminStats = () => {
         </div>
         <div className="glass-panel" style={{ padding: '16px 20px' }}>
           <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12, color: 'var(--primary)' }}>Betline</div>
-          <div className="admin-stat-label" style={{ fontSize: 13, color: 'var(--on-surface-variant)', marginBottom: 4 }}>Рівень 1: {stats.levelsByCasino?.tonplay?.level1 || 0}</div>
-          <div className="admin-stat-label" style={{ fontSize: 13, color: 'var(--on-surface-variant)', marginBottom: 4 }}>Рівень 2: {stats.levelsByCasino?.tonplay?.level2 || 0}</div>
-          <div className="admin-stat-label" style={{ fontSize: 13, color: 'var(--on-surface-variant)' }}>Рівень 3: {stats.levelsByCasino?.tonplay?.level3 || 0}</div>
+          <div className="admin-stat-label" style={{ fontSize: 13, color: 'var(--on-surface-variant)', marginBottom: 4 }}>Рівень 1: {stats.levelsByCasino?.betline?.level1 || 0}</div>
+          <div className="admin-stat-label" style={{ fontSize: 13, color: 'var(--on-surface-variant)', marginBottom: 4 }}>Рівень 2: {stats.levelsByCasino?.betline?.level2 || 0}</div>
+          <div className="admin-stat-label" style={{ fontSize: 13, color: 'var(--on-surface-variant)' }}>Рівень 3: {stats.levelsByCasino?.betline?.level3 || 0}</div>
         </div>
       </div>
 

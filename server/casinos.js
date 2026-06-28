@@ -8,14 +8,14 @@ const casinos = {
     level_column: 'level_topmatch',
     casino_id_column: 'casino_id_topmatch',
   },
-  tonplay: {
-    id: 'tonplay',
-    name_uk: 'TonPlay',
-    name_ru: 'TonPlay',
-    referral_link: process.env.REFERRAL_LINK_TONPLAY || process.env.REFERRAL_LINK,
-    photo: 'tonplay.jpg',
-    level_column: 'level_tonplay',
-    casino_id_column: 'casino_id_tonplay',
+  betline: {
+    id: 'betline',
+    name_uk: 'Betline',
+    name_ru: 'Betline',
+    referral_link: process.env.REFERRAL_LINK_BETLINE || process.env.REFERRAL_LINK_TONPLAY || process.env.REFERRAL_LINK,
+    photo: 'betline.jpg',
+    level_column: 'level_betline',
+    casino_id_column: 'casino_id_betline',
   },
 };
 module.exports = casinos;

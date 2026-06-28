@@ -1,10 +1,19 @@
 const { Pool } = require('pg');
 
+// Accept whichever connection string the host injects.
+// Vercel Postgres / Neon set POSTGRES_URL(_NON_POOLING); others use DATABASE_URL.
+const connectionString =
+  process.env.DATABASE_URL ||
+  process.env.POSTGRES_URL_NON_POOLING ||
+  process.env.POSTGRES_URL;
+
+// Managed/cloud Postgres (Vercel, Neon, Supabase, …) requires SSL.
+// Only a local database (localhost/127.0.0.1) goes without it.
+const isLocal = !!connectionString && /@(localhost|127\.0\.0\.1)[:/]/.test(connectionString);
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: (process.env.DATABASE_URL?.includes('supabase') || process.env.DATABASE_URL?.includes('neon.tech'))
-    ? { rejectUnauthorized: false }
-    : undefined,
+  connectionString,
+  ssl: connectionString && !isLocal ? { rejectUnauthorized: false } : undefined,
 });
 
 const migrate = async () => {
@@ -21,7 +30,7 @@ const migrate = async () => {
         casino_id VARCHAR(32),
         status VARCHAR(20) DEFAULT 'pending',
         level_topmatch INTEGER DEFAULT NULL,
-        level_tonplay INTEGER DEFAULT NULL,
+        level_betline INTEGER DEFAULT NULL,
         created_at TIMESTAMP DEFAULT NOW()
       )
     `);
@@ -39,24 +48,35 @@ const migrate = async () => {
     `);
 
     await client.query(`
-      ALTER TABLE users ADD COLUMN IF NOT EXISTS level_tonplay INTEGER DEFAULT NULL
-    `);
-
-    await client.query(`
       ALTER TABLE users ADD COLUMN IF NOT EXISTS casino_id_topmatch VARCHAR(32) DEFAULT NULL
-    `);
-
-    await client.query(`
-      ALTER TABLE users ADD COLUMN IF NOT EXISTS casino_id_tonplay VARCHAR(32) DEFAULT NULL
     `);
 
     await client.query(`
       ALTER TABLE users ADD COLUMN IF NOT EXISTS wallet_topmatch VARCHAR(100) DEFAULT NULL
     `);
 
-    await client.query(`
-      ALTER TABLE users ADD COLUMN IF NOT EXISTS wallet_tonplay VARCHAR(100) DEFAULT NULL
-    `);
+    // ── Rename tonplay → betline (data-preserving) ──
+    // Rename existing user columns only if the old name exists and the new one does not.
+    for (const [oldCol, newCol] of [
+      ['level_tonplay', 'level_betline'],
+      ['casino_id_tonplay', 'casino_id_betline'],
+      ['wallet_tonplay', 'wallet_betline'],
+    ]) {
+      await client.query(`
+        DO $$
+        BEGIN
+          IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='${oldCol}')
+             AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='${newCol}') THEN
+            ALTER TABLE users RENAME COLUMN ${oldCol} TO ${newCol};
+          END IF;
+        END $$;
+      `);
+    }
+
+    // Ensure the betline columns exist for fresh databases.
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS level_betline INTEGER DEFAULT NULL`);
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS casino_id_betline VARCHAR(32) DEFAULT NULL`);
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS wallet_betline VARCHAR(100) DEFAULT NULL`);
 
     await client.query(`
       ALTER TABLE users ALTER COLUMN status SET DEFAULT 'verified'
@@ -166,6 +186,13 @@ const migrate = async () => {
       ALTER TABLE users ADD COLUMN IF NOT EXISTS notifications_cleared_at TIMESTAMP DEFAULT NULL
     `);
 
+    // Migrate stored casino-identifier values from 'tonplay' to 'betline'
+    // (run after all referenced tables are guaranteed to exist).
+    await client.query(`UPDATE contests SET casino='betline' WHERE casino='tonplay'`);
+    await client.query(`UPDATE broadcasts SET target_casino='betline' WHERE target_casino='tonplay'`);
+    await client.query(`UPDATE pending_changes SET casino='betline' WHERE casino='tonplay'`);
+    await client.query(`UPDATE pending_changes SET field=replace(field, 'tonplay', 'betline') WHERE field LIKE '%tonplay%'`);
+
     await client.query('COMMIT');
     console.log('Database migration completed successfully');
 
@@ -209,6 +236,21 @@ const migrate = async () => {
         )
       `);
     } catch (err) { console.log('announcements table already exists or error:', err.message); }
+
+    try {
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS confirmed_referrals (
+          id SERIAL PRIMARY KEY,
+          casino VARCHAR(20) NOT NULL,
+          casino_account_id VARCHAR(64) NOT NULL,
+          sub_id VARCHAR(64),
+          level INTEGER,
+          raw_query TEXT,
+          created_at TIMESTAMP DEFAULT NOW(),
+          UNIQUE(casino, casino_account_id)
+        )
+      `);
+    } catch (err) { console.log('confirmed_referrals table already exists or error:', err.message); }
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('Migration failed:', err);

@@ -11,7 +11,7 @@ const Contests = () => {
   const navigate = useNavigate();
   const lang = user?.language || 'ru';
   const paramCasino = searchParams.get('casino');
-  const [casinoId] = useState(paramCasino || (user?.level_topmatch ? 'topmatch' : user?.level_tonplay ? 'tonplay' : null));
+  const [casinoId] = useState(paramCasino || (user?.level_topmatch ? 'topmatch' : user?.level_betline ? 'betline' : null));
 
   const goBack = () => navigate(-1);
   const [active, setActive] = useState([]);

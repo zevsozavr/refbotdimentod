@@ -79,7 +79,7 @@ const Settings = () => {
         </div>
         <div className="settings-row">
           <span className="settings-value">Betline ID</span>
-          <span className="settings-value">{user?.casino_id_tonplay || t('settings.not_set')}</span>
+          <span className="settings-value">{user?.casino_id_betline || t('settings.not_set')}</span>
         </div>
         <div className="settings-row">
           <span className="settings-value">TopMatch TRC20</span>
@@ -90,7 +90,7 @@ const Settings = () => {
         <div className="settings-row">
           <span className="settings-value">Betline TRC20</span>
           <span className="settings-value" style={{ fontFamily: 'monospace', fontSize: 13 }}>
-            {user?.wallet_tonplay || t('settings.not_set')}
+            {user?.wallet_betline || t('settings.not_set')}
           </span>
         </div>
       </div>

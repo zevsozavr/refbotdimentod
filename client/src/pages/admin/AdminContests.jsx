@@ -177,7 +177,7 @@ const AdminContests = () => {
             <label className="form-label">{t('admin.contests.form.casino')}</label>
             <select className="glass-input" value={form.casino} onChange={(e) => setForm({ ...form, casino: e.target.value })}>
               <option value="topmatch">TopMatch</option>
-              <option value="tonplay">Betline</option>
+              <option value="betline">Betline</option>
             </select>
           </div>
           <div className="form-group">

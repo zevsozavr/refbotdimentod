@@ -12,7 +12,10 @@ const initialize = async () => {
   initialized = true;
   try {
     await migrate();
-    const webhookUrlBase = (process.env.WEBHOOK_URL || '').trim();
+    // Prefer Vercel's auto-provided production domain so the webhook always
+    // targets the correct deployment, independent of a manually-set WEBHOOK_URL.
+    const prodUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+    const webhookUrlBase = (prodUrl ? `https://${prodUrl}` : (process.env.WEBHOOK_URL || '')).trim();
     if (webhookUrlBase && webhookUrlBase.startsWith('https://')) {
       const webhookUrl = `${webhookUrlBase}/webhook/${process.env.WEBHOOK_SECRET_PATH}`;
       await bot.telegram.setWebhook(webhookUrl);

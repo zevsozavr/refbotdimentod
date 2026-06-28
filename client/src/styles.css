@@ -310,7 +310,7 @@ body::after {
   border: 1px solid rgba(217,72,51,0.3);
 }
 
-.casino-card.tonplay {
+.casino-card.betline {
   box-shadow: 0 8px 32px var(--betline-glow);
   border: 1px solid rgba(43,108,176,0.3);
 }
@@ -334,7 +334,7 @@ body::after {
   content: 'TOP MATCH';
   font-size: 48px;
   font-weight: 900;
-  color: rgba(255,255,255,0.55);
+  color: rgba(255,255,255,0.70);
   letter-spacing: 0.08em;
   font-family: var(--font-display);
   pointer-events: none;
@@ -342,7 +342,7 @@ body::after {
   text-shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
 
-.casino-bg-tonplay {
+.casino-bg-betline {
   background: url('/photos/bluebg.jpg') center/cover no-repeat;
   display: flex;
   align-items: center;
@@ -350,7 +350,7 @@ body::after {
   position: absolute;
   inset: 0;
 }
-.casino-bg-tonplay::before {
+.casino-bg-betline::before {
   content: 'BETLINE';
   font-size: 48px;
   font-weight: 900;
@@ -375,7 +375,7 @@ body::after {
   background: linear-gradient(to top, rgba(88,15,34,0.95) 0%, rgba(88,15,34,0.4) 50%, transparent 100%);
 }
 
-.casino-card.tonplay .casino-card-overlay {
+.casino-card.betline .casino-card-overlay {
   background: linear-gradient(to top, rgba(16,78,185,0.95) 0%, rgba(16,78,185,0.4) 50%, transparent 100%);
 }
 
@@ -412,7 +412,7 @@ body::after {
   50% { box-shadow: 0 8px 48px var(--betline-glow), 0 0 80px var(--betline-glow); }
 }
 .casino-card.topmatch { animation: neonPulse 4s ease-in-out infinite; }
-.casino-card.tonplay { animation: neonPulseTon 4s ease-in-out infinite; }
+.casino-card.betline { animation: neonPulseTon 4s ease-in-out infinite; }
 
 /* ── Shimmer on Casino Cards ── */
 @keyframes shimmer {
@@ -453,7 +453,7 @@ body::after {
   font-weight: 800;
 }
 
-.level-badge.tonplay {
+.level-badge.betline {
   background: rgba(43,108,176,0.35);
   border: 1px solid rgba(43,108,176,0.6);
   color: #93c5fd;
@@ -487,7 +487,7 @@ body::after {
   box-shadow: 0 0 0 0 var(--topmatch-glow);
 }
 
-.level-pulse-ring.tonplay {
+.level-pulse-ring.betline {
   border: 2px solid var(--betline);
   box-shadow: 0 0 0 0 var(--betline-glow);
 }
@@ -534,7 +534,7 @@ body::after {
   background: linear-gradient(to top, rgba(88,15,34,0.95) 0%, rgba(88,15,34,0.5) 40%, transparent 100%);
 }
 
-.casino-hero.tonplay .casino-hero-overlay {
+.casino-hero.betline .casino-hero-overlay {
   background: linear-gradient(to top, rgba(16,78,185,0.95) 0%, rgba(16,78,185,0.5) 40%, transparent 100%);
 }
 
@@ -619,7 +619,7 @@ body::after {
   border: 1px solid rgba(217,72,51,0.3);
 }
 
-.btn-tonplay {
+.btn-betline {
   background: linear-gradient(135deg, #1a4a7a 0%, #2b6cb0 100%);
   color: #fff;
   box-shadow: 0 4px 16px var(--betline-glow);
@@ -842,7 +842,7 @@ body::after {
 }
 
 .contest-card.topmatch::before { background: var(--topmatch-gradient); }
-.contest-card.tonplay::before { background: var(--betline-gradient); }
+.contest-card.betline::before { background: var(--betline-gradient); }
 
 .contest-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; color: #fff; }
 .contest-prize {
@@ -1445,7 +1445,7 @@ textarea.input { resize: vertical; min-height: 80px; }
 }
 
 .tab.active.topmatch { background: var(--topmatch-gradient); border-color: var(--topmatch); }
-.tab.active.tonplay { background: var(--betline-gradient); border-color: var(--betline); }
+.tab.active.betline { background: var(--betline-gradient); border-color: var(--betline); }
 
 /* ── Pagination ── */
 .pagination {
@@ -2529,7 +2529,7 @@ body::after {
   box-shadow: 0 6px 22px var(--topmatch-glow), inset 0 1px 0 rgba(255,255,255,0.25);
   color: #fff;
 }
-.btn-tonplay {
+.btn-betline {
   background: linear-gradient(135deg, #15457a 0%, #2b6cb0 55%, #4f93dd 100%);
   border: 1px solid rgba(255,255,255,0.18);
   box-shadow: 0 6px 22px var(--betline-glow), inset 0 1px 0 rgba(255,255,255,0.25);
@@ -2561,15 +2561,15 @@ body::after {
   box-shadow: var(--shadow-deep);
 }
 .casino-card.topmatch { border: 1px solid rgba(217,72,51,0.45); }
-.casino-card.tonplay { border: 1px solid rgba(43,108,176,0.45); }
+.casino-card.betline { border: 1px solid rgba(43,108,176,0.45); }
 .casino-bg-topmatch {
   background: url('/photos/redbg.jpg') center/cover no-repeat;
 }
-.casino-bg-tonplay {
+.casino-bg-betline {
   background: url('/photos/bluebg.jpg') center/cover no-repeat;
 }
 .casino-bg-topmatch::before,
-.casino-bg-tonplay::before {
+.casino-bg-betline::before {
   font-size: 52px;
   color: rgba(255,255,255,0.55);
   text-shadow: 0 2px 8px rgba(0,0,0,0.4);
@@ -2591,7 +2591,7 @@ body::after {
   box-shadow: 0 4px 14px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.25);
 }
 .level-badge.topmatch { background: rgba(217,72,51,0.45); color: #ffd9d2; }
-.level-badge.tonplay { background: rgba(43,108,176,0.5); color: #d6e9ff; }
+.level-badge.betline { background: rgba(43,108,176,0.5); color: #d6e9ff; }
 
 /* ── Tabs: pill segmented with gold active ── */
 .tab.active {

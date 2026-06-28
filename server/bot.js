@@ -23,8 +23,8 @@ const checkContestReminders = async () => {
       );
       for (const p of participants.rows) {
         const msg = p.language === 'uk'
-          ? `🔔 Конкурс "${r.title_uk}" розпочнеться за 15 хвилин!\nКазино: ${r.casino === 'topmatch' ? 'TopMatch' : 'TonPlay'}`
-          : `🔔 Конкурс "${r.title_ru}" начнется через 15 минут!\nКазино: ${r.casino === 'topmatch' ? 'TopMatch' : 'TonPlay'}`;
+          ? `🔔 Конкурс "${r.title_uk}" розпочнеться за 15 хвилин!\nКазино: ${r.casino === 'topmatch' ? 'TopMatch' : 'Betline'}`
+          : `🔔 Конкурс "${r.title_ru}" начнется через 15 минут!\nКазино: ${r.casino === 'topmatch' ? 'TopMatch' : 'Betline'}`;
         try { await bot.telegram.sendMessage(p.telegram_id, msg); } catch (e) { /* ignore */ }
       }
       await pool.query('UPDATE contest_reminders SET sent = TRUE, sent_at = NOW() WHERE id = $1', [r.id]);
@@ -202,7 +202,7 @@ bot.action('lang_ru', async (ctx) => {
 
 const notifyWinner = async (user, contest, language) => {
   try {
-    const wallet = contest.casino === 'topmatch' ? user.wallet_topmatch : user.wallet_tonplay;
+    const wallet = contest.casino === 'topmatch' ? user.wallet_topmatch : user.wallet_betline;
     const walletLine = wallet ? `\nTRC20 гаманець для отримання призу: ${wallet}` : '\n⚠️ Будь ласка, вкажіть ваш TRC20 USDT гаманець в налаштуваннях додатку для отримання призу.';
     const walletLineRu = wallet ? `\nTRC20 кошелек для получения приза: ${wallet}` : '\n⚠️ Пожалуйста, укажите ваш TRC20 USDT кошелек в настройках приложения для получения приза.';
     const message = language === 'uk'
@@ -218,12 +218,12 @@ const notifyWinner = async (user, contest, language) => {
 const notifyAdmin = async (winners, contest) => {
   try {
     const adminIds = (process.env.ADMIN_TELEGRAM_IDS || '').split(',').map(id => id.trim()).filter(Boolean);
-    const casinoName = contest.casino === 'topmatch' ? 'TopMatch' : 'TonPlay';
+    const casinoName = contest.casino === 'topmatch' ? 'TopMatch' : 'Betline';
     const winnersArr = Array.isArray(winners) ? winners : [winners];
 
     for (const winner of winnersArr) {
-      const casinoId = contest.casino === 'topmatch' ? winner.casino_id_topmatch : winner.casino_id_tonplay;
-      const wallet = contest.casino === 'topmatch' ? winner.wallet_topmatch : winner.wallet_tonplay;
+      const casinoId = contest.casino === 'topmatch' ? winner.casino_id_topmatch : winner.casino_id_betline;
+      const wallet = contest.casino === 'topmatch' ? winner.wallet_topmatch : winner.wallet_betline;
       const message = `🏆 Переможець / Победитель\n\nКазино / Казино: ${casinoName}\nTelegram ID: ${winner.telegram_id}\nUsername: @${winner.telegram_username || 'N/A'}\nCasino ID: ${casinoId || 'N/A'}\nTRC20 USDT: ${wallet || 'N/A'}\nКонкурс / Конкурс: ${contest.title_uk} / ${contest.title_ru}\nПриз / Приз: ${contest.prize_uk} / ${contest.prize_ru}`;
 
       for (const adminId of adminIds) {

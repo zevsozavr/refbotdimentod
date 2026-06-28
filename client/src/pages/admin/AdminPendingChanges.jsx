@@ -67,7 +67,7 @@ const AdminPendingChanges = () => {
                 <span className={`badge ${c.change_type === 'wallet' ? 'badge-success' : 'badge-primary'}`}>
                   {c.change_type === 'wallet' ? <><span className="emoji-icon">💰</span> Wallet</> : <><span className="emoji-icon">🎰</span> Casino ID</>}
                 </span>
-                {c.casino && <span className="badge badge-secondary">{c.casino === 'tonplay' ? 'BETLINE' : c.casino.toUpperCase()}</span>}
+                {c.casino && <span className="badge badge-secondary">{c.casino === 'betline' ? 'BETLINE' : c.casino.toUpperCase()}</span>}
               </div>
               <span className="pending-change-field">
                 {c.change_type === 'wallet'

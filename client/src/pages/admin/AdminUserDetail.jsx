@@ -50,7 +50,7 @@ const AdminUserDetail = () => {
         const res = await adminApi.get(`/admin/users/${id}`);
         setUser(res.data);
         setTopMatchLevel(res.data.level_topmatch ? String(res.data.level_topmatch) : '');
-        setBetlineLevel(res.data.level_tonplay ? String(res.data.level_tonplay) : '');
+        setBetlineLevel(res.data.level_betline ? String(res.data.level_betline) : '');
       } catch (e) {
         console.error('User detail error:', e);
       } finally {
@@ -94,7 +94,7 @@ const AdminUserDetail = () => {
       const res = await adminApi.get(`/admin/users/${id}`);
       setUser(res.data);
       setTopMatchLevel(res.data.level_topmatch ? String(res.data.level_topmatch) : '');
-      setBetlineLevel(res.data.level_tonplay ? String(res.data.level_tonplay) : '');
+      setBetlineLevel(res.data.level_betline ? String(res.data.level_betline) : '');
     } catch (e) {
       const msg = e.response?.data?.errors?.[0]?.message || e.response?.data?.error || 'Failed to set level';
       setLevelError(msg);
@@ -163,14 +163,14 @@ const AdminUserDetail = () => {
         <CopyField label={t('admin.user_detail.telegram_id')} value={user.telegram_id} mono />
         <CopyField label={t('admin.user_detail.username')} value={user.telegram_username ? `@${user.telegram_username}` : '—'} />
         <CopyField label="TopMatch ID" value={user.casino_id_topmatch || '—'} mono />
-        <CopyField label="Betline ID" value={user.casino_id_tonplay || '—'} mono />
+        <CopyField label="Betline ID" value={user.casino_id_betline || '—'} mono />
         <div className="detail-field">
           <span className="form-label">TopMatch {t('admin.user_detail.referral_type')}</span>
           <span>{user.level_topmatch || '—'}</span>
         </div>
         <div className="detail-field">
           <span className="form-label">Betline {t('admin.user_detail.referral_type')}</span>
-          <span>{user.level_tonplay || '—'}</span>
+          <span>{user.level_betline || '—'}</span>
         </div>
         <div className="detail-field">
           <span className="form-label">{t('admin.user_detail.language')}</span>
@@ -181,7 +181,7 @@ const AdminUserDetail = () => {
           <span>{new Date(user.created_at).toLocaleString()}</span>
         </div>
         <CopyField label={t('admin.user_detail.wallet_topmatch')} value={user.wallet_topmatch || '—'} mono />
-        <CopyField label={t('admin.user_detail.wallet_tonplay')} value={user.wallet_tonplay || '—'} mono />
+        <CopyField label={t('admin.user_detail.wallet_betline')} value={user.wallet_betline || '—'} mono />
       </div>
 
       <div className="glass-panel mb-4">
@@ -239,14 +239,14 @@ const AdminUserDetail = () => {
 
       <div className="glass-panel">
         <h3 className="mb-2" style={{ fontSize: 16, fontWeight: 600 }}>Betline {t('admin.user_detail.set_type')}</h3>
-        <p className="text-sm text-secondary mb-2">{t('admin.user_detail.current')}: {user.level_tonplay || '—'}</p>
+        <p className="text-sm text-secondary mb-2">{t('admin.user_detail.current')}: {user.level_betline || '—'}</p>
         <select className="glass-input" value={betlineLevel} onChange={(e) => setBetlineLevel(e.target.value)} style={{ width: '100%' }}>
           <option value="">— {t('admin.users.no_level')} —</option>
           <option value="1">1</option>
           <option value="2">2</option>
           <option value="3">3</option>
         </select>
-        <button className="btn btn-primary btn-sm" onClick={() => setLevel('tonplay', betlineLevel)} disabled={!betlineLevel}>
+        <button className="btn btn-primary btn-sm" onClick={() => setLevel('betline', betlineLevel)} disabled={!betlineLevel}>
           {t('admin.user_detail.set_type')}
         </button>
         {levelError && <p className="text-sm" style={{ color: 'var(--error)', marginTop: 8 }}>{levelError}</p>}
