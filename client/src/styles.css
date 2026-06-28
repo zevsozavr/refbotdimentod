@@ -323,7 +323,7 @@ body::after {
 }
 
 .casino-bg-topmatch {
-  background: url('/photos/redbg.png') center/cover no-repeat;
+  background: url('/photos/redbg.jpg') center/cover no-repeat;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -342,7 +342,7 @@ body::after {
 }
 
 .casino-bg-tonplay {
-  background: url('/photos/bluebg.png') center/cover no-repeat;
+  background: url('/photos/bluebg.jpg') center/cover no-repeat;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2561,10 +2561,10 @@ body::after {
 .casino-card.topmatch { border: 1px solid rgba(217,72,51,0.45); }
 .casino-card.tonplay { border: 1px solid rgba(43,108,176,0.45); }
 .casino-bg-topmatch {
-  background: url('/photos/redbg.png') center/cover no-repeat;
+  background: url('/photos/redbg.jpg') center/cover no-repeat;
 }
 .casino-bg-tonplay {
-  background: url('/photos/bluebg.png') center/cover no-repeat;
+  background: url('/photos/bluebg.jpg') center/cover no-repeat;
 }
 .casino-bg-topmatch::before,
 .casino-bg-tonplay::before {
