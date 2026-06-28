@@ -1,33 +1,40 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import useAdminCounts from '../hooks/useAdminCounts';
 
 const AdminNav = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  const counts = useAdminCounts();
 
   const items = [
-    { path: '/admin/stats', label: t('admin.stats.title') },
-    { path: '/admin/users', label: t('admin.users.title') },
-    { path: '/admin/contests', label: t('admin.contests.title') },
-    { path: '/admin/pending-changes', label: 'Pending' },
-    { path: '/admin/broadcast', label: t('admin.broadcast.title') },
-    { path: '/admin/streams', label: 'Streams' },
-    { path: '/admin/announces', label: t('nav.announces') },
+    { path: '/admin/stats', label: t('admin.stats.title'), icon: '📊' },
+    { path: '/admin/users', label: t('admin.users.title'), icon: '👤', badge: counts.pendingUsers },
+    { path: '/admin/contests', label: t('admin.contests.title'), icon: '🏆' },
+    { path: '/admin/pending-changes', label: 'Pending', icon: '⏳', badge: counts.pendingChanges },
+    { path: '/admin/broadcast', label: t('admin.broadcast.title'), icon: '📢' },
+    { path: '/admin/streams', label: 'Streams', icon: '📺' },
+    { path: '/admin/announces', label: t('nav.announces'), icon: '📣' },
   ];
 
   return (
     <div className="admin-nav">
-      {items.map((item) => (
-        <button
-          key={item.path}
-          className={`admin-nav-item ${location.pathname === item.path || location.pathname.startsWith(item.path + '/') ? 'active' : ''}`}
-          onClick={() => navigate(item.path)}
-        >
-          {item.label}
-        </button>
-      ))}
+      {items.map((item) => {
+        const active = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
+        return (
+          <button
+            key={item.path}
+            className={`admin-nav-item ${active ? 'active' : ''}`}
+            onClick={() => navigate(item.path)}
+          >
+            <span className="emoji-icon admin-nav-icon">{item.icon}</span>
+            <span>{item.label}</span>
+            {item.badge > 0 && <span className="admin-nav-badge">{item.badge > 99 ? '99+' : item.badge}</span>}
+          </button>
+        );
+      })}
     </div>
   );
 };

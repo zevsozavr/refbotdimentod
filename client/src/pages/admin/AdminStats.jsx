@@ -4,6 +4,7 @@ import { adminApi } from '../../axios';
 import AdminNav from '../../components/AdminNav';
 import useStaggeredEntrance from '../../hooks/useStaggeredEntrance';
 import useCountUp from '../../hooks/useCountUp';
+import { invalidateAdminCounts } from '../../hooks/useAdminCounts';
 
 const AdminStats = () => {
   const { t } = useTranslation();
@@ -16,6 +17,7 @@ const AdminStats = () => {
     try {
       const res = await adminApi.get('/admin/stats');
       setStats(res.data);
+      invalidateAdminCounts();
     } catch (e) {
       console.error('Stats fetch error:', e);
     } finally {

@@ -3,6 +3,35 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { adminApi } from '../../axios';
 import AdminNav from '../../components/AdminNav';
+import { invalidateAdminCounts } from '../../hooks/useAdminCounts';
+
+const CopyField = ({ label, value, mono }) => {
+  const [copied, setCopied] = useState(false);
+  const empty = !value || value === '—';
+  const handleCopy = async () => {
+    if (empty) return;
+    try {
+      await navigator.clipboard.writeText(String(value));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch (e) { /* clipboard unavailable */ }
+  };
+  return (
+    <div className="detail-field">
+      <span className="form-label">{label}</span>
+      <button
+        type="button"
+        className={`detail-value ${empty ? 'is-empty' : 'is-copyable'} ${mono ? 'is-mono' : ''}`}
+        onClick={handleCopy}
+        disabled={empty}
+        title={empty ? '' : 'Copy'}
+      >
+        <span className="detail-value-text">{value}</span>
+        {!empty && <span className="emoji-icon detail-copy-icon">{copied ? '✓' : '⧉'}</span>}
+      </button>
+    </div>
+  );
+};
 
 const AdminUserDetail = () => {
   const { t } = useTranslation();
@@ -13,6 +42,7 @@ const AdminUserDetail = () => {
   const [topMatchLevel, setTopMatchLevel] = useState('');
   const [betlineLevel, setBetlineLevel] = useState('');
   const [levelError, setLevelError] = useState('');
+  const [confirmBan, setConfirmBan] = useState(false);
 
   useEffect(() => {
     const fetch = async () => {
@@ -50,6 +80,7 @@ const AdminUserDetail = () => {
           return;
       }
       setUser(res.data);
+      invalidateAdminCounts();
     } catch (e) {
       console.error('Action error:', e);
     }
@@ -111,57 +142,46 @@ const AdminUserDetail = () => {
         <span className="emoji-icon">◀</span> {t('admin.users.title')}
       </button>
 
-      <h1 className="page-title metallic-text">{t('admin.user_detail.title')}</h1>
-
-      <div className="glass-panel mb-4">
-        <div className="form-group">
-          <span className="form-label">{t('admin.user_detail.telegram_id')}</span>
-          <span>{user.telegram_id}</span>
-        </div>
-        <div className="form-group">
-          <span className="form-label">{t('admin.user_detail.username')}</span>
-          <span>@{user.telegram_username || t('settings.not_set')}</span>
-        </div>
-        <div className="form-group">
-          <span className="form-label">TopMatch ID</span>
-          <span>{user.casino_id_topmatch || t('settings.not_set')}</span>
-        </div>
-        <div className="form-group">
-          <span className="form-label">Betline ID</span>
-          <span>{user.casino_id_tonplay || t('settings.not_set')}</span>
-        </div>
-        <div className="form-group">
-          <span className="form-label">{t('admin.user_detail.status')}</span>
+      <div className="detail-hero glass-panel mb-4">
+        <div className="detail-hero-main">
+          <div className="detail-hero-name">@{user.telegram_username || `ID ${user.telegram_id}`}</div>
           <span className={`status-badge ${getStatusBadge(user.status)}`}>{statusLabel[user.status]}</span>
         </div>
-        <div className="form-group">
+        {user.telegram_username && (
+          <a
+            className="btn btn-secondary btn-sm detail-tg-link"
+            href={`https://t.me/${user.telegram_username}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span className="emoji-icon">✈</span> Telegram
+          </a>
+        )}
+      </div>
+
+      <div className="glass-panel mb-4">
+        <CopyField label={t('admin.user_detail.telegram_id')} value={user.telegram_id} mono />
+        <CopyField label={t('admin.user_detail.username')} value={user.telegram_username ? `@${user.telegram_username}` : '—'} />
+        <CopyField label="TopMatch ID" value={user.casino_id_topmatch || '—'} mono />
+        <CopyField label="Betline ID" value={user.casino_id_tonplay || '—'} mono />
+        <div className="detail-field">
           <span className="form-label">TopMatch {t('admin.user_detail.referral_type')}</span>
           <span>{user.level_topmatch || '—'}</span>
         </div>
-        <div className="form-group">
+        <div className="detail-field">
           <span className="form-label">Betline {t('admin.user_detail.referral_type')}</span>
           <span>{user.level_tonplay || '—'}</span>
         </div>
-        <div className="form-group">
+        <div className="detail-field">
           <span className="form-label">{t('admin.user_detail.language')}</span>
           <span>{user.language === 'uk' ? 'Українська' : 'Русский'}</span>
         </div>
-        <div className="form-group">
+        <div className="detail-field">
           <span className="form-label">{t('admin.user_detail.created')}</span>
           <span>{new Date(user.created_at).toLocaleString()}</span>
         </div>
-        <div className="form-group">
-          <span className="form-label">{t('admin.user_detail.wallet_topmatch')}</span>
-          <span style={{ fontFamily: 'monospace', fontSize: 13, wordBreak: 'break-all' }}>
-            {user.wallet_topmatch || t('settings.not_set')}
-          </span>
-        </div>
-        <div className="form-group">
-          <span className="form-label">{t('admin.user_detail.wallet_tonplay')}</span>
-          <span style={{ fontFamily: 'monospace', fontSize: 13, wordBreak: 'break-all' }}>
-            {user.wallet_tonplay || t('settings.not_set')}
-          </span>
-        </div>
+        <CopyField label={t('admin.user_detail.wallet_topmatch')} value={user.wallet_topmatch || '—'} mono />
+        <CopyField label={t('admin.user_detail.wallet_tonplay')} value={user.wallet_tonplay || '—'} mono />
       </div>
 
       <div className="glass-panel mb-4">
@@ -178,9 +198,23 @@ const AdminUserDetail = () => {
             </>
           )}
           {user.status !== 'banned' ? (
-            <button className="btn btn-danger btn-sm" onClick={() => handleAction('ban')}>
-              {t('admin.user_detail.ban')}
-            </button>
+            confirmBan ? (
+              <div className="confirm-row">
+                <span className="confirm-text">{t('admin.user_detail.confirm_ban')}</span>
+                <div className="flex gap-2">
+                  <button className="btn btn-danger btn-sm" onClick={() => { setConfirmBan(false); handleAction('ban'); }}>
+                    {t('admin.user_detail.ban')}
+                  </button>
+                  <button className="btn btn-secondary btn-sm" onClick={() => setConfirmBan(false)}>
+                    {t('admin.contests.form.cancel')}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button className="btn btn-danger btn-sm" onClick={() => setConfirmBan(true)}>
+                {t('admin.user_detail.ban')}
+              </button>
+            )
           ) : (
             <button className="btn btn-success btn-sm" onClick={() => handleAction('unban')}>
               {t('admin.user_detail.unban')}

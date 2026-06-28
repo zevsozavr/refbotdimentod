@@ -551,7 +551,7 @@ router.post('/contests/:id/leave', verifyTelegramAuth, async (req, res) => {
 
 router.get('/admin/users', verifyTelegramAuth, verifyAdminAuth, adminLimiter, async (req, res) => {
   try {
-    const { status, level_topmatch, level_tonplay, page = 1, limit = 20 } = req.query;
+    const { status, level_topmatch, level_tonplay, search, page = 1, limit = 20 } = req.query;
     const conditions = [];
     const params = [];
     let paramIndex = 1;
@@ -559,6 +559,12 @@ router.get('/admin/users', verifyTelegramAuth, verifyAdminAuth, adminLimiter, as
     if (status && ALLOWED_STATUSES.includes(status)) {
       conditions.push(`status = $${paramIndex++}`);
       params.push(status);
+    }
+    if (search && String(search).trim()) {
+      const term = String(search).trim().replace(/^@/, '');
+      conditions.push(`(telegram_username ILIKE $${paramIndex} OR CAST(telegram_id AS TEXT) ILIKE $${paramIndex} OR casino_id_topmatch ILIKE $${paramIndex} OR casino_id_tonplay ILIKE $${paramIndex})`);
+      params.push(`%${term}%`);
+      paramIndex++;
     }
     if (level_topmatch && ['1', '2', '3'].includes(level_topmatch)) {
       conditions.push(`level_topmatch = $${paramIndex++}`);

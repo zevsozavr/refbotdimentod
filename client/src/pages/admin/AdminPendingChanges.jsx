@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { adminApi } from '../../axios';
 import AdminNav from '../../components/AdminNav';
+import { invalidateAdminCounts } from '../../hooks/useAdminCounts';
 
 const AdminPendingChanges = () => {
   const { t, i18n } = useTranslation();
@@ -26,6 +27,7 @@ const AdminPendingChanges = () => {
     try {
       await adminApi.post(`/admin/pending-changes/${id}/approve`);
       fetch();
+      invalidateAdminCounts();
     } catch (e) {
       alert(e.response?.data?.error || t('common.error'));
     }
@@ -35,6 +37,7 @@ const AdminPendingChanges = () => {
     try {
       await adminApi.post(`/admin/pending-changes/${id}/reject`);
       fetch();
+      invalidateAdminCounts();
     } catch (e) {
       alert(e.response?.data?.error || t('common.error'));
     }

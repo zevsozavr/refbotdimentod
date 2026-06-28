@@ -1018,12 +1018,26 @@ body::after {
   display: flex;
   gap: 6px;
   overflow-x: auto;
-  margin-bottom: 20px;
-  padding-bottom: 4px;
+  margin: -20px -16px 20px;
+  padding: 12px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(10, 16, 26, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(195, 198, 211, 0.1);
+  scrollbar-width: none;
 }
 
+.admin-nav::-webkit-scrollbar { display: none; }
+
 .admin-nav-item {
+  position: relative;
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 8px 14px;
   border-radius: 999px;
   background: rgba(18, 28, 42, 0.4);
@@ -1037,11 +1051,160 @@ body::after {
   font-family: var(--font-body);
 }
 
+.admin-nav-item:hover { border-color: rgba(195, 198, 211, 0.35); color: var(--primary); }
+
+.admin-nav-icon { font-size: 14px; line-height: 1; }
+
 .admin-nav-item.active {
   background: var(--primary);
   color: var(--on-primary);
   border-color: var(--primary);
 }
+
+.admin-nav-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--secondary);
+  color: #1a1206;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.admin-nav-item.active .admin-nav-badge { background: #1a1206; color: var(--secondary); }
+
+/* ── Admin Search ── */
+.admin-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.admin-search-icon {
+  position: absolute;
+  left: 14px;
+  font-size: 14px;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.admin-search-input {
+  width: 100%;
+  padding-left: 40px !important;
+  padding-right: 40px !important;
+}
+
+.admin-search-clear {
+  position: absolute;
+  right: 8px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 999px;
+  background: rgba(195, 198, 211, 0.12);
+  color: var(--on-surface-variant);
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.admin-search-clear:hover { background: rgba(195, 198, 211, 0.22); color: var(--primary); }
+
+.admin-result-count {
+  font-size: 12px;
+  color: var(--on-surface-variant);
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+/* ── Admin Empty State ── */
+.admin-empty {
+  text-align: center;
+  padding: 48px 20px;
+}
+
+.admin-empty-icon { font-size: 40px; opacity: 0.4; margin-bottom: 12px; }
+
+/* ── Admin User Detail ── */
+.detail-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px;
+}
+
+.detail-hero-main { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+.detail-hero-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--primary);
+  font-family: var(--font-display);
+}
+
+.detail-tg-link { width: auto !important; flex-shrink: 0; }
+
+.detail-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(195, 198, 211, 0.07);
+}
+
+.detail-field:last-child { border-bottom: none; }
+
+.detail-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 62%;
+  padding: 4px 8px;
+  margin: -4px -8px -4px 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--on-surface);
+  font-size: 14px;
+  font-family: inherit;
+  text-align: right;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.detail-value.is-copyable:hover { background: rgba(195, 198, 211, 0.1); }
+.detail-value.is-empty { cursor: default; color: var(--on-surface-variant); opacity: 0.7; }
+.detail-value.is-mono .detail-value-text { font-family: monospace; font-size: 13px; }
+
+.detail-value-text { word-break: break-all; }
+
+.detail-copy-icon { font-size: 13px; opacity: 0.55; flex-shrink: 0; }
+.detail-value.is-copyable:hover .detail-copy-icon { opacity: 1; color: var(--primary); }
+
+/* ── Inline confirm ── */
+.confirm-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.confirm-text { font-size: 13px; font-weight: 600; color: #ef9a9a; }
 
 /* ── User Row ── */
 .user-row {
