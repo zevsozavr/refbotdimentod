@@ -323,41 +323,15 @@ body::after {
 }
 
 .casino-bg-topmatch {
-  background: linear-gradient(135deg, #580f22 0%, #d94833 40%, #e8793e 70%, #f5a623 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: url('/photos/redbg.png') center/cover no-repeat;
   position: absolute;
   inset: 0;
-}
-.casino-bg-topmatch::before {
-  content: 'TOP MATCH';
-  font-size: 48px;
-  font-weight: 900;
-  color: rgba(255,255,255,0.18);
-  letter-spacing: 0.08em;
-  font-family: var(--font-display);
-  pointer-events: none;
-  user-select: none;
 }
 
 .casino-bg-tonplay {
-  background: linear-gradient(135deg, #0a2647 0%, #1a5276 40%, #2e86c1 70%, #5dade2 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: url('/photos/bluebg.png') center/cover no-repeat;
   position: absolute;
   inset: 0;
-}
-.casino-bg-tonplay::before {
-  content: 'BETLINE';
-  font-size: 48px;
-  font-weight: 900;
-  color: rgba(255,255,255,0.18);
-  letter-spacing: 0.08em;
-  font-family: var(--font-display);
-  pointer-events: none;
-  user-select: none;
 }
 
 .casino-card-overlay {
@@ -2561,23 +2535,10 @@ body::after {
 .casino-card.topmatch { border: 1px solid rgba(217,72,51,0.45); }
 .casino-card.tonplay { border: 1px solid rgba(43,108,176,0.45); }
 .casino-bg-topmatch {
-  background:
-    radial-gradient(120% 100% at 80% 0%, rgba(255,180,120,0.35) 0%, transparent 55%),
-    linear-gradient(135deg, #4a0d1c 0%, #b3251f 38%, #e8793e 72%, #f5a623 100%);
+  background: url('/photos/redbg.png') center/cover no-repeat;
 }
 .casino-bg-tonplay {
-  background:
-    radial-gradient(120% 100% at 80% 0%, rgba(160,210,255,0.35) 0%, transparent 55%),
-    linear-gradient(135deg, #07203f 0%, #1a5276 38%, #2e86c1 72%, #5dade2 100%);
-}
-.casino-bg-topmatch::before,
-.casino-bg-tonplay::before {
-  font-size: 52px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.30), rgba(255,255,255,0.06));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  color: transparent;
+  background: url('/photos/bluebg.png') center/cover no-repeat;
 }
 /* Glossy top sheen across every card */
 .casino-card-overlay::before {
