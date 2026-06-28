@@ -28,7 +28,7 @@ app.use(helmet.referrerPolicy({ policy: 'no-referrer' }));
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;
-  const host = req.headers['x-forwarded-host'] || req.headers['host'];
+  const host = req.headers['host'];
   const serverOrigin = req.protocol + '://' + host;
   const allowed = [
     'https://web.telegram.org',
@@ -43,7 +43,7 @@ app.use((req, res, next) => {
     }
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,x-telegram-init-data');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,x-telegram-init-data,x-session-token');
   }
   if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
@@ -57,7 +57,7 @@ app.use(rateLimit({
   legacyHeaders: false,
 }));
 
-app.use(express.json({ limit: '50mb' }));
+app.use(express.json({ limit: '1mb' }));
 
 app.use('/photos', express.static(path.join(__dirname, '../resources/photos')));
 const uploadsDir = process.env.VERCEL ? '/tmp/uploads' : path.join(__dirname, 'uploads');

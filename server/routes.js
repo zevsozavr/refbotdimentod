@@ -1,5 +1,5 @@
 const express = require('express');
-const { body, param, query, validationResult } = require('express-validator');
+const { body, validationResult } = require('express-validator');
 const rateLimit = require('express-rate-limit');
 const multer = require('multer');
 const path = require('path');
@@ -26,9 +26,12 @@ const upload = multer({
   storage,
   limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
-    const allowed = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+    const allowedExts = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
     const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, allowed.includes(ext));
+    if (!allowedExts.includes(ext)) return cb(null, false);
+    const allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedMimes.includes(file.mimetype)) return cb(null, false);
+    cb(null, true);
   },
 });
 
@@ -219,70 +222,217 @@ router.get('/casinos', verifyTelegramAuth, (req, res) => {
   })));
 });
 
-// ─── AFFILIATE POSTBACK (server-to-server referral confirmation) ───
-// Called by the casino's affiliate network when a player signs up under our link.
-// PUBLIC endpoint (no Telegram auth) — protected by a shared secret in POSTBACK_SECRET.
-// Example: GET /api/postback?casino=topmatch&player_id=12345&sub_id=822479618&key=SECRET
-const handlePostback = async (req, res) => {
+// ─── REFERRAL CHECK API ───
+// Called by the casino's backend (or admin tool) to confirm a user as a referral.
+// Protected by REFERRAL_API_KEY in the Authorization header.
+// Example: POST /api/referral/check
+// Body: { "casino": "topmatch", "casino_account_id": "12345", "telegram_id": 822479618 }
+router.post('/referral/check', async (req, res) => {
   try {
-    const data = { ...req.query, ...req.body };
-    const secret = process.env.POSTBACK_SECRET;
-
-    if (!secret) {
-      console.error('Postback received but POSTBACK_SECRET is not configured');
-      return res.status(500).send('not configured');
+    const expectedKey = process.env.REFERRAL_API_KEY;
+    if (!expectedKey) {
+      console.error('REFERRAL_API_KEY not configured — referral check endpoint unavailable');
+      return res.status(503).json({ error: 'Referral API is not configured on this server' });
     }
-    if (data.key !== secret) {
-      console.warn('Postback rejected: bad key');
-      return res.status(403).send('forbidden');
+    const apiKey = req.headers['authorization']?.replace('Bearer ', '');
+    if (apiKey !== expectedKey) {
+      return res.status(403).json({ error: 'Invalid API key' });
     }
 
-    const casino = String(data.casino || '').toLowerCase();
-    if (!['topmatch', 'betline'].includes(casino)) {
-      return res.status(400).send('bad casino');
+    const { casino, casino_account_id, telegram_id } = req.body;
+    if (!casino || !['topmatch', 'betline'].includes(casino)) {
+      return res.status(400).json({ error: 'Valid casino required (topmatch or betline)' });
+    }
+    if (!casino_account_id || !String(casino_account_id).trim()) {
+      return res.status(400).json({ error: 'casino_account_id is required' });
     }
 
-    // Accept the common macro names different networks use for the player id.
-    const accountId = String(
-      data.player_id || data.customer_id || data.account_id || data.cid || ''
-    ).trim();
-    if (!accountId) return res.status(400).send('missing player id');
+    const accountId = String(casino_account_id).trim();
 
-    const subId = data.sub_id || data.s1 || data.aff_sub || data.clickid || null;
-    const level = data.level ? parseInt(data.level, 10) : null;
-
-    // Record the confirmed referral (authoritative source of "is eligible").
     await pool.query(
-      `INSERT INTO confirmed_referrals (casino, casino_account_id, sub_id, level, raw_query)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO confirmed_referrals (casino, casino_account_id, sub_id)
+       VALUES ($1, $2, $3)
        ON CONFLICT (casino, casino_account_id)
-       DO UPDATE SET sub_id = COALESCE(EXCLUDED.sub_id, confirmed_referrals.sub_id),
-                     level  = COALESCE(EXCLUDED.level, confirmed_referrals.level)`,
-      [casino, accountId, subId ? String(subId) : null, Number.isNaN(level) ? null : level, JSON.stringify(data)]
+       DO UPDATE SET sub_id = COALESCE(EXCLUDED.sub_id, confirmed_referrals.sub_id)`,
+      [casino, accountId, telegram_id ? String(telegram_id) : null]
     );
 
-    // If sub_id is the Telegram id we injected into the link, auto-link & verify the user.
-    if (subId && /^\d+$/.test(String(subId))) {
+    let matchedUser = null;
+    if (telegram_id) {
       const idCol = `casino_id_${casino}`;
       const lvlCol = `level_${casino}`;
-      await pool.query(
+      const result = await pool.query(
         `UPDATE users
-           SET ${idCol} = $1,
-               ${lvlCol} = COALESCE(${lvlCol}, $2),
-               status = 'verified'
-         WHERE telegram_id = $3`,
-        [accountId, Number.isNaN(level) ? 1 : (level || 1), String(subId)]
+         SET ${idCol} = COALESCE(${idCol}, $1),
+             ${lvlCol} = COALESCE(${lvlCol}, 1),
+             status = 'verified'
+         WHERE telegram_id = $2 RETURNING *`,
+        [accountId, telegram_id]
       );
+      if (result.rows.length > 0) {
+        matchedUser = result.rows[0];
+        await notifyUser(
+          matchedUser.telegram_id,
+          'Вітаємо! Ваш акаунт підтверджено як реферала. Рівень 1 активовано.',
+          'Поздравляем! Ваш аккаунт подтвержден как реферал. Уровень 1 активирован.',
+          matchedUser.language
+        );
+      }
     }
 
-    return res.status(200).send('OK');
+    res.json({ success: true, matched: !!matchedUser, user: matchedUser ? { id: matchedUser.id, telegram_id: matchedUser.telegram_id, level: matchedUser[`level_${casino}`] } : null });
   } catch (err) {
-    console.error('Postback error:', err);
-    return res.status(500).send('error');
+    console.error('Referral check error:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
-};
-router.get('/postback', handlePostback);
-router.post('/postback', handlePostback);
+});
+
+// ─── DEPOSIT API ───
+// Called by the casino's backend (or admin tool) to report a user deposit.
+// Protected by REFERRAL_API_KEY in the Authorization header.
+// Example: POST /api/deposit
+// Body: { "casino": "topmatch", "casino_account_id": "12345", "amount": 100.50 }
+router.post('/deposit', async (req, res) => {
+  try {
+    const expectedKey = process.env.REFERRAL_API_KEY;
+    if (!expectedKey) {
+      console.error('REFERRAL_API_KEY not configured — deposit endpoint unavailable');
+      return res.status(503).json({ error: 'Deposit API is not configured on this server' });
+    }
+    const apiKey = req.headers['authorization']?.replace('Bearer ', '');
+    if (apiKey !== expectedKey) {
+      return res.status(403).json({ error: 'Invalid API key' });
+    }
+
+    const { casino, casino_account_id, amount } = req.body;
+    if (!casino || !['topmatch', 'betline'].includes(casino)) {
+      return res.status(400).json({ error: 'Valid casino required (topmatch or betline)' });
+    }
+    if (!casino_account_id || !String(casino_account_id).trim()) {
+      return res.status(400).json({ error: 'casino_account_id is required' });
+    }
+    const parsedAmount = parseFloat(amount);
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      return res.status(400).json({ error: 'Amount must be a positive number' });
+    }
+
+    const accountId = String(casino_account_id).trim();
+    const lvlCol = `level_${casino}`;
+
+    // Find user by casino account id
+    const idCol = `casino_id_${casino}`;
+    const userResult = await pool.query(
+      `SELECT id, telegram_id, language, ${lvlCol}, ${idCol} FROM users WHERE ${idCol} = $1`,
+      [accountId]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'User with this casino account ID not found' });
+    }
+
+    const user = userResult.rows[0];
+
+    // Record the deposit
+    await pool.query(
+      'INSERT INTO deposits (user_id, casino, casino_account_id, amount) VALUES ($1, $2, $3, $4)',
+      [user.id, casino, accountId, parsedAmount]
+    );
+
+    // Get threshold from admin settings
+    const thresholdKey = `deposit_threshold_${casino}`;
+    const thresholdResult = await pool.query(
+      'SELECT value FROM admin_settings WHERE key = $1',
+      [thresholdKey]
+    );
+    const threshold = parseFloat(thresholdResult.rows[0]?.value || '1000');
+
+    // Calculate total deposits
+    const totalResult = await pool.query(
+      'SELECT COALESCE(SUM(amount), 0) as total FROM deposits WHERE user_id = $1 AND casino = $2',
+      [user.id, casino]
+    );
+    const totalDeposits = parseFloat(totalResult.rows[0].total);
+
+    let newLevel = null;
+    if (totalDeposits >= threshold) {
+      newLevel = 3;
+    } else if (parsedAmount > 0) {
+      newLevel = 2;
+    }
+
+    if (newLevel && (!user[lvlCol] || user[lvlCol] < newLevel)) {
+      await pool.query(
+        `UPDATE users SET ${lvlCol} = $1 WHERE id = $2`,
+        [newLevel, user.id]
+      );
+
+      const levelMsg = newLevel === 2
+        ? (user.language === 'uk' ? 'Вітаємо! Вам нараховано рівень 2 за перший депозит.' : 'Поздравляем! Вам присвоен уровень 2 за первый депозит.')
+        : (user.language === 'uk' ? `Вітаємо! Вам нараховано рівень 3. Загальна сума депозитів: ${totalDeposits}` : `Поздравляем! Вам присвоен уровень 3. Общая сумма депозитов: ${totalDeposits}`);
+      await notifyUser(user.telegram_id, levelMsg, levelMsg, user.language);
+    }
+
+    res.json({
+      success: true,
+      deposit: { casino, amount: parsedAmount },
+      total_deposits: totalDeposits,
+      level: newLevel || user[lvlCol],
+    });
+  } catch (err) {
+    console.error('Deposit error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ─── USER DEPOSITS ───
+
+router.get('/user/deposits', verifyTelegramAuth, async (req, res) => {
+  try {
+    const userResult = await pool.query('SELECT id FROM users WHERE telegram_id = $1', [req.telegramUser.id]);
+    if (userResult.rows.length === 0) return res.status(404).json({ error: 'User not found' });
+    const userId = userResult.rows[0].id;
+
+    const result = await pool.query(
+      `SELECT casino, COUNT(*) as transaction_count, COALESCE(SUM(amount), 0) as total_amount
+       FROM deposits WHERE user_id = $1
+       GROUP BY casino ORDER BY casino`,
+      [userId]
+    );
+
+    const thresholds = await pool.query(
+      "SELECT key, value FROM admin_settings WHERE key LIKE 'deposit_threshold_%'"
+    );
+    const thresholdMap = {};
+    for (const row of thresholds.rows) {
+      thresholdMap[row.key.replace('deposit_threshold_', '')] = parseFloat(row.value);
+    }
+
+    const data = result.rows.map(r => ({
+      casino: r.casino,
+      transaction_count: parseInt(r.transaction_count),
+      total_amount: parseFloat(r.total_amount),
+      threshold: thresholdMap[r.casino] || 1000,
+    }));
+
+    // Also include casinos with no deposits
+    const casinos = require('./casinos');
+    for (const [id] of Object.entries(casinos)) {
+      if (!data.find(d => d.casino === id)) {
+        data.push({
+          casino: id,
+          transaction_count: 0,
+          total_amount: 0,
+          threshold: thresholdMap[id] || 1000,
+        });
+      }
+    }
+
+    res.json(data);
+  } catch (err) {
+    console.error('Get deposits error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 router.get('/casino/:casinoId/me', verifyTelegramAuth, async (req, res) => {
   try {
@@ -295,7 +445,7 @@ router.get('/casino/:casinoId/me', verifyTelegramAuth, async (req, res) => {
     const level = user[casino.level_column];
 
     // Tag the referral link with this user's Telegram id (sub_id) so the
-    // affiliate postback can map a signup back to this exact user.
+    // referral check API can map a signup back to this exact user.
     let referralLink = casino.referral_link;
     if (referralLink) {
       const sep = referralLink.includes('?') ? '&' : '?';
@@ -327,34 +477,46 @@ router.post('/casino/:casinoId/submit-id', verifyTelegramAuth, [
     const casino = casinos[req.params.casinoId];
     if (!casino) return res.status(404).json({ error: 'Casino not found' });
 
-    const userResult = await pool.query('SELECT id, telegram_username, status, ' + casino.casino_id_column + ' FROM users WHERE telegram_id = $1', [req.telegramUser.id]);
-    if (userResult.rows.length === 0) return res.status(404).json({ error: 'User not found' });
+    const userIdResult = await pool.query('SELECT id, telegram_id, telegram_username, language, status, ' + casino.casino_id_column + ' FROM users WHERE telegram_id = $1', [req.telegramUser.id]);
+    if (userIdResult.rows.length === 0) return res.status(404).json({ error: 'User not found' });
 
-    const user = userResult.rows[0];
-    const oldValue = user[casino.casino_id_column];
+    const user = userIdResult.rows[0];
+    const newAccountId = String(req.body.casino_account_id).trim();
 
-    // Check if there's already a pending change for this field
-    const existing = await pool.query(
-      "SELECT id FROM pending_changes WHERE user_id = $1 AND field = $2 AND status = 'pending'",
-      [user.id, casino.casino_id_column]
-    );
-    if (existing.rows.length > 0) {
-      return res.status(400).json({ error: 'You already have a pending change for this field' });
-    }
-
-    await pool.query(
-      'INSERT INTO pending_changes (user_id, field, old_value, new_value) VALUES ($1, $2, $3, $4)',
-      [user.id, casino.casino_id_column, oldValue, req.body.casino_account_id]
+    // Auto-check if this casino account ID is a confirmed referral
+    const referralCheck = await pool.query(
+      'SELECT * FROM confirmed_referrals WHERE casino = $1 AND casino_account_id = $2',
+      [req.params.casinoId, newAccountId]
     );
 
-    if (user.status === 'rejected') {
-      await pool.query("UPDATE users SET status = 'pending' WHERE id = $1", [user.id]);
+    if (referralCheck.rows.length > 0) {
+      // User IS a referral - auto-approve and set level 1
+      await pool.query(
+        `UPDATE users SET ${casino.casino_id_column} = $1, ${casino.level_column} = 1, status = 'verified' WHERE id = $2`,
+        [newAccountId, user.id]
+      );
+
+      await notifyUser(
+        user.telegram_id,
+        `Вітаємо! Ваш ID ${newAccountId} для ${casino.id === 'topmatch' ? 'TopMatch' : 'Betline'} підтверджено. Рівень 1 активовано.`,
+        `Поздравляем! Ваш ID ${newAccountId} для ${casino.id === 'topmatch' ? 'TopMatch' : 'Betline'} подтвержден. Уровень 1 активирован.`,
+        user.language
+      );
+
+      return res.json({ status: 'verified', level: 1, casino_account_id: newAccountId, auto_approved: true });
     }
 
-    const casinoName = casino.id === 'topmatch' ? 'TopMatch' : 'Betline';
-    await notifyAdminChange(user, casino.casino_id_column, req.body.casino_account_id, casinoName);
+    // User is NOT a referral - reject with notification
+    await notifyUser(
+      user.telegram_id,
+      `На жаль, ID ${newAccountId} для ${casino.id === 'topmatch' ? 'TopMatch' : 'Betline'} не знайдено як реферала. Переконайтеся, що ви зареєструвалися за нашим реферальним посиланням, та спробуйте ще раз.`,
+      `К сожалению, ID ${newAccountId} для ${casino.id === 'topmatch' ? 'TopMatch' : 'Betline'} не найден как реферал. Убедитесь, что вы зарегистрировались по нашей реферальной ссылке, и попробуйте снова.`,
+      user.language
+    );
 
-    res.json({ status: 'pending', field: casino.casino_id_column, new_value: req.body.casino_account_id });
+    await notifyAdminChange(user, casino.casino_id_column, newAccountId, casino.id === 'topmatch' ? 'TopMatch' : 'Betline');
+
+    res.status(403).json({ error: 'Casino account ID not recognized as a referral. Make sure you registered using our referral link.' });
   } catch (err) {
     console.error('Submit casino ID error:', err);
     res.status(500).json({ error: 'Internal server error' });
@@ -1213,6 +1375,44 @@ router.get('/admin/stats', verifyTelegramAuth, verifyAdminAuth, adminLimiter, as
   }
 });
 
+// ─── ADMIN SETTINGS ───
+
+router.get('/admin/settings', verifyTelegramAuth, verifyAdminAuth, adminLimiter, async (req, res) => {
+  try {
+    const result = await pool.query("SELECT key, value, updated_at FROM admin_settings ORDER BY key");
+    const settings = {};
+    for (const row of result.rows) {
+      settings[row.key] = { value: row.value, updated_at: row.updated_at };
+    }
+    res.json(settings);
+  } catch (err) {
+    console.error('Admin settings error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.put('/admin/settings', verifyTelegramAuth, verifyAdminAuth, adminLimiter, async (req, res) => {
+  try {
+    const { key, value } = req.body;
+    if (!key || !key.startsWith('deposit_threshold_')) {
+      return res.status(400).json({ error: 'Invalid settings key' });
+    }
+    const numValue = parseFloat(value);
+    if (isNaN(numValue) || numValue < 0) {
+      return res.status(400).json({ error: 'Value must be a non-negative number' });
+    }
+    await pool.query(
+      `INSERT INTO admin_settings (key, value) VALUES ($1, $2)
+       ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = NOW()`,
+      [key, String(numValue)]
+    );
+    res.json({ success: true, key, value: String(numValue) });
+  } catch (err) {
+    console.error('Update settings error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // ─── STREAMS ───
 
 router.get('/streams', verifyTelegramAuth, async (req, res) => {
@@ -1243,6 +1443,11 @@ router.post('/admin/streams', verifyTelegramAuth, verifyAdminAuth, adminLimiter,
     if (!link || !start_time) {
       return res.status(400).json({ error: 'link and start_time are required' });
     }
+    if (link && (typeof link !== 'string' || link.length > 2000)) {
+      return res.status(400).json({ error: 'link must be a string with max 2000 characters' });
+    }
+    if (text_ru && typeof text_ru === 'string' && text_ru.length > 1000) text_ru = text_ru.slice(0, 1000);
+    if (text_uk && typeof text_uk === 'string' && text_uk.length > 1000) text_uk = text_uk.slice(0, 1000);
     const result = await pool.query(
       `INSERT INTO streams (banner_image, link, start_time, text_ru, text_uk)
        VALUES ($1, $2, $3, $4, $5) RETURNING *`,
@@ -1383,6 +1588,8 @@ router.post('/admin/announcements', verifyTelegramAuth, verifyAdminAuth, adminLi
     if (!title_uk || !title_ru) {
       return res.status(400).json({ error: 'title_uk and title_ru are required' });
     }
+    if (typeof title_uk !== 'string' || title_uk.length > 500) return res.status(400).json({ error: 'title_uk max 500 characters' });
+    if (typeof title_ru !== 'string' || title_ru.length > 500) return res.status(400).json({ error: 'title_ru max 500 characters' });
     const result = await pool.query(
       `INSERT INTO announcements (title_uk, title_ru, text_uk, text_ru, banner_image)
        VALUES ($1, $2, $3, $4, $5) RETURNING *`,

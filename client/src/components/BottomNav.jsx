@@ -6,6 +6,7 @@ import { useApp } from '../contexts/AppContext';
 const NAV_ICONS = {
   '/': <span className="emoji-icon">🏠</span>,
   '/announces': <span className="emoji-icon">📢</span>,
+  '/deposits': <span className="emoji-icon">💰</span>,
   '/settings': <span className="emoji-icon">⚙️</span>,
 };
 
@@ -17,7 +18,7 @@ const BottomNav = () => {
 
   if (!user) return null;
 
-  const mainPaths = ['/', '/announces', '/settings'];
+  const mainPaths = ['/', '/announces', '/deposits', '/settings'];
   const isActive = (path) => location.pathname === path;
 
   const adminPath = location.pathname;

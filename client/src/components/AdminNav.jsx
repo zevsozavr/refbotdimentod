@@ -17,6 +17,7 @@ const AdminNav = () => {
     { path: '/admin/broadcast', label: t('admin.broadcast.title'), icon: '📢' },
     { path: '/admin/streams', label: 'Streams', icon: '📺' },
     { path: '/admin/announces', label: t('nav.announces'), icon: '📣' },
+    { path: '/admin/settings', label: 'Settings', icon: '⚙️' },
   ];
 
   return (

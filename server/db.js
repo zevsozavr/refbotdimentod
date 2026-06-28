@@ -251,6 +251,53 @@ const migrate = async () => {
         )
       `);
     } catch (err) { console.log('confirmed_referrals table already exists or error:', err.message); }
+
+    try {
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS deposits (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+          casino VARCHAR(20) NOT NULL,
+          casino_account_id VARCHAR(64) NOT NULL,
+          amount DECIMAL(18, 2) NOT NULL,
+          currency VARCHAR(10) DEFAULT 'USD',
+          created_at TIMESTAMP DEFAULT NOW()
+        )
+      `);
+    } catch (err) { console.log('deposits table already exists or error:', err.message); }
+
+    try {
+      await client.query(`CREATE INDEX IF NOT EXISTS idx_deposits_user_casino ON deposits(user_id, casino)`);
+    } catch (err) { console.log('deposits index error:', err.message); }
+
+    try {
+      await client.query(`CREATE INDEX IF NOT EXISTS idx_pending_changes_user_status ON pending_changes(user_id, status)`);
+    } catch (err) { console.log('pending_changes index error:', err.message); }
+
+    try {
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS admin_settings (
+          id SERIAL PRIMARY KEY,
+          key VARCHAR(100) UNIQUE NOT NULL,
+          value TEXT NOT NULL,
+          updated_at TIMESTAMP DEFAULT NOW()
+        )
+      `);
+    } catch (err) { console.log('admin_settings table already exists or error:', err.message); }
+
+    try {
+      await client.query(`
+        INSERT INTO admin_settings (key, value) VALUES ('deposit_threshold_topmatch', '1000')
+        ON CONFLICT (key) DO NOTHING
+      `);
+    } catch (err) { console.log('admin_settings seed error:', err.message); }
+
+    try {
+      await client.query(`
+        INSERT INTO admin_settings (key, value) VALUES ('deposit_threshold_betline', '1000')
+        ON CONFLICT (key) DO NOTHING
+      `);
+    } catch (err) { console.log('admin_settings seed error:', err.message); }
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('Migration failed:', err);

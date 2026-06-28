@@ -38,9 +38,12 @@ const verifySessionToken = (token) => {
 const verifyTelegramAuth = (req, res, next) => {
   const initData = req.headers['x-telegram-init-data'];
 
-  // Development bypass — skip verification if NODE_ENV is not production
-  if (process.env.NODE_ENV !== 'production') {
-    const devUser = { id: parseInt(process.env.DEV_TELEGRAM_ID || '1'), first_name: 'Dev', username: 'devuser' };
+  // Development bypass — requires explicit DEV_MODE=true (never auto-enable in staging/prod)
+  if (process.env.DEV_MODE === 'true' || process.env.__DEV_MODE === 'true') {
+    if (!process.env.DEV_TELEGRAM_ID) {
+      return res.status(401).json({ error: 'DEV_MODE enabled but DEV_TELEGRAM_ID is not set' });
+    }
+    const devUser = { id: parseInt(process.env.DEV_TELEGRAM_ID, 10), first_name: 'Dev', username: 'devuser' };
     req.telegramUser = devUser;
     return next();
   }
