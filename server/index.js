@@ -2,123 +2,12 @@ require('dotenv').config();
 
 const fs = require('fs');
 const path = require('path');
-const express = require('express');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
 const { migrate } = require('./db');
 const { bot } = require('./bot');
-const routes = require('./routes');
+const app = require('./app');
 
-const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.set('trust proxy', 1);
-
-// Security headers
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", "https://api.telegram.org"],
-      frameAncestors: ["https://web.telegram.org", "https://web.telegram.org.k"],
-    },
-  },
-  frameguard: false,
-  crossOriginEmbedderPolicy: false,
-}));
-
-app.use(helmet.referrerPolicy({ policy: 'no-referrer' }));
-
-// CORS
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  const host = req.headers['x-forwarded-host'] || req.headers['host'];
-  const serverOrigin = req.protocol + '://' + host;
-  const allowed = [
-    'https://web.telegram.org',
-    'https://web.telegram.org.k',
-    process.env.APP_URL,
-    serverOrigin,
-  ].filter(Boolean);
-
-  if (!origin || allowed.includes(origin)) {
-    if (origin) {
-      res.setHeader('Access-Control-Allow-Origin', origin);
-    }
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,x-telegram-init-data');
-  }
-  if (req.method === 'OPTIONS') return res.sendStatus(204);
-  next();
-});
-
-// Rate limiter
-app.use(rateLimit({
-  windowMs: 60 * 1000,
-  max: 100,
-  message: { error: 'Too many requests, please try again later' },
-  standardHeaders: true,
-  legacyHeaders: false,
-}));
-
-app.use(express.json({ limit: '50mb' }));
-
-// photos
-app.use('/photos', express.static(path.join(__dirname, '../resources/photos')));
-
-// uploaded banners
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// Bot webhook — path is already secret via WEBHOOK_SECRET_PATH
-app.post(`/webhook/${process.env.WEBHOOK_SECRET_PATH}`, (req, res) => {
-  bot.handleUpdate(req.body, res);
-});
-
-// API routes
-app.use('/api', routes);
-
-// Static files — must be after API routes, before error handler and listen
-const clientBuildPath = path.join(__dirname, '../client/dist');
-
-if (fs.existsSync(clientBuildPath)) {
-  app.use(express.static(clientBuildPath, {
-    setHeaders: (res, filePath) => {
-      if (filePath.endsWith('.js')) {
-        res.setHeader('Content-Type', 'application/javascript');
-      } else if (filePath.endsWith('.css')) {
-        res.setHeader('Content-Type', 'text/css');
-      }
-    }
-  }));
-
-  app.use((req, res, next) => {
-    if (req.path.startsWith('/api') || req.path.startsWith('/webhook')) {
-      return next();
-    }
-    const indexPath = path.join(clientBuildPath, 'index.html');
-    if (fs.existsSync(indexPath)) {
-      res.sendFile(indexPath);
-    } else {
-      next();
-    }
-  });
-
-  console.log('Frontend static files loaded from', clientBuildPath);
-} else {
-  console.log('Frontend build not found — API only mode');
-}
-
-// Error handler
-app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err);
-  res.status(500).json({ error: 'Internal server error' });
-});
-
-// Start
 const start = async () => {
   try {
     const uploadDir = path.join(__dirname, 'uploads', 'banners');
@@ -146,7 +35,7 @@ const start = async () => {
     }
 
     await bot.telegram.setMyCommands([
-      { command: 'start', description: 'Головне меню / Головне меню' },
+      { command: 'start', description: 'Головне меню / Главное меню' },
       { command: 'notifications', description: '🔔 Сповіщення / Уведомления' },
     ]).catch(e => console.error('setMyCommands error:', e));
 

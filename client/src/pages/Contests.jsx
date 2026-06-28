@@ -9,8 +9,9 @@ const Contests = () => {
   const { user } = useApp();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const lang = user?.language || 'ru';
   const paramCasino = searchParams.get('casino');
-  const [casinoId, setCasinoId] = useState(paramCasino || (user?.level_topmatch ? 'topmatch' : user?.level_tonplay ? 'tonplay' : null));
+  const [casinoId] = useState(paramCasino || (user?.level_topmatch ? 'topmatch' : user?.level_tonplay ? 'tonplay' : null));
 
   const goBack = () => navigate(-1);
   const [active, setActive] = useState([]);
@@ -19,8 +20,12 @@ const Contests = () => {
   const [loading, setLoading] = useState(true);
   const [walletError, setWalletError] = useState(false);
 
+  const hasWallet = casinoId ? !!user?.['wallet_' + casinoId] : false;
+  const hasCasinoId = casinoId ? !!user?.['casino_id_' + casinoId] : false;
+  const isUnavailable = casinoId && (!hasWallet || !hasCasinoId);
+
   useEffect(() => {
-    if (!casinoId) {
+    if (!casinoId || isUnavailable) {
       setLoading(false);
       return;
     }
@@ -44,7 +49,7 @@ const Contests = () => {
       }
     };
     fetch();
-  }, [casinoId, navigate]);
+  }, [casinoId, isUnavailable]);
 
   const getTimeRemaining = (endDate) => {
     const diff = new Date(endDate) - new Date();
@@ -92,8 +97,38 @@ const Contests = () => {
   if (!casinoId) {
     return (
       <div className="page">
-        <h1 className="page-title metallic-text">{t('contests.title')}</h1>
-        <p className="text-secondary" style={{ textAlign: 'center', marginTop: 20 }}>{t('contests.no_casino') || 'Выберите казино на главной'}</p>
+        <button className="back-btn" onClick={goBack}><span className="emoji-icon">◀</span></button>
+        <h1 className="page-title metallic-text" style={{ paddingLeft: 48 }}>{t('contests.title')}</h1>
+        <p className="text-secondary" style={{ textAlign: 'center', marginTop: 20 }}>{t('contests.no_casino')}</p>
+        <button className="btn btn-secondary" onClick={goBack} style={{ margin: '16px auto', display: 'block', width: 'calc(100% - 32px)' }}>
+          {t('common.back')}
+        </button>
+      </div>
+    );
+  }
+
+  if (isUnavailable) {
+    return (
+      <div className="page">
+        <button className="back-btn" onClick={goBack}><span className="emoji-icon">◀</span></button>
+        <h1 className="page-title metallic-text" style={{ paddingLeft: 48 }}>{t('contests.title')}</h1>
+        <div className="glass-panel" style={{ padding: 24, textAlign: 'center', marginTop: 20, margin: '20px 0 0' }}>
+          <div style={{ fontSize: 44, marginBottom: 14 }}>🔒</div>
+          <p style={{ fontSize: 16, fontWeight: 700, marginBottom: 10, color: 'var(--primary)' }}>
+            {t('contests.unavailable')}
+          </p>
+          <p className="text-secondary" style={{ fontSize: 13, marginBottom: 22, lineHeight: 1.5 }}>
+            {t('contests.need_wallet_and_id')}
+          </p>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button className="btn btn-secondary" onClick={goBack} style={{ flex: 1 }}>
+              {t('common.back')}
+            </button>
+            <button className={`btn btn-${casinoId}`} onClick={() => navigate(`/casino/${casinoId}`)} style={{ flex: 1 }}>
+              {t('contests.setup')}
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -101,14 +136,20 @@ const Contests = () => {
   if (walletError) {
     return (
       <div className="page">
-        <h1 className="page-title metallic-text">{t('contests.title')}</h1>
+        <button className="back-btn" onClick={goBack}><span className="emoji-icon">◀</span></button>
+        <h1 className="page-title metallic-text" style={{ paddingLeft: 48 }}>{t('contests.title')}</h1>
         <div className="glass-panel" style={{ padding: 20, textAlign: 'center', marginTop: 20 }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}><span className="emoji-icon">💰</span></div>
           <p style={{ fontSize: 15, fontWeight: 600, marginBottom: 8 }}>{t('settings.wallet_title')}</p>
           <p className="text-secondary" style={{ fontSize: 13, marginBottom: 16, color: '#fff' }}>{t('settings.wallet_note')}</p>
-          <button className={`btn btn-${casinoId}`} onClick={() => navigate(`/casino/${casinoId}`)}>
-            {lang === 'uk' ? 'Зрозумів' : 'Понял'}
-          </button>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button className="btn btn-secondary" onClick={goBack} style={{ flex: 1 }}>
+              {t('common.back')}
+            </button>
+            <button className={`btn btn-${casinoId}`} onClick={() => navigate(`/casino/${casinoId}`)} style={{ flex: 1 }}>
+              {lang === 'uk' ? 'Зрозумів' : 'Понял'}
+            </button>
+          </div>
         </div>
       </div>
     );

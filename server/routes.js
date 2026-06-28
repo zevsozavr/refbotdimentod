@@ -10,10 +10,10 @@ const { notifyWinner, notifyAdmin, notifyUser, notifyAdminChange, notifyAllUsers
 
 const router = express.Router();
 
-const uploadDir = path.join(__dirname, 'uploads/banners');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
+const uploadDir = process.env.VERCEL
+  ? '/tmp/uploads/banners'
+  : path.join(__dirname, 'uploads/banners');
+try { fs.mkdirSync(uploadDir, { recursive: true }); } catch (_) {}
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadDir),
