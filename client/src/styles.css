@@ -176,6 +176,8 @@ body::after {
   -webkit-backdrop-filter: blur(24px);
   border: 1px solid rgba(195, 198, 211, 0.15);
   box-shadow: 0 8px 32px rgba(0,0,0,0.8);
+  padding: 16px;
+  border-radius: var(--radius-md);
 }
 
 /* ── Glass Card (new) ── */
@@ -208,11 +210,22 @@ body::after {
 
 /* ── Glass Input (new) ── */
 .glass-input {
+  display: block;
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 16px;
+  font-family: inherit;
+  border-radius: var(--radius-md);
+  outline: none;
   background: rgba(5, 15, 28, 0.6);
   border: 1px solid rgba(195, 198, 211, 0.2);
   color: var(--on-surface);
   transition: all 0.3s ease;
+  -webkit-user-select: text;
+  user-select: text;
 }
+
+.glass-input::placeholder { color: var(--on-surface-variant); }
 
 .glass-input:focus {
   border-color: var(--primary);
@@ -625,6 +638,7 @@ body::after {
 }
 
 .btn-xs { padding: 4px 10px; font-size: 11px; border-radius: 6px; }
+.btn-sm { padding: 10px 18px; font-size: 14px; border-radius: var(--radius-sm); width: auto; }
 .btn-danger { background: var(--error-container); color: #fff; }
 .btn-success { background: rgba(78,222,163,0.2); color: var(--tertiary); border: 1px solid rgba(78,222,163,0.3); }
 .btn-block { width: 100%; justify-content: center; margin-top: 12px; }
@@ -1190,6 +1204,16 @@ body::after {
 
 .detail-copy-icon { font-size: 13px; opacity: 0.55; flex-shrink: 0; }
 .detail-value.is-copyable:hover .detail-copy-icon { opacity: 1; color: var(--primary); }
+
+/* ── Admin minimalism overrides ── */
+/* Suppress the gold shimmer on glass panels inside admin pages */
+.page .glass-panel::before { display: none; }
+/* Bigger, more readable form labels in admin */
+.page .form-label { font-size: 12px; letter-spacing: 0.04em; }
+/* select inside glass-input should show arrow */
+select.glass-input { cursor: pointer; }
+/* textarea glass-input */
+textarea.glass-input { resize: vertical; min-height: 80px; }
 
 /* ── Inline confirm ── */
 .confirm-row {
