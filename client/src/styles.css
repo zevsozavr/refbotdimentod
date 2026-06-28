@@ -334,11 +334,12 @@ body::after {
   content: 'TOP MATCH';
   font-size: 48px;
   font-weight: 900;
-  color: rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.55);
   letter-spacing: 0.08em;
   font-family: var(--font-display);
   pointer-events: none;
   user-select: none;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
 
 .casino-bg-tonplay {
@@ -353,11 +354,12 @@ body::after {
   content: 'BETLINE';
   font-size: 48px;
   font-weight: 900;
-  color: rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.55);
   letter-spacing: 0.08em;
   font-family: var(--font-display);
   pointer-events: none;
   user-select: none;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
 
 .casino-card-overlay {
@@ -2569,11 +2571,8 @@ body::after {
 .casino-bg-topmatch::before,
 .casino-bg-tonplay::before {
   font-size: 52px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.30), rgba(255,255,255,0.06));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  color: transparent;
+  color: rgba(255,255,255,0.55);
+  text-shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
 /* Glossy top sheen across every card */
 .casino-card-overlay::before {
