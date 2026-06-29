@@ -1,7 +1,7 @@
 // Vercel serverless entry point
 require('dotenv').config({ path: require('path').join(__dirname, '../server/.env') });
 
-const { migrate } = require('../server/db');
+const { migrate, ensureSchema } = require('../server/db');
 const { bot } = require('../server/bot');
 const app = require('../server/app');
 
@@ -11,7 +11,14 @@ const initialize = async () => {
   if (initialized) return;
   initialized = true;
   try {
-    await migrate();
+    // On most cold starts the schema already exists, so this is a single cheap
+    // lookup. Set RUN_MIGRATIONS=true to force the full migration (fresh DB or
+    // after a schema change).
+    if (process.env.RUN_MIGRATIONS === 'true') {
+      await migrate();
+    } else {
+      await ensureSchema();
+    }
     // Prefer Vercel's auto-provided production domain so the webhook always
     // targets the correct deployment, independent of a manually-set WEBHOOK_URL.
     const prodUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL;

@@ -1,19 +1,26 @@
 const { Pool } = require('pg');
 
 // Accept whichever connection string the host injects.
-// Vercel Postgres / Neon set POSTGRES_URL(_NON_POOLING); others use DATABASE_URL.
+// Vercel Postgres / Neon set POSTGRES_URL (pooled) and POSTGRES_URL_NON_POOLING
+// (direct); others use DATABASE_URL. On serverless prefer the POOLED url so we
+// don't open a fresh direct connection per cold start (slow + connection storms).
 const connectionString =
   process.env.DATABASE_URL ||
-  process.env.POSTGRES_URL_NON_POOLING ||
-  process.env.POSTGRES_URL;
+  process.env.POSTGRES_URL ||
+  process.env.POSTGRES_URL_NON_POOLING;
 
 // Managed/cloud Postgres (Vercel, Neon, Supabase, …) requires SSL.
 // Only a local database (localhost/127.0.0.1) goes without it.
 const isLocal = !!connectionString && /@(localhost|127\.0\.0\.1)[:/]/.test(connectionString);
+const isServerless = !!process.env.VERCEL;
 
 const pool = new Pool({
   connectionString,
   ssl: connectionString && !isLocal ? { rejectUnauthorized: false } : undefined,
+  // Keep each lambda's footprint small; a long-lived host can hold more.
+  max: isServerless ? 2 : 10,
+  idleTimeoutMillis: isServerless ? 10000 : 30000,
+  connectionTimeoutMillis: 10000,
 });
 
 const migrate = async () => {
@@ -307,4 +314,21 @@ const migrate = async () => {
   }
 };
 
-module.exports = { pool, migrate };
+// Cheap schema guard for serverless cold starts: the full migrate() runs a
+// large ALTER-heavy transaction that locks core tables. We only need that on a
+// fresh database or right after a schema change. `admin_settings` is created
+// near the end of migrate(), so its presence means the schema is already set
+// up — in that case we skip the heavy migration entirely. Force a full run
+// after changing the schema with RUN_MIGRATIONS=true.
+let schemaReady = false;
+const ensureSchema = async () => {
+  if (schemaReady) return;
+  try {
+    const r = await pool.query("SELECT to_regclass('public.admin_settings') AS t");
+    if (r.rows[0] && r.rows[0].t) { schemaReady = true; return; }
+  } catch (_) { /* fall through to a full migrate */ }
+  await migrate();
+  schemaReady = true;
+};
+
+module.exports = { pool, migrate, ensureSchema };

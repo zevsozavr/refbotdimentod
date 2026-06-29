@@ -10,22 +10,21 @@ const Home = () => {
   const { user } = useApp();
   const navigate = useNavigate();
   const [casinos, setCasinos] = useState([]);
-  const [levels, setLevels] = useState({});
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
   const lang = user?.language || 'uk';
 
   useStaggeredEntrance('.casino-card', 120);
 
+  // Levels come straight from the user object loaded at auth — no need for a
+  // per-casino request on every home load.
+  const levels = {
+    topmatch: user?.level_topmatch ?? null,
+    betline: user?.level_betline ?? null,
+  };
+
   useEffect(() => {
-    api.get('/casinos').then(res => {
-      setCasinos(res.data);
-      res.data.forEach(casino => {
-        api.get(`/casino/${casino.id}/me`).then(r => {
-          setLevels(prev => ({ ...prev, [casino.id]: r.data.level }));
-        });
-      });
-    });
+    api.get('/casinos').then(res => setCasinos(res.data)).catch(() => {});
   }, []);
 
   useEffect(() => {
