@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { migrate } = require('./db');
 const { bot } = require('./bot');
+const { runContestMaintenance } = require('./contestJobs');
 const app = require('./app');
 
 const PORT = process.env.PORT || 3000;
@@ -38,6 +39,11 @@ const start = async () => {
       { command: 'start', description: 'Головне меню / Главное меню' },
       { command: 'notifications', description: '🔔 Сповіщення / Уведомления' },
     ]).catch(e => console.error('setMyCommands error:', e));
+
+    // Run contest maintenance (reminders, auto-end, auto-pick winners) every
+    // minute on this long-lived process. On serverless (Vercel) this is driven
+    // by an HTTP cron hitting /api/cron/run instead.
+    setInterval(() => { runContestMaintenance().catch(e => console.error('Contest maintenance error:', e)); }, 60000);
 
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);

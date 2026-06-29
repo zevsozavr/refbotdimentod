@@ -7,6 +7,7 @@ const fs = require('fs');
 const { pool } = require('./db');
 const { verifyTelegramAuth, verifyAdminAuth, isAdminId, generateSessionToken } = require('./middleware');
 const { notifyWinner, notifyAdmin, notifyUser, notifyAdminChange, notifyAllUsers } = require('./bot');
+const { runContestMaintenance, finalizeContest } = require('./contestJobs');
 
 const router = express.Router();
 
@@ -97,6 +98,29 @@ router.post('/upload', verifyTelegramAuth, verifyAdminAuth, adminLimiter, (req, 
     res.json({ url });
   });
 });
+
+// ─── CRON ───
+// Drives contest maintenance on serverless deployments (Vercel Cron) where the
+// long-lived setInterval in index.js does not run. Accepts Vercel's own cron
+// requests (x-vercel-cron header) or a Bearer CRON_SECRET for manual/external
+// triggers.
+const handleCron = async (req, res) => {
+  const isVercelCron = !!req.headers['x-vercel-cron'];
+  const secret = process.env.CRON_SECRET;
+  const authed = secret && req.headers['authorization'] === `Bearer ${secret}`;
+  if (!isVercelCron && !authed) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+  try {
+    const results = await runContestMaintenance();
+    res.json({ ok: true, finalized: results });
+  } catch (err) {
+    console.error('Cron run error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+router.get('/cron/run', handleCron);
+router.post('/cron/run', handleCron);
 
 // ─── AUTH ───
 
@@ -700,9 +724,7 @@ router.get('/contests/history', verifyTelegramAuth, async (req, res) => {
     if (!userLevel) return res.json([]);
 
     const result = await pool.query(
-      `SELECT c.*, cw.picked_at as winner_picked_at
-       FROM contests c
-       LEFT JOIN contest_winners cw ON cw.contest_id = c.id
+      `SELECT * FROM contests c
        WHERE c.casino = $1 AND c.eligible_referral_type = $2
        AND c.status IN ('ended', 'winner_picked')
        ORDER BY c.end_date DESC`,
@@ -711,7 +733,7 @@ router.get('/contests/history', verifyTelegramAuth, async (req, res) => {
 
     const lang = user.language;
     const contests = await Promise.all(result.rows.map(async (c) => {
-      let winnerInfo = null;
+      let winners = [];
       if (c.status === 'winner_picked') {
         const winnerResult = await pool.query(
           `SELECT u.telegram_username FROM contest_winners cw
@@ -719,9 +741,7 @@ router.get('/contests/history', verifyTelegramAuth, async (req, res) => {
            WHERE cw.contest_id = $1`,
           [c.id]
         );
-        if (winnerResult.rows.length > 0) {
-          winnerInfo = { telegram_username: winnerResult.rows[0].telegram_username };
-        }
+        winners = winnerResult.rows.map(r => ({ telegram_username: r.telegram_username }));
       }
       return {
         id: c.id,
@@ -729,10 +749,11 @@ router.get('/contests/history', verifyTelegramAuth, async (req, res) => {
         description: lang === 'uk' ? c.description_uk : c.description_ru,
         prize: lang === 'uk' ? c.prize_uk : c.prize_ru,
         eligible_referral_type: c.eligible_referral_type,
+        casino: c.casino,
         start_date: c.start_date,
         end_date: c.end_date,
         status: c.status,
-        winner: winnerInfo,
+        winners,
       };
     }));
     res.json(contests);
@@ -1021,12 +1042,9 @@ router.post('/admin/users/:id/unban', verifyTelegramAuth, verifyAdminAuth, admin
 });
 
 router.post('/admin/contests', verifyTelegramAuth, verifyAdminAuth, adminLimiter, [
-  sanitizeContestFields('title_uk'),
-  sanitizeContestFields('title_ru'),
-  sanitizeContestFields('description_uk'),
-  sanitizeContestFields('description_ru'),
-  sanitizeContestFields('prize_uk'),
-  sanitizeContestFields('prize_ru'),
+  sanitizeContestFields('title'),
+  sanitizeContestFields('description'),
+  sanitizeContestFields('prize'),
   validateReferralType,
   validateCasino,
   body('start_date').optional({ nullable: true }),
@@ -1035,15 +1053,17 @@ router.post('/admin/contests', verifyTelegramAuth, verifyAdminAuth, adminLimiter
   body('banner_image').optional({ nullable: true }).trim().isLength({ max: 500 }),
 ], handleValidationErrors, async (req, res) => {
   try {
-    const { title_uk, title_ru, description_uk, description_ru, prize_uk, prize_ru, referral_type, casino, winner_count, banner_image } = req.body;
+    // Single-language content: the same value is stored in both language
+    // columns so every user sees identical text regardless of app language.
+    const { title, description, prize, referral_type, casino, winner_count, banner_image } = req.body;
     const start_date = req.body.start_date || new Date().toISOString();
     const endObj = new Date();
     endObj.setHours(23, 59, 59, 999);
     const end_date = req.body.end_date || endObj.toISOString();
     const result = await pool.query(
       `INSERT INTO contests (title_uk, title_ru, description_uk, description_ru, prize_uk, prize_ru, eligible_referral_type, casino, start_date, end_date, winner_count, banner_image)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
-      [title_uk, title_ru, description_uk, description_ru, prize_uk, prize_ru, referral_type, casino, start_date, end_date, winner_count || 1, banner_image || null]
+       VALUES ($1, $1, $2, $2, $3, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+      [title, description, prize, referral_type, casino, start_date, end_date, winner_count || 1, banner_image || null]
     );
     await pool.query(
       'INSERT INTO contest_reminders (contest_id) VALUES ($1)',
@@ -1057,12 +1077,9 @@ router.post('/admin/contests', verifyTelegramAuth, verifyAdminAuth, adminLimiter
 });
 
 router.put('/admin/contests/:id', verifyTelegramAuth, verifyAdminAuth, adminLimiter, [
-  sanitizeContestFields('title_uk'),
-  sanitizeContestFields('title_ru'),
-  sanitizeContestFields('description_uk'),
-  sanitizeContestFields('description_ru'),
-  sanitizeContestFields('prize_uk'),
-  sanitizeContestFields('prize_ru'),
+  sanitizeContestFields('title'),
+  sanitizeContestFields('description'),
+  sanitizeContestFields('prize'),
   validateReferralType,
   validateCasino,
   body('start_date').isISO8601(),
@@ -1072,7 +1089,7 @@ router.put('/admin/contests/:id', verifyTelegramAuth, verifyAdminAuth, adminLimi
 ], handleValidationErrors, async (req, res) => {
   try {
     const contestId = parseInt(req.params.id);
-    const { title_uk, title_ru, description_uk, description_ru, prize_uk, prize_ru, referral_type, casino, start_date, end_date, winner_count, banner_image } = req.body;
+    const { title, description, prize, referral_type, casino, start_date, end_date, winner_count, banner_image } = req.body;
 
     const existing = await pool.query('SELECT * FROM contests WHERE id = $1', [contestId]);
     if (existing.rows.length === 0) {
@@ -1083,11 +1100,11 @@ router.put('/admin/contests/:id', verifyTelegramAuth, verifyAdminAuth, adminLimi
     }
 
     const result = await pool.query(
-      `UPDATE contests SET title_uk=$1, title_ru=$2, description_uk=$3, description_ru=$4,
-       prize_uk=$5, prize_ru=$6, eligible_referral_type=$7, casino=$8, start_date=$9, end_date=$10,
-       winner_count=$11, banner_image=$12
-       WHERE id=$13 RETURNING *`,
-      [title_uk, title_ru, description_uk, description_ru, prize_uk, prize_ru, referral_type, casino, start_date, end_date, winner_count || 1, banner_image || null, contestId]
+      `UPDATE contests SET title_uk=$1, title_ru=$1, description_uk=$2, description_ru=$2,
+       prize_uk=$3, prize_ru=$3, eligible_referral_type=$4, casino=$5, start_date=$6, end_date=$7,
+       winner_count=$8, banner_image=$9
+       WHERE id=$10 RETURNING *`,
+      [title, description, prize, referral_type, casino, start_date, end_date, winner_count || 1, banner_image || null, contestId]
     );
     res.json(result.rows[0]);
   } catch (err) {
@@ -1111,6 +1128,10 @@ router.delete('/admin/contests/:id', verifyTelegramAuth, verifyAdminAuth, adminL
   }
 });
 
+// Manual winner pick — normally winners are chosen automatically when a
+// contest reaches its end_date (see contestJobs). This is a fallback that
+// lets an admin force the draw early, or re-run it for a contest that ended
+// with no eligible participants.
 router.post('/admin/contests/:id/pick-winner', verifyTelegramAuth, verifyAdminAuth, adminLimiter, async (req, res) => {
   try {
     const contestId = parseInt(req.params.id);
@@ -1124,54 +1145,27 @@ router.post('/admin/contests/:id/pick-winner', verifyTelegramAuth, verifyAdminAu
       return res.status(403).json({ error: 'Winner already picked for this contest' });
     }
 
-    if (new Date(contest.end_date) > new Date()) {
-      return res.status(403).json({ error: 'Contest has not ended yet' });
-    }
-
-    const levelColumn = contest.casino === 'topmatch' ? 'level_topmatch' : 'level_betline';
-    const walletColumn = contest.casino === 'topmatch' ? 'wallet_topmatch' : 'wallet_betline';
-    const winnerCount = contest.winner_count || 1;
-
-    const usersResult = await pool.query(
-      `SELECT u.* FROM users u
-       JOIN contest_participants cp ON cp.user_id = u.id
-       WHERE cp.contest_id = $1
-       AND u.status = 'verified'
-       AND u.${levelColumn} = $2
-       AND u.${walletColumn} IS NOT NULL
-       ORDER BY RANDOM() LIMIT $3`,
-      [contestId, contest.eligible_referral_type, winnerCount]
-    );
-
-    if (usersResult.rows.length === 0) {
-      return res.status(404).json({ error: 'No eligible users found' });
-    }
-
-    const winners = usersResult.rows;
-
-    for (const w of winners) {
-      await pool.query(
-        'INSERT INTO contest_winners (contest_id, user_id) VALUES ($1, $2)',
-        [contestId, w.id]
-      );
-    }
-
-    await pool.query(
-      "UPDATE contests SET status = 'winner_picked' WHERE id = $1",
+    // Claim the contest so the cron job cannot finalize it concurrently.
+    const claim = await pool.query(
+      "UPDATE contests SET status = 'finalizing' WHERE id = $1 AND status IN ('active', 'ended') RETURNING *",
       [contestId]
     );
-
-    for (const w of winners) {
-      await notifyWinner(w, contest, w.language);
+    if (claim.rows.length === 0) {
+      return res.status(409).json({ error: 'Contest is being processed, try again' });
     }
-    await notifyAdmin(winners, contest);
 
-    res.json({
-      winners: winners.map(w => ({
-        telegram_id: w.telegram_id,
-        telegram_username: w.telegram_username,
-      })),
-    });
+    let result;
+    try {
+      result = await finalizeContest(claim.rows[0]);
+    } catch (e) {
+      await pool.query("UPDATE contests SET status = 'active' WHERE id = $1 AND status = 'finalizing'", [contestId]);
+      throw e;
+    }
+
+    if (result.winners.length === 0) {
+      return res.status(404).json({ error: 'No eligible users found' });
+    }
+    res.json({ winners: result.winners });
   } catch (err) {
     console.error('Pick winner error:', err);
     res.status(500).json({ error: 'Internal server error' });
@@ -1179,8 +1173,7 @@ router.post('/admin/contests/:id/pick-winner', verifyTelegramAuth, verifyAdminAu
 });
 
 router.post('/admin/broadcast', verifyTelegramAuth, verifyAdminAuth, adminLimiter, [
-  sanitizeMessageFields('message_uk'),
-  sanitizeMessageFields('message_ru'),
+  sanitizeMessageFields('message'),
   body('target_referral_type').optional({ nullable: true }).custom((value) => {
     if (value === null || value === undefined || value === '') return true;
     const num = parseInt(value);
@@ -1188,7 +1181,7 @@ router.post('/admin/broadcast', verifyTelegramAuth, verifyAdminAuth, adminLimite
   }).withMessage('target_referral_type must be 1, 2, 3, or null'),
 ], handleValidationErrors, async (req, res) => {
   try {
-    const { message_uk, message_ru, target_referral_type } = req.body;
+    const { message, target_referral_type } = req.body;
     let query = "SELECT * FROM users WHERE status = 'verified'";
     const params = [];
 
@@ -1202,7 +1195,7 @@ router.post('/admin/broadcast', verifyTelegramAuth, verifyAdminAuth, adminLimite
 
     for (const user of usersResult.rows) {
       try {
-        await notifyUser(user.telegram_id, message_uk, message_ru, user.language);
+        await notifyUser(user.telegram_id, message, message, user.language);
         sentCount++;
       } catch (e) {
         console.error(`Failed to send broadcast to ${user.telegram_id}:`, e);
@@ -1210,8 +1203,8 @@ router.post('/admin/broadcast', verifyTelegramAuth, verifyAdminAuth, adminLimite
     }
 
     await pool.query(
-      'INSERT INTO broadcasts (message_uk, message_ru, target_referral_type) VALUES ($1, $2, $3)',
-      [message_uk, message_ru, target_referral_type || null]
+      'INSERT INTO broadcasts (message_uk, message_ru, target_level) VALUES ($1, $1, $2)',
+      [message, target_referral_type ? parseInt(target_referral_type) : null]
     );
 
     res.json({ sentCount, totalUsers: usersResult.rows.length });
@@ -1232,9 +1225,127 @@ router.get('/admin/contests', verifyTelegramAuth, verifyAdminAuth, adminLimiter,
     }
     query += ' ORDER BY created_at DESC';
     const result = await pool.query(query, params);
-    res.json(result.rows);
+    // Expose single-language aliases (content is mirrored across _uk/_ru).
+    res.json(result.rows.map(c => ({
+      ...c,
+      title: c.title_uk,
+      description: c.description_uk,
+      prize: c.prize_uk,
+      eligible_level: c.eligible_referral_type,
+    })));
   } catch (err) {
     console.error('Admin contests error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ─── WINNERS REGISTRY ───
+
+// Admin: every contest win, newest first, with winner + contest details.
+router.get('/admin/winners', verifyTelegramAuth, verifyAdminAuth, adminLimiter, async (req, res) => {
+  try {
+    const { casino } = req.query;
+    const params = [];
+    let where = '';
+    if (casino && ['topmatch', 'betline'].includes(casino)) {
+      params.push(casino);
+      where = `WHERE c.casino = $${params.length}`;
+    }
+    const result = await pool.query(
+      `SELECT cw.id, cw.picked_at,
+              c.id AS contest_id, c.title_uk AS contest_title, c.prize_uk AS prize,
+              c.casino, c.eligible_referral_type AS level,
+              u.id AS user_id, u.telegram_id, u.telegram_username,
+              CASE WHEN c.casino = 'topmatch' THEN u.casino_id_topmatch ELSE u.casino_id_betline END AS casino_account_id,
+              CASE WHEN c.casino = 'topmatch' THEN u.wallet_topmatch ELSE u.wallet_betline END AS wallet
+       FROM contest_winners cw
+       JOIN contests c ON c.id = cw.contest_id
+       JOIN users u ON u.id = cw.user_id
+       ${where}
+       ORDER BY cw.picked_at DESC`,
+      params
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Admin winners error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// User: the current user's own wins.
+router.get('/user/winnings', verifyTelegramAuth, async (req, res) => {
+  try {
+    const userResult = await pool.query('SELECT id, language FROM users WHERE telegram_id = $1', [req.telegramUser.id]);
+    if (userResult.rows.length === 0) return res.status(404).json({ error: 'User not found' });
+    const user = userResult.rows[0];
+    const lang = user.language;
+
+    const result = await pool.query(
+      `SELECT cw.id, cw.picked_at, c.id AS contest_id, c.casino, c.eligible_referral_type AS level,
+              ${lang === 'uk' ? 'c.title_uk' : 'c.title_ru'} AS title,
+              ${lang === 'uk' ? 'c.prize_uk' : 'c.prize_ru'} AS prize
+       FROM contest_winners cw
+       JOIN contests c ON c.id = cw.contest_id
+       WHERE cw.user_id = $1
+       ORDER BY cw.picked_at DESC`,
+      [user.id]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('User winnings error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ─── ADMIN: DEPOSITS REGISTRY ───
+
+// Admin: every user that has deposits, with totals per casino (from the
+// deposit API records). Includes the level-3 threshold for context.
+router.get('/admin/deposits', verifyTelegramAuth, verifyAdminAuth, adminLimiter, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT u.id AS user_id, u.telegram_id, u.telegram_username,
+              d.casino, COUNT(*) AS transaction_count, COALESCE(SUM(d.amount), 0) AS total_amount
+       FROM deposits d
+       JOIN users u ON u.id = d.user_id
+       GROUP BY u.id, u.telegram_id, u.telegram_username, d.casino
+       ORDER BY total_amount DESC`
+    );
+
+    const thresholds = await pool.query(
+      "SELECT key, value FROM admin_settings WHERE key LIKE 'deposit_threshold_%'"
+    );
+    const thresholdMap = {};
+    for (const row of thresholds.rows) {
+      thresholdMap[row.key.replace('deposit_threshold_', '')] = parseFloat(row.value);
+    }
+
+    // Group rows into one entry per user with per-casino totals.
+    const byUser = new Map();
+    for (const r of result.rows) {
+      if (!byUser.has(r.user_id)) {
+        byUser.set(r.user_id, {
+          user_id: r.user_id,
+          telegram_id: r.telegram_id,
+          telegram_username: r.telegram_username,
+          casinos: {},
+          grand_total: 0,
+        });
+      }
+      const entry = byUser.get(r.user_id);
+      const amount = parseFloat(r.total_amount);
+      entry.casinos[r.casino] = {
+        total_amount: amount,
+        transaction_count: parseInt(r.transaction_count),
+        threshold: thresholdMap[r.casino] || 1000,
+      };
+      entry.grand_total += amount;
+    }
+
+    const data = Array.from(byUser.values()).sort((a, b) => b.grand_total - a.grand_total);
+    res.json({ users: data, thresholds: thresholdMap });
+  } catch (err) {
+    console.error('Admin deposits error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -1439,25 +1550,26 @@ router.get('/admin/streams', verifyTelegramAuth, verifyAdminAuth, adminLimiter, 
 
 router.post('/admin/streams', verifyTelegramAuth, verifyAdminAuth, adminLimiter, async (req, res) => {
   try {
-    const { banner_image, link, start_time, text_ru, text_uk } = req.body;
+    const { banner_image, link, start_time } = req.body;
+    // Single-language: one text field, mirrored into both language columns.
+    let text = req.body.text;
     if (!link || !start_time) {
       return res.status(400).json({ error: 'link and start_time are required' });
     }
-    if (link && (typeof link !== 'string' || link.length > 2000)) {
+    if (typeof link !== 'string' || link.length > 2000) {
       return res.status(400).json({ error: 'link must be a string with max 2000 characters' });
     }
-    if (text_ru && typeof text_ru === 'string' && text_ru.length > 1000) text_ru = text_ru.slice(0, 1000);
-    if (text_uk && typeof text_uk === 'string' && text_uk.length > 1000) text_uk = text_uk.slice(0, 1000);
+    if (text && typeof text === 'string' && text.length > 1000) text = text.slice(0, 1000);
     const result = await pool.query(
       `INSERT INTO streams (banner_image, link, start_time, text_ru, text_uk)
-       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [banner_image || null, link, start_time, text_ru || null, text_uk || null]
+       VALUES ($1, $2, $3, $4, $4) RETURNING *`,
+      [banner_image || null, link, start_time, text || null]
     );
     const startDate = new Date(start_time);
     const timeStr = startDate.toLocaleString('uk-UA', { timeZone: 'Europe/Kyiv' });
     notifyAllUsers(
-      `📺 Новий стрім!${text_uk ? `\n${text_uk}` : ''}\n🕐 ${timeStr}\n🔗 ${link}`,
-      `📺 Новый стрим!${text_ru ? `\n${text_ru}` : ''}\n🕐 ${timeStr}\n🔗 ${link}`
+      `📺 Новий стрім!${text ? `\n${text}` : ''}\n🕐 ${timeStr}\n🔗 ${link}`,
+      `📺 Новый стрим!${text ? `\n${text}` : ''}\n🕐 ${timeStr}\n🔗 ${link}`
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -1469,11 +1581,13 @@ router.post('/admin/streams', verifyTelegramAuth, verifyAdminAuth, adminLimiter,
 router.put('/admin/streams/:id', verifyTelegramAuth, verifyAdminAuth, adminLimiter, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    const { banner_image, link, start_time, text_ru, text_uk, status } = req.body;
+    const { banner_image, link, start_time, status } = req.body;
+    // Accept single `text`; fall back to legacy text_uk/text_ru if sent.
+    const text = req.body.text !== undefined ? req.body.text : (req.body.text_uk ?? req.body.text_ru);
     const result = await pool.query(
-      `UPDATE streams SET banner_image = COALESCE($1, banner_image), link = COALESCE($2, link), start_time = COALESCE($3, start_time), text_ru = COALESCE($4, text_ru), text_uk = COALESCE($5, text_uk), status = COALESCE($6, status)
-       WHERE id = $7 RETURNING *`,
-      [banner_image, link, start_time, text_ru, text_uk, status, id]
+      `UPDATE streams SET banner_image = COALESCE($1, banner_image), link = COALESCE($2, link), start_time = COALESCE($3, start_time), text_ru = COALESCE($4, text_ru), text_uk = COALESCE($4, text_uk), status = COALESCE($5, status)
+       WHERE id = $6 RETURNING *`,
+      [banner_image, link, start_time, text, status, id]
     );
     if (result.rows.length === 0) return res.status(404).json({ error: 'Stream not found' });
     res.json(result.rows[0]);
@@ -1584,21 +1698,18 @@ router.get('/admin/announcements', verifyTelegramAuth, verifyAdminAuth, adminLim
 
 router.post('/admin/announcements', verifyTelegramAuth, verifyAdminAuth, adminLimiter, async (req, res) => {
   try {
-    const { title_uk, title_ru, text_uk, text_ru, banner_image } = req.body;
-    if (!title_uk || !title_ru) {
-      return res.status(400).json({ error: 'title_uk and title_ru are required' });
+    // Single-language: one title + one text, mirrored into both columns.
+    const { title, text, banner_image } = req.body;
+    if (!title || typeof title !== 'string' || !title.trim()) {
+      return res.status(400).json({ error: 'title is required' });
     }
-    if (typeof title_uk !== 'string' || title_uk.length > 500) return res.status(400).json({ error: 'title_uk max 500 characters' });
-    if (typeof title_ru !== 'string' || title_ru.length > 500) return res.status(400).json({ error: 'title_ru max 500 characters' });
+    if (title.length > 500) return res.status(400).json({ error: 'title max 500 characters' });
     const result = await pool.query(
       `INSERT INTO announcements (title_uk, title_ru, text_uk, text_ru, banner_image)
-       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [title_uk, title_ru, text_uk || null, text_ru || null, banner_image || null]
+       VALUES ($1, $1, $2, $2, $3) RETURNING *`,
+      [title, text || null, banner_image || null]
     );
-    notifyAllUsers(
-      `📢 ${title_uk}`,
-      `📢 ${title_ru}`
-    );
+    notifyAllUsers(`📢 ${title}`, `📢 ${title}`);
     res.status(201).json(result.rows[0]);
   } catch (err) {
     console.error('Create announcement error:', err);
@@ -1609,11 +1720,13 @@ router.post('/admin/announcements', verifyTelegramAuth, verifyAdminAuth, adminLi
 router.put('/admin/announcements/:id', verifyTelegramAuth, verifyAdminAuth, adminLimiter, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    const { title_uk, title_ru, text_uk, text_ru, banner_image } = req.body;
+    const { banner_image } = req.body;
+    const title = req.body.title !== undefined ? req.body.title : (req.body.title_uk ?? req.body.title_ru);
+    const text = req.body.text !== undefined ? req.body.text : (req.body.text_uk ?? req.body.text_ru);
     const result = await pool.query(
-      `UPDATE announcements SET title_uk = COALESCE($1, title_uk), title_ru = COALESCE($2, title_ru), text_uk = COALESCE($3, text_uk), text_ru = COALESCE($4, text_ru), banner_image = COALESCE($5, banner_image)
-       WHERE id = $6 RETURNING *`,
-      [title_uk, title_ru, text_uk, text_ru, banner_image, id]
+      `UPDATE announcements SET title_uk = COALESCE($1, title_uk), title_ru = COALESCE($1, title_ru), text_uk = COALESCE($2, text_uk), text_ru = COALESCE($2, text_ru), banner_image = COALESCE($3, banner_image)
+       WHERE id = $4 RETURNING *`,
+      [title, text, banner_image, id]
     );
     if (result.rows.length === 0) return res.status(404).json({ error: 'Announcement not found' });
     res.json(result.rows[0]);

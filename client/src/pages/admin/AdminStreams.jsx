@@ -10,7 +10,7 @@ const AdminStreams = () => {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ banner_image: '', link: '', start_time: '', text_ru: '', text_uk: '' });
+  const [form, setForm] = useState({ banner_image: '', link: '', start_time: '', text: '' });
   const [error, setError] = useState('');
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef(null);
@@ -44,7 +44,7 @@ const AdminStreams = () => {
     setEditing(null);
     const now = new Date();
     now.setMinutes(now.getMinutes() + 15);
-    setForm({ banner_image: '', link: '', start_time: toLocalDatetime(now.toISOString()), text_ru: '', text_uk: '' });
+    setForm({ banner_image: '', link: '', start_time: toLocalDatetime(now.toISOString()), text: '' });
     setShowForm(true);
     setError('');
   };
@@ -55,8 +55,7 @@ const AdminStreams = () => {
       banner_image: s.banner_image || '',
       link: s.link,
       start_time: toLocalDatetime(s.start_time),
-      text_ru: s.text_ru || '',
-      text_uk: s.text_uk || '',
+      text: s.text_uk || s.text_ru || '',
     });
     setShowForm(true);
     setError('');
@@ -87,15 +86,15 @@ const AdminStreams = () => {
   return (
     <div className="page">
       <AdminNav />
-      <h1 className="page-title metallic-text"><span className="emoji-icon">🖥️</span> Streams</h1>
-      <button className="btn btn-primary btn-sm mb-4" onClick={openCreate}>Create Stream</button>
+      <h1 className="page-title metallic-text"><span className="emoji-icon">🖥️</span> {t('admin.streams.title')}</h1>
+      <button className="btn btn-primary btn-sm mb-4" onClick={openCreate}>{t('admin.streams.create')}</button>
 
       {showForm && (
         <div className="glass-panel" style={{ padding: 16, marginBottom: 16 }}>
           <div className="form-group">
-            <label className="form-label">Banner Image</label>
+            <label className="form-label">{t('admin.contests.form.banner')}</label>
             <input ref={fileRef} className="glass-input" type="file" accept="image/*" onChange={handleBannerUpload} disabled={uploading} />
-            {uploading && <p className="text-secondary text-sm mt-1">Uploading...</p>}
+            {uploading && <p className="text-secondary text-sm mt-1">...</p>}
             {form.banner_image && (
               <div style={{ position: 'relative', display: 'inline-block', marginTop: 8 }}>
                 <img src={form.banner_image} alt="" style={{ maxWidth: '100%', maxHeight: 120, borderRadius: 'var(--radius-sm)' }} />
@@ -104,20 +103,16 @@ const AdminStreams = () => {
             )}
           </div>
           <div className="form-group">
-            <label className="form-label">Stream Link *</label>
+            <label className="form-label">{t('admin.streams.link')} *</label>
             <input className="glass-input" placeholder="https://..." value={form.link} onChange={(e) => setForm({ ...form, link: e.target.value })} maxLength={500} />
           </div>
           <div className="form-group">
-            <label className="form-label">Start Time *</label>
+            <label className="form-label">{t('admin.streams.start')} *</label>
             <input className="glass-input" type="datetime-local" value={form.start_time} onChange={(e) => setForm({ ...form, start_time: e.target.value })} />
           </div>
           <div className="form-group">
-            <label className="form-label">Text (RU)</label>
-            <textarea className="glass-input" rows={3} value={form.text_ru} onChange={(e) => setForm({ ...form, text_ru: e.target.value })} />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Text (UK)</label>
-            <textarea className="glass-input" rows={3} value={form.text_uk} onChange={(e) => setForm({ ...form, text_uk: e.target.value })} />
+            <label className="form-label">{t('admin.contests.form.text')}</label>
+            <textarea className="glass-input" rows={3} value={form.text} onChange={(e) => setForm({ ...form, text: e.target.value })} />
           </div>
           {error && <p className="text-sm" style={{ color: 'var(--error)' }}>{error}</p>}
           <div className="flex gap-2 mt-4">
@@ -133,14 +128,14 @@ const AdminStreams = () => {
           <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>
             <a href={s.link} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)' }}>{s.link}</a>
           </div>
-          <div className="text-secondary" style={{ fontSize: 12, marginBottom: 4 }}>{s.text_ru}{s.text_uk ? ` / ${s.text_uk}` : ''}</div>
+          <div className="text-secondary" style={{ fontSize: 12, marginBottom: 4 }}>{s.text_uk || s.text_ru}</div>
           <div className="text-secondary" style={{ fontSize: 12 }}><span className="emoji-icon">🕐</span> {new Date(s.start_time).toLocaleString([], { timeZone: 'Europe/Kyiv' })}</div>
           <div style={{ fontSize: 12, marginTop: 4, display: 'flex', gap: 6, alignItems: 'center' }}>
             <span className={`badge ${s.status === 'scheduled' ? 'badge-primary' : s.status === 'live' ? 'badge-success' : 'badge-secondary'}`}>
-              {s.status === 'scheduled' ? 'Scheduled' : s.status === 'live' ? <><span className="emoji-icon">🔴</span> Live</> : 'Ended'}
+              {s.status === 'scheduled' ? t('admin.streams.scheduled') : s.status === 'live' ? <><span className="emoji-icon">🔴</span> {t('admin.streams.live')}</> : t('admin.contests.ended')}
             </span>
-            {s.status === 'scheduled' && <button className="btn btn-success btn-xs" onClick={() => setStatus(s.id, 'live')}>Set Live</button>}
-            {s.status === 'live' && <button className="btn btn-secondary btn-xs" onClick={() => setStatus(s.id, 'ended')}>End</button>}
+            {s.status === 'scheduled' && <button className="btn btn-success btn-xs" onClick={() => setStatus(s.id, 'live')}>{t('admin.streams.set_live')}</button>}
+            {s.status === 'live' && <button className="btn btn-secondary btn-xs" onClick={() => setStatus(s.id, 'ended')}>{t('admin.streams.end')}</button>}
           </div>
           <div className="flex gap-2 mt-3">
             <button className="btn btn-secondary btn-sm" onClick={() => openEdit(s)}>{t('admin.contests.edit')}</button>

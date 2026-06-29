@@ -4,38 +4,6 @@ const { pool } = require('./db');
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
-// ─── REMINDER INTERVAL ───
-
-const checkContestReminders = async () => {
-  try {
-    const reminders = await pool.query(
-      `SELECT cr.id, cr.contest_id, c.title_uk, c.title_ru, c.start_date, c.casino
-       FROM contest_reminders cr
-       JOIN contests c ON c.id = cr.contest_id
-       WHERE cr.sent = FALSE AND c.status = 'active' AND c.start_date <= NOW() + INTERVAL '15 minutes' AND c.start_date > NOW()`
-    );
-    for (const r of reminders.rows) {
-      const participants = await pool.query(
-        `SELECT u.telegram_id, u.language FROM contest_participants cp
-         JOIN users u ON u.id = cp.user_id
-         WHERE cp.contest_id = $1`,
-        [r.contest_id]
-      );
-      for (const p of participants.rows) {
-        const msg = p.language === 'uk'
-          ? `🔔 Конкурс "${r.title_uk}" розпочнеться за 15 хвилин!\nКазино: ${r.casino === 'topmatch' ? 'TopMatch' : 'Betline'}`
-          : `🔔 Конкурс "${r.title_ru}" начнется через 15 минут!\nКазино: ${r.casino === 'topmatch' ? 'TopMatch' : 'Betline'}`;
-        try { await bot.telegram.sendMessage(p.telegram_id, msg); } catch (e) { /* ignore */ }
-      }
-      await pool.query('UPDATE contest_reminders SET sent = TRUE, sent_at = NOW() WHERE id = $1', [r.id]);
-    }
-  } catch (err) {
-    console.error('Contest reminder check error:', err);
-  }
-};
-
-setInterval(checkContestReminders, 60000);
-
 // ─── NOTIFICATION MENU ───
 
 const sendNotificationMenu = async (ctx, language) => {
@@ -257,6 +225,19 @@ const notifyAdminChange = async (user, field, newValue, casinoName) => {
   }
 };
 
+// Send a plain text message to all configured admins.
+const notifyAdminMessage = async (text) => {
+  try {
+    const adminIds = (process.env.ADMIN_TELEGRAM_IDS || '').split(',').map(id => id.trim()).filter(Boolean);
+    for (const adminId of adminIds) {
+      try { await bot.telegram.sendMessage(adminId, text); }
+      catch (e) { console.error(`Error notifying admin ${adminId}:`, e); }
+    }
+  } catch (err) {
+    console.error('Error notifying admins (message):', err);
+  }
+};
+
 const notifyUser = async (telegramId, textUk, textRu, language) => {
   try {
     const message = language === 'uk' ? textUk : textRu;
@@ -281,4 +262,4 @@ const notifyAllUsers = async (textUk, textRu) => {
   }
 };
 
-module.exports = { bot, notifyWinner, notifyAdmin, notifyUser, notifyAdminChange, notifyAllUsers };
+module.exports = { bot, notifyWinner, notifyAdmin, notifyAdminMessage, notifyUser, notifyAdminChange, notifyAllUsers };

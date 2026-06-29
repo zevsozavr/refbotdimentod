@@ -13,10 +13,12 @@ const AdminNav = () => {
     { path: '/admin/stats', label: t('admin.stats.title'), icon: '📊' },
     { path: '/admin/users', label: t('admin.users.title'), icon: '👤', badge: counts.pendingUsers },
     { path: '/admin/contests', label: t('admin.contests.title'), icon: '🏆' },
+    { path: '/admin/winners', label: t('admin.winners.title'), icon: '🥇' },
+    { path: '/admin/deposits', label: t('admin.deposits.title'), icon: '💰' },
     { path: '/admin/pending-changes', label: 'Pending', icon: '⏳', badge: counts.pendingChanges },
     { path: '/admin/broadcast', label: t('admin.broadcast.title'), icon: '📢' },
-    { path: '/admin/streams', label: 'Streams', icon: '📺' },
-    { path: '/admin/announces', label: t('nav.announces'), icon: '📣' },
+    { path: '/admin/streams', label: t('admin.streams.title'), icon: '📺' },
+    { path: '/admin/announces', label: t('admin.announces.title'), icon: '📣' },
     { path: '/admin/settings', label: 'Settings', icon: '⚙️' },
   ];
 

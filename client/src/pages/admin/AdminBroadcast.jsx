@@ -5,8 +5,7 @@ import AdminNav from '../../components/AdminNav';
 
 const AdminBroadcast = () => {
   const { t } = useTranslation();
-  const [messageUk, setMessageUk] = useState('');
-  const [messageRu, setMessageRu] = useState('');
+  const [message, setMessage] = useState('');
   const [targetType, setTargetType] = useState('');
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState(null);
@@ -19,8 +18,7 @@ const AdminBroadcast = () => {
     setShowConfirm(false);
     try {
       const res = await adminApi.post('/admin/broadcast', {
-        message_uk: messageUk,
-        message_ru: messageRu,
+        message,
         target_referral_type: targetType || null,
       });
       setResult(res.data);
@@ -31,7 +29,7 @@ const AdminBroadcast = () => {
     }
   };
 
-  const canSend = messageUk.trim() && messageRu.trim();
+  const canSend = message.trim();
 
   return (
     <div className="page">
@@ -40,12 +38,8 @@ const AdminBroadcast = () => {
 
       <div className="glass-panel mb-4">
         <div className="form-group">
-          <label className="form-label">{t('admin.broadcast.message_uk')}</label>
-          <textarea className="glass-input" rows={4} value={messageUk} onChange={(e) => setMessageUk(e.target.value)} maxLength={1000} />
-        </div>
-        <div className="form-group">
-          <label className="form-label">{t('admin.broadcast.message_ru')}</label>
-          <textarea className="glass-input" rows={4} value={messageRu} onChange={(e) => setMessageRu(e.target.value)} maxLength={1000} />
+          <label className="form-label">{t('admin.broadcast.message')}</label>
+          <textarea className="glass-input" rows={4} value={message} onChange={(e) => setMessage(e.target.value)} maxLength={1000} />
         </div>
         <div className="form-group">
           <label className="form-label">{t('admin.broadcast.target')}</label>
@@ -69,11 +63,10 @@ const AdminBroadcast = () => {
         </button>
       </div>
 
-      {(messageUk || messageRu) && (
+      {message && (
         <div className="glass-panel mb-4">
           <div className="form-label" style={{ marginBottom: 10 }}>{t('admin.broadcast.preview')}</div>
-          {messageUk && <div className="text-sm mb-2"><strong>UK:</strong> {messageUk}</div>}
-          {messageRu && <div className="text-sm"><strong>RU:</strong> {messageRu}</div>}
+          <div className="text-sm">{message}</div>
         </div>
       )}
 

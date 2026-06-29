@@ -11,8 +11,8 @@ const AdminContests = () => {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({
-    title_uk: '', title_ru: '', description_uk: '', description_ru: '',
-    prize_uk: '', prize_ru: '', referral_type: '1', casino: 'topmatch', start_date: '', end_date: '',
+    title: '', description: '', prize: '',
+    referral_type: '1', casino: 'topmatch', start_date: '', end_date: '',
     winner_count: '1', banner_image: '',
   });
   const [error, setError] = useState('');
@@ -62,7 +62,7 @@ const AdminContests = () => {
     const endObj = new Date();
     endObj.setHours(23, 59);
     const endStr = toLocalDatetime(endObj.toISOString());
-    setForm({ title_uk: '', title_ru: '', description_uk: '', description_ru: '', prize_uk: '', prize_ru: '', referral_type: '1', casino: 'topmatch', start_date: startStr, end_date: endStr, winner_count: '1', banner_image: '' });
+    setForm({ title: '', description: '', prize: '', referral_type: '1', casino: 'topmatch', start_date: startStr, end_date: endStr, winner_count: '1', banner_image: '' });
     setShowForm(true);
     setError('');
   };
@@ -70,9 +70,9 @@ const AdminContests = () => {
   const openEdit = (contest) => {
     setEditing(contest);
     setForm({
-      title_uk: contest.title_uk, title_ru: contest.title_ru,
-      description_uk: contest.description_uk, description_ru: contest.description_ru,
-      prize_uk: contest.prize_uk, prize_ru: contest.prize_ru,
+      title: contest.title ?? contest.title_uk ?? '',
+      description: contest.description ?? contest.description_uk ?? '',
+      prize: contest.prize ?? contest.prize_uk ?? '',
       referral_type: String(contest.eligible_referral_type),
       casino: contest.casino || 'topmatch',
       start_date: toLocalDatetime(contest.start_date), end_date: toLocalDatetime(contest.end_date),
@@ -81,6 +81,16 @@ const AdminContests = () => {
     });
     setShowForm(true);
     setError('');
+  };
+
+  const handlePickWinner = async (id) => {
+    if (!confirm(t('admin.contests.pick_winner') + '?')) return;
+    try {
+      await adminApi.post(`/admin/contests/${id}/pick-winner`);
+      fetchContests();
+    } catch (e) {
+      alert(e.response?.data?.error || t('common.error'));
+    }
   };
 
   const handleSave = async () => {
@@ -150,28 +160,16 @@ const AdminContests = () => {
           </h3>
 
           <div className="form-group">
-            <label className="form-label">{t('admin.contests.form.title_uk')}</label>
-            <input className="glass-input" value={form.title_uk} onChange={(e) => setForm({ ...form, title_uk: e.target.value })} maxLength={500} />
+            <label className="form-label">{t('admin.contests.form.title')}</label>
+            <input className="glass-input" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} maxLength={500} />
           </div>
           <div className="form-group">
-            <label className="form-label">{t('admin.contests.form.title_ru')}</label>
-            <input className="glass-input" value={form.title_ru} onChange={(e) => setForm({ ...form, title_ru: e.target.value })} maxLength={500} />
+            <label className="form-label">{t('admin.contests.form.desc')}</label>
+            <textarea className="glass-input" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} maxLength={500} />
           </div>
           <div className="form-group">
-            <label className="form-label">{t('admin.contests.form.desc_uk')}</label>
-            <textarea className="glass-input" value={form.description_uk} onChange={(e) => setForm({ ...form, description_uk: e.target.value })} maxLength={500} />
-          </div>
-          <div className="form-group">
-            <label className="form-label">{t('admin.contests.form.desc_ru')}</label>
-            <textarea className="glass-input" value={form.description_ru} onChange={(e) => setForm({ ...form, description_ru: e.target.value })} maxLength={500} />
-          </div>
-          <div className="form-group">
-            <label className="form-label">{t('admin.contests.form.prize_uk')}</label>
-            <input className="glass-input" value={form.prize_uk} onChange={(e) => setForm({ ...form, prize_uk: e.target.value })} maxLength={500} />
-          </div>
-          <div className="form-group">
-            <label className="form-label">{t('admin.contests.form.prize_ru')}</label>
-            <input className="glass-input" value={form.prize_ru} onChange={(e) => setForm({ ...form, prize_ru: e.target.value })} maxLength={500} />
+            <label className="form-label">{t('admin.contests.form.prize')}</label>
+            <input className="glass-input" value={form.prize} onChange={(e) => setForm({ ...form, prize: e.target.value })} maxLength={500} />
           </div>
           <div className="form-group">
             <label className="form-label">{t('admin.contests.form.casino')}</label>
@@ -189,11 +187,11 @@ const AdminContests = () => {
             </select>
           </div>
           <div className="form-group">
-            <label className="form-label">Winner Count</label>
+            <label className="form-label">{t('admin.contests.form.winner_count')}</label>
             <input className="glass-input" type="number" min="1" max="100" value={form.winner_count} onChange={(e) => setForm({ ...form, winner_count: e.target.value })} />
           </div>
           <div className="form-group">
-            <label className="form-label">Banner Image</label>
+            <label className="form-label">{t('admin.contests.form.banner')}</label>
             <input ref={fileRef} className="glass-input" type="file" accept="image/*" onChange={handleBannerUpload} disabled={uploading} />
             {uploading && <p className="text-secondary text-sm mt-1">Uploading...</p>}
             {form.banner_image && (
@@ -224,12 +222,12 @@ const AdminContests = () => {
       {contests.map((c) => (
         <div key={c.id} className="glass-panel mb-4">
           <div className="flex items-center justify-between mb-2">
-            <div className="contest-title">{c.title_uk}</div>
+            <div className="contest-title">{c.title ?? c.title_uk}</div>
             <span className={`badge ${statusBadge(c.status)}`}>{statusLabel(c.status)}</span>
           </div>
-          <div className="contest-desc">{c.description_uk}</div>
+          <div className="contest-desc">{c.description ?? c.description_uk}</div>
           <div className="contest-meta mt-2">
-            <span className="badge badge-type">{c.casino === 'topmatch' ? 'TopMatch' : 'Betline'} — {t('contests.level')} {c.eligible_level}</span>
+            <span className="badge badge-type">{c.casino === 'topmatch' ? 'TopMatch' : 'Betline'} — {t('contests.level')} {c.eligible_level ?? c.eligible_referral_type}</span>
             <span className="text-sm text-secondary">
               {new Date(c.start_date).toLocaleDateString()} — {new Date(c.end_date).toLocaleDateString()}
             </span>
@@ -237,6 +235,9 @@ const AdminContests = () => {
           <div className="flex gap-2 mt-3" style={{ flexWrap: 'wrap' }}>
             {c.status === 'active' && (
               <button className="btn btn-secondary btn-sm" onClick={() => openEdit(c)}>{t('admin.contests.edit')}</button>
+            )}
+            {(c.status === 'active' || c.status === 'ended') && (
+              <button className="btn btn-primary btn-sm" onClick={() => handlePickWinner(c.id)}>{t('admin.contests.pick_winner')}</button>
             )}
             <button className="btn btn-danger btn-sm" onClick={() => handleDelete(c.id)}>{t('admin.contests.delete')}</button>
           </div>

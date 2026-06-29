@@ -55,6 +55,16 @@ const Home = () => {
         </div>
       </div>
 
+      <button
+        className="glass-panel"
+        onClick={() => navigate('/winnings')}
+        style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '12px 16px', marginBottom: 16, cursor: 'pointer', textAlign: 'left', border: 'none' }}
+      >
+        <span className="emoji-icon" style={{ fontSize: 20 }}>🏆</span>
+        <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--primary)' }}>{lang === 'uk' ? 'Мої виграші' : 'Мои выигрыши'}</span>
+        <span className="emoji-icon" style={{ marginLeft: 'auto' }}>▶</span>
+      </button>
+
       <div className="casino-list">
         {casinos.map(casino => (
             <div key={casino.id} className={`casino-card ${casino.id} ${casino.id === 'topmatch' ? 'banner-float' : 'banner-float-delayed'}`} onClick={() => navigate(`/casino/${casino.id}`)}>

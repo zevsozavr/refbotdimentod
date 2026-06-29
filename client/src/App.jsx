@@ -13,6 +13,7 @@ import Contests from './pages/Contests';
 import Announces from './pages/Announces';
 import Casino from './pages/Casino';
 import Deposits from './pages/Deposits';
+import Winnings from './pages/Winnings';
 import Settings from './pages/Settings';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminUserDetail from './pages/admin/AdminUserDetail';
@@ -22,6 +23,8 @@ import AdminStats from './pages/admin/AdminStats';
 import AdminPendingChanges from './pages/admin/AdminPendingChanges';
 import AdminStreams from './pages/admin/AdminStreams';
 import AdminAnnounces from './pages/admin/AdminAnnounces';
+import AdminWinners from './pages/admin/AdminWinners';
+import AdminDeposits from './pages/admin/AdminDeposits';
 import AdminSettings from './pages/admin/AdminSettings';
 import './styles.css';
 
@@ -164,6 +167,7 @@ const AppContent = () => {
           <Route path="/contests" element={<Contests />} />
           <Route path="/announces" element={<Announces />} />
           <Route path="/deposits" element={<Deposits />} />
+          <Route path="/winnings" element={<Winnings />} />
           <Route path="/settings" element={<Settings />} />
           {isAdmin && (
             <>
@@ -175,6 +179,8 @@ const AppContent = () => {
               <Route path="/admin/pending-changes" element={<AdminPendingChanges />} />
               <Route path="/admin/streams" element={<AdminStreams />} />
               <Route path="/admin/announces" element={<AdminAnnounces />} />
+              <Route path="/admin/winners" element={<AdminWinners />} />
+              <Route path="/admin/deposits" element={<AdminDeposits />} />
               <Route path="/admin/settings" element={<AdminSettings />} />
             </>
           )}
