@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import api from '../axios';
 import { useApp } from '../contexts/AppContext';
+import Chevron from '../components/Chevron';
 
 const Contests = () => {
   const { t } = useTranslation();
@@ -97,7 +98,7 @@ const Contests = () => {
   if (!casinoId) {
     return (
       <div className="page">
-        <button className="back-btn" onClick={goBack} aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg></button>
+        <button className="back-btn" onClick={goBack} aria-label="Back"><Chevron /></button>
         <h1 className="page-title metallic-text" style={{ paddingLeft: 48 }}>{t('contests.title')}</h1>
         <p className="text-secondary" style={{ textAlign: 'center', marginTop: 20 }}>{t('contests.no_casino')}</p>
         <button className="btn btn-secondary" onClick={goBack} style={{ margin: '16px auto', display: 'block', width: 'calc(100% - 32px)' }}>
@@ -110,7 +111,7 @@ const Contests = () => {
   if (isUnavailable) {
     return (
       <div className="page">
-        <button className="back-btn" onClick={goBack} aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg></button>
+        <button className="back-btn" onClick={goBack} aria-label="Back"><Chevron /></button>
         <h1 className="page-title metallic-text" style={{ paddingLeft: 48 }}>{t('contests.title')}</h1>
         <div className="glass-panel" style={{ padding: 24, textAlign: 'center', marginTop: 20, margin: '20px 0 0' }}>
           <div style={{ fontSize: 44, marginBottom: 14 }}>🔒</div>
@@ -136,7 +137,7 @@ const Contests = () => {
   if (walletError) {
     return (
       <div className="page">
-        <button className="back-btn" onClick={goBack} aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg></button>
+        <button className="back-btn" onClick={goBack} aria-label="Back"><Chevron /></button>
         <h1 className="page-title metallic-text" style={{ paddingLeft: 48 }}>{t('contests.title')}</h1>
         <div className="glass-panel" style={{ padding: 20, textAlign: 'center', marginTop: 20 }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}><span className="emoji-icon">💰</span></div>
@@ -157,7 +158,7 @@ const Contests = () => {
 
   return (
     <div className="page">
-      <button className="back-btn" onClick={goBack} aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg></button>
+      <button className="back-btn" onClick={goBack} aria-label="Back"><Chevron /></button>
       <h1 className="page-title metallic-text" style={{ paddingLeft: 48 }}>{t('contests.title')}</h1>
 
       <div className="tabs">

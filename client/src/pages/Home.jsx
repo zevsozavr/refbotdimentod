@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../axios';
 import { useApp } from '../contexts/AppContext';
 import NotificationDropdown from '../components/NotificationDropdown';
+import Chevron from '../components/Chevron';
 import useStaggeredEntrance from '../hooks/useStaggeredEntrance';
 
 const Home = () => {
@@ -62,7 +63,7 @@ const Home = () => {
       >
         <span className="emoji-icon" style={{ fontSize: 20 }}>🏆</span>
         <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--primary)' }}>{lang === 'uk' ? 'Мої виграші' : 'Мои выигрыши'}</span>
-        <span className="emoji-icon" style={{ marginLeft: 'auto' }}>▶</span>
+        <Chevron dir="right" style={{ marginLeft: 'auto', color: 'var(--on-surface-variant)' }} />
       </button>
 
       <div className="casino-list">

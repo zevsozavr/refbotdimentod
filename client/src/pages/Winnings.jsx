@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../axios';
+import Chevron from '../components/Chevron';
 
 const Winnings = () => {
   const { t } = useTranslation();
@@ -26,7 +27,7 @@ const Winnings = () => {
     <div className="page">
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
         <button className="btn btn-secondary btn-sm" onClick={() => navigate(-1)} style={{ width: 'auto', padding: '8px 12px', fontSize: 13 }}>
-          <span className="emoji-icon">◀</span>
+          <Chevron />
         </button>
         <h1 className="page-title metallic-text" style={{ marginBottom: 0 }}>{t('winnings.title')}</h1>
       </div>

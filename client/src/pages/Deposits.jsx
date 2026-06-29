@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../axios';
 import { useApp } from '../contexts/AppContext';
+import Chevron from '../components/Chevron';
 
 const Deposits = () => {
   const { user } = useApp();
@@ -29,7 +30,7 @@ const Deposits = () => {
     <div className="page">
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
         <button className="btn btn-secondary btn-sm" onClick={() => navigate(-1)} style={{ width: 'auto', padding: '8px 12px', fontSize: 13 }}>
-          <span className="emoji-icon">◀</span>
+          <Chevron />
         </button>
         <h1 className="page-title" style={{ marginBottom: 0 }}>
           {lang === 'uk' ? 'Мої депозити' : 'Мои депозиты'}

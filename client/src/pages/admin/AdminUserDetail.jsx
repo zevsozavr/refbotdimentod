@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { adminApi } from '../../axios';
 import AdminNav from '../../components/AdminNav';
+import Chevron from '../../components/Chevron';
 import { invalidateAdminCounts } from '../../hooks/useAdminCounts';
 
 const CopyField = ({ label, value, mono }) => {
@@ -139,7 +140,7 @@ const AdminUserDetail = () => {
     <div className="page">
       <AdminNav />
       <button className="btn btn-secondary btn-sm mb-4" onClick={() => navigate('/admin/users')}>
-        <span className="emoji-icon">◀</span> {t('admin.users.title')}
+        <Chevron /> {t('admin.users.title')}
       </button>
 
       <div className="detail-hero glass-panel mb-4">

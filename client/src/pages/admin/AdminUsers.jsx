@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { adminApi } from '../../axios';
 import AdminNav from '../../components/AdminNav';
+import Chevron from '../../components/Chevron';
 import useStaggeredEntrance from '../../hooks/useStaggeredEntrance';
 
 const AdminUsers = () => {
@@ -133,11 +134,11 @@ const AdminUsers = () => {
           {totalPages > 1 && (
             <div className="pagination" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 16, marginTop: 20, paddingBottom: 80 }}>
               <button className="btn btn-secondary" style={{ width: 'auto', padding: '8px 16px', fontSize: 13 }} disabled={page <= 1} onClick={() => setPage(page - 1)}>
-                <span className="emoji-icon">◀</span>
+                <Chevron dir="left" />
               </button>
               <span style={{ fontSize: 14, color: 'var(--on-surface-variant)' }}>{page} / {totalPages}</span>
               <button className="btn btn-secondary" style={{ width: 'auto', padding: '8px 16px', fontSize: 13 }} disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
-                <span className="emoji-icon">▶</span>
+                <Chevron dir="right" />
               </button>
             </div>
           )}
